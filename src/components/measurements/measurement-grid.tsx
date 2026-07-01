@@ -52,7 +52,7 @@ export function MeasurementGrid({
       {editable ? (
         <label className="grid gap-1 rounded-md border border-[#eadfce] bg-white p-3 text-sm sm:col-span-2 xl:col-span-3">
           <span className="font-semibold text-[#4c1525]">Special Notes</span>
-          <Textarea name={`${valuePrefix}Notes`} placeholder="Garment-specific fitting notes" />
+          <Textarea name={`${valuePrefix}Notes`} placeholder="Fitting notes" />
         </label>
       ) : null}
     </div>

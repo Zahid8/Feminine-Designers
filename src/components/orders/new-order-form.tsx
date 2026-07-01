@@ -91,6 +91,7 @@ export function NewOrderForm({
   const receipt = formatReceiptNumber({ prefix: STORE_SETTINGS.receiptPrefix, year: 2026, sequence: 3 });
   const activeGarmentTypes = garmentTypes.filter((type) => type.active);
   const visibleItems = useMemo(() => Array.from({ length: clothCount }, (_, index) => items[index] ?? items[0]), [clothCount, items]);
+  const globalMeasurementTemplate = templateForGarment(visibleItems[0]?.garmentType ?? activeGarmentTypes[0]?.name ?? "");
   const totals = useMemo(
     () =>
       calculateOrderTotals({
@@ -240,76 +241,76 @@ export function NewOrderForm({
             />
           </Field>
           <div className="grid gap-4">
-            {visibleItems.map((item, index) => {
-              const template = templateForGarment(item.garmentType);
-              return (
-                <details
-                  key={index}
-                  open={index === 0}
-                  className="rounded-md border border-[#eadfce] bg-white p-4"
-                >
-                  <summary className="cursor-pointer text-sm font-bold text-[#4c1525]">
-                    Dress {index + 1}: {item.garmentType}
-                  </summary>
-                  <div className="mt-4 grid gap-4 lg:grid-cols-[1.2fr_.6fr_.7fr_.7fr]">
-                    <Field label="Garment type">
-                      <select
-                        name={`items.${index}.garmentType`}
-                        className="h-10 rounded-md border border-[#d8c7b4] bg-white px-3 text-sm"
-                        value={item.garmentType}
-                        onChange={(event) => updateItem(index, { garmentType: event.target.value })}
-                      >
-                        {activeGarmentTypes.map((type) => (
-                          <option key={type.id}>{type.name}</option>
-                        ))}
-                      </select>
-                    </Field>
-                    <Field label="Quantity">
-                      <Input
-                        name={`items.${index}.quantity`}
-                        type="number"
-                        min={1}
-                        value={item.quantity}
-                        onChange={(event) => updateItem(index, { quantity: Number(event.target.value) })}
-                      />
-                    </Field>
-                    <Field label="Rate">
-                      <Input
-                        name={`items.${index}.rateRupees`}
-                        type="number"
-                        min={0}
-                        value={item.rate}
-                        onChange={(event) => updateItem(index, { rate: Number(event.target.value) })}
-                      />
-                    </Field>
-                    <Field label="Fabric length">
-                      <Input name={`items.${index}.fabricLength`} placeholder="Example: 2.5 m" />
-                    </Field>
-                    <Field label="Fabric/color">
-                      <Input name={`items.${index}.fabricColor`} placeholder="Optional" />
-                    </Field>
-                    <Field label="Design reference">
-                      <Input name={`items.${index}.designReference`} placeholder="Optional" />
-                    </Field>
-                    <label className="grid gap-1 text-sm font-medium lg:col-span-4">
-                      <span>Stitching instructions</span>
-                      <Textarea
-                        name={`items.${index}.stitchingInstructions`}
-                        defaultValue={index === 0 ? "Princess cut, padded, lining required" : ""}
-                      />
-                    </label>
-                  </div>
-                  <div className="mt-4">
-                    <MeasurementGrid
-                      template={template}
-                      editable
-                      valuePrefix={`measurements.${index}`}
-                      metaPrefix={`measurementMeta.${index}`}
+            {visibleItems.map((item, index) => (
+              <details
+                key={index}
+                open={index === 0}
+                className="rounded-md border border-[#eadfce] bg-white p-4"
+              >
+                <summary className="cursor-pointer text-sm font-bold text-[#4c1525]">
+                  Dress {index + 1}: {item.garmentType}
+                </summary>
+                <div className="mt-4 grid gap-4 lg:grid-cols-[1.2fr_.6fr_.7fr_.7fr]">
+                  <Field label="Garment type">
+                    <select
+                      name={`items.${index}.garmentType`}
+                      className="h-10 rounded-md border border-[#d8c7b4] bg-white px-3 text-sm"
+                      value={item.garmentType}
+                      onChange={(event) => updateItem(index, { garmentType: event.target.value })}
+                    >
+                      {activeGarmentTypes.map((type) => (
+                        <option key={type.id}>{type.name}</option>
+                      ))}
+                    </select>
+                  </Field>
+                  <Field label="Quantity">
+                    <Input
+                      name={`items.${index}.quantity`}
+                      type="number"
+                      min={1}
+                      value={item.quantity}
+                      onChange={(event) => updateItem(index, { quantity: Number(event.target.value) })}
                     />
-                  </div>
-                </details>
-              );
-            })}
+                  </Field>
+                  <Field label="Rate">
+                    <Input
+                      name={`items.${index}.rateRupees`}
+                      type="number"
+                      min={0}
+                      value={item.rate}
+                      onChange={(event) => updateItem(index, { rate: Number(event.target.value) })}
+                    />
+                  </Field>
+                  <Field label="Fabric length">
+                    <Input name={`items.${index}.fabricLength`} placeholder="Example: 2.5 m" />
+                  </Field>
+                  <Field label="Fabric/color">
+                    <Input name={`items.${index}.fabricColor`} placeholder="Optional" />
+                  </Field>
+                  <Field label="Design reference">
+                    <Input name={`items.${index}.designReference`} placeholder="Optional" />
+                  </Field>
+                  <label className="grid gap-1 text-sm font-medium lg:col-span-4">
+                    <span>Stitching instructions</span>
+                    <Textarea
+                      name={`items.${index}.stitchingInstructions`}
+                      defaultValue={index === 0 ? "Princess cut, padded, lining required" : ""}
+                    />
+                  </label>
+                </div>
+              </details>
+            ))}
+          </div>
+          <div className="rounded-md border border-[#eadfce] bg-white p-4">
+            <h3 className="text-sm font-bold text-[#4c1525]">Measurements</h3>
+            <div className="mt-4">
+              <MeasurementGrid
+                template={globalMeasurementTemplate}
+                editable
+                valuePrefix="measurement"
+                metaPrefix="measurementMeta"
+              />
+            </div>
           </div>
           <div className="grid gap-3 rounded-lg border border-[#eadfce] bg-white p-4 md:grid-cols-[1fr_220px]">
             <div>

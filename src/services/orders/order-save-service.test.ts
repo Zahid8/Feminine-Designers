@@ -77,4 +77,31 @@ describe("saveParsedOrder", () => {
       })
     );
   });
+
+  it("sends measurements without an item sort order when they are order-level measurements", async () => {
+    const { saveParsedOrder } = await import("./order-save-service");
+    const parsed = makeParsedOrder(0);
+    parsed.measurements = [
+      {
+        id: "form-global-length",
+        fieldKey: "length",
+        displayCode: "L",
+        displayLabel: "Length",
+        value: "14",
+        unit: "in",
+        sortOrder: 1
+      }
+    ];
+
+    await saveParsedOrder(parsed);
+
+    const payload = mockRpc.mock.calls[0]?.[1]?.p_payload as { measurements?: Array<Record<string, unknown>> };
+    expect(payload.measurements).toEqual([
+      expect.objectContaining({
+        field_key: "length",
+        value: "14",
+        item_sort_order: null
+      })
+    ]);
+  });
 });

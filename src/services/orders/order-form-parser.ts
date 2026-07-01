@@ -30,6 +30,14 @@ function readItemIndexes(formData: FormData) {
   return [...indexes].sort((a, b) => a - b);
 }
 
+function measurementIdPrefix(groupKey: string) {
+  return groupKey === "global" ? "global" : String(Number(groupKey) + 1);
+}
+
+function measurementOrderItemSortOrder(groupKey: string) {
+  return groupKey === "global" ? undefined : Number(groupKey) + 1;
+}
+
 export function parseOrderFormData(formData: FormData): ParsedOrderForm {
   const intent = readIntent(formData);
   const itemIndexes = readItemIndexes(formData);
@@ -43,11 +51,11 @@ export function parseOrderFormData(formData: FormData): ParsedOrderForm {
       measurementValues[itemIndex] = { ...(measurementValues[itemIndex] ?? {}), [fieldKey]: value.trim() };
     } else if (key.startsWith("measurement.") && typeof value === "string") {
       const fieldKey = key.replace("measurement.", "");
-      measurementValues["0"] = { ...(measurementValues["0"] ?? {}), [fieldKey]: value.trim() };
+      measurementValues.global = { ...(measurementValues.global ?? {}), [fieldKey]: value.trim() };
     }
     if (key.startsWith("measurementMeta.") && typeof value === "string") {
       const parts = key.split(".");
-      const itemIndex = parts.length === 4 ? parts[1] : "0";
+      const itemIndex = parts.length === 4 ? parts[1] : "global";
       const fieldKey = parts.length === 4 ? parts[2] : parts[1];
       const metaKey = parts.length === 4 ? parts[3] : parts[2];
       measurementMeta[itemIndex] = {
@@ -96,8 +104,8 @@ export function parseOrderFormData(formData: FormData): ParsedOrderForm {
       const meta = measurementMeta[itemIndex]?.[fieldKey] ?? {};
       const normalizedValue = value.trim() === "" ? "NA" : value;
       return {
-        id: `form-${Number(itemIndex) + 1}-${fieldKey}`,
-        orderItemSortOrder: Number(itemIndex) + 1,
+        id: `form-${measurementIdPrefix(itemIndex)}-${fieldKey}`,
+        orderItemSortOrder: measurementOrderItemSortOrder(itemIndex),
         fieldKey,
         displayCode: meta.displayCode || fieldKey.toUpperCase(),
         displayLabel: meta.displayLabel || meta.displayCode || fieldKey,

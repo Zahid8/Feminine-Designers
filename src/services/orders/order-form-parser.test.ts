@@ -35,7 +35,7 @@ describe("parseOrderFormData", () => {
       expect.objectContaining({ garmentType: "Blouse", quantity: 2, rateRupees: 1200, discountRupees: 0 })
     ]);
     expect(parsed.measurementValues).toMatchObject({
-      "0": {
+      global: {
         length: "14",
         collar: "15",
         frontcross: "13.5"
@@ -43,8 +43,8 @@ describe("parseOrderFormData", () => {
     });
     expect(parsed.measurements).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ fieldKey: "collar", displayCode: "CL", value: "15" }),
-        expect.objectContaining({ fieldKey: "frontcross", displayCode: "FC", value: "13.5" })
+        expect.objectContaining({ fieldKey: "collar", displayCode: "CL", value: "15", orderItemSortOrder: undefined }),
+        expect.objectContaining({ fieldKey: "frontcross", displayCode: "FC", value: "13.5", orderItemSortOrder: undefined })
       ])
     );
     expect(parsed.clothSampleDataUrl).toBe("data:image/jpeg;base64,abc123");
@@ -68,7 +68,7 @@ describe("parseOrderFormData", () => {
     expect(parseOrderFormData(formData).order.status).toBe("Draft");
   });
 
-  it("keeps blank measurement fields as NA so receipts show every column", () => {
+  it("keeps blank global measurement fields as NA before receipt filtering", () => {
     const formData = new FormData();
     formData.set("intent", "order");
     formData.set("customerName", "Ayesha Khan");
@@ -95,12 +95,13 @@ describe("parseOrderFormData", () => {
         displayLabel: "Collar",
         value: "NA",
         unit: "in",
-        sortOrder: 19
+        sortOrder: 19,
+        orderItemSortOrder: undefined
       })
     ]);
   });
 
-  it("parses multiple garment sections with item-specific measurements and global charges", () => {
+  it("parses multiple garment sections with one global measurement set and global charges", () => {
     const formData = new FormData();
     formData.set("intent", "order");
     formData.set("customerName", "Ayesha Khan");
@@ -121,14 +122,10 @@ describe("parseOrderFormData", () => {
     formData.set("stitchingCostRupees", "500");
     formData.set("advancePaidRupees", "500");
     formData.set("paymentMethod", "Cash");
-    formData.set("measurements.0.length", "14");
-    formData.set("measurementMeta.0.length.displayCode", "L");
-    formData.set("measurementMeta.0.length.displayLabel", "Length");
-    formData.set("measurementMeta.0.length.unit", "in");
-    formData.set("measurements.1.length", "40");
-    formData.set("measurementMeta.1.length.displayCode", "L");
-    formData.set("measurementMeta.1.length.displayLabel", "Length");
-    formData.set("measurementMeta.1.length.unit", "in");
+    formData.set("measurement.length", "14");
+    formData.set("measurementMeta.length.displayCode", "L");
+    formData.set("measurementMeta.length.displayLabel", "Length");
+    formData.set("measurementMeta.length.unit", "in");
 
     const parsed = parseOrderFormData(formData);
 
@@ -145,9 +142,9 @@ describe("parseOrderFormData", () => {
     );
     expect(parsed.measurements).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ fieldKey: "length", value: "14", orderItemSortOrder: 1 }),
-        expect.objectContaining({ fieldKey: "length", value: "40", orderItemSortOrder: 2 })
+        expect.objectContaining({ fieldKey: "length", value: "14", orderItemSortOrder: undefined })
       ])
     );
+    expect(parsed.measurements).toHaveLength(1);
   });
 });

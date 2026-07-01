@@ -73,6 +73,15 @@ describe("NewOrderForm actions", () => {
     expect(screen.getByText("Ankle Round")).toBeDefined();
   });
 
+  it("renders one global measurement set instead of item-specific measurement fields", () => {
+    const { container } = render(<NewOrderForm />);
+
+    expect(container.querySelector('[name="measurement.length"]')).toBeDefined();
+    expect(container.querySelector('[name="measurementMeta.length.displayCode"]')).toBeDefined();
+    expect(container.querySelector('[name="measurements.0.length"]')).toBeNull();
+    expect(container.querySelector('[name="measurementMeta.0.length.displayCode"]')).toBeNull();
+  });
+
   it("adds a measurement section break after crotch", () => {
     render(<NewOrderForm />);
 
