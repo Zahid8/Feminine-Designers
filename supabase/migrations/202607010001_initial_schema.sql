@@ -183,7 +183,7 @@ create table customer_measurement_profiles (
   field_key text not null,
   value text not null,
   unit text not null default 'in',
-  source_order_id uuid references orders(id),
+  source_order_id uuid references orders(id) on delete set null,
   updated_by uuid references profiles(id),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),

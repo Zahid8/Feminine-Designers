@@ -18,7 +18,12 @@ export function DeleteOrderButton({ orderId, receiptNumber }: { orderId: string;
     setIsDeleting(true);
     startTransition(() => {
       void deleteOrderAction(orderId)
-        .then(() => {
+        .then((result) => {
+          if (!result.ok) {
+            setIsDeleting(false);
+            window.alert(result.message);
+            return;
+          }
           router.push("/orders");
           router.refresh();
         })

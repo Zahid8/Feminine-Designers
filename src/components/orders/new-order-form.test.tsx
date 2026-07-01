@@ -4,6 +4,13 @@ import { NewOrderForm } from "@/components/orders/new-order-form";
 import { GARMENT_TYPES, MEASUREMENT_TEMPLATES } from "@/lib/constants/business";
 
 describe("NewOrderForm actions", () => {
+  it("starts customer name and phone fields blank", () => {
+    render(<NewOrderForm />);
+
+    expect((screen.getByLabelText(/search or customer name/i) as HTMLInputElement).value).toBe("");
+    expect((screen.getByLabelText(/phone number/i) as HTMLInputElement).value).toBe("");
+  });
+
   it("submits draft, final order, and print intents instead of inert buttons", () => {
     render(<NewOrderForm />);
 

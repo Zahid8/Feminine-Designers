@@ -15,13 +15,16 @@ describe("order-delete-service", () => {
     mockEq.mockResolvedValue({ error: null });
   });
 
-  it("deletes the selected order from Supabase", async () => {
+  it("clears customer measurement profile references before deleting the selected order", async () => {
     const { deleteOrderById } = await import("./order-delete-service");
 
     await deleteOrderById("order-1");
 
-    expect(mockFrom).toHaveBeenCalledWith("orders");
-    expect(mockDelete).toHaveBeenCalled();
-    expect(mockEq).toHaveBeenCalledWith("id", "order-1");
+    expect(mockFrom).toHaveBeenNthCalledWith(1, "customer_measurement_profiles");
+    expect(mockDelete).toHaveBeenCalledTimes(2);
+    expect(mockEq).toHaveBeenNthCalledWith(1, "source_order_id", "order-1");
+
+    expect(mockFrom).toHaveBeenNthCalledWith(2, "orders");
+    expect(mockEq).toHaveBeenNthCalledWith(2, "id", "order-1");
   });
 });

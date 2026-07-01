@@ -17,8 +17,16 @@ export async function setAllOrderItemsDeliveredAction(orderId: string, delivered
 }
 
 export async function deleteOrderAction(orderId: string) {
-  await deleteOrderById(orderId);
-  revalidatePath("/orders");
-  revalidatePath("/customers");
-  revalidatePath("/dashboard");
+  try {
+    await deleteOrderById(orderId);
+    revalidatePath("/orders");
+    revalidatePath("/customers");
+    revalidatePath("/dashboard");
+    return { ok: true };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "Could not delete order."
+    };
+  }
 }

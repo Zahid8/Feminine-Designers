@@ -6,6 +6,13 @@ export async function deleteOrderById(orderId: string) {
   }
 
   const admin = createSupabaseAdminClient();
+  const { error: profileError } = await admin
+    .from("customer_measurement_profiles")
+    .delete()
+    .eq("source_order_id", orderId);
+
+  if (profileError) throw new Error(profileError.message);
+
   const { error } = await admin.from("orders").delete().eq("id", orderId);
 
   if (error) throw new Error(error.message);

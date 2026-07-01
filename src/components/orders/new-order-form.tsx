@@ -181,10 +181,10 @@ export function NewOrderForm({
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-3">
           <Field label="Search or customer name">
-            <Input name="customerName" placeholder="Name or phone number" defaultValue="Ayesha Khan" />
+            <Input name="customerName" placeholder="Name or phone number" />
           </Field>
           <Field label="Phone number">
-            <Input name="phonePrimary" placeholder="Indian mobile number" defaultValue="9718926185" />
+            <Input name="phonePrimary" placeholder="Indian mobile number" />
           </Field>
           <div className="rounded-md border border-[#eadfce] bg-[#fdf8ef] p-3 text-sm">
             <p className="font-semibold text-[#4c1525]">Returning customer match</p>
