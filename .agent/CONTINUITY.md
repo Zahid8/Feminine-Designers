@@ -27,6 +27,7 @@
 - 2026-07-01T09:19Z [CODE] Added `public/Logo.PNG` to PDF receipt headers in `src/components/receipts/receipt-pdf.tsx`; customer/store PDFs render one logo and combined PDFs render one logo in each panel.
 - 2026-07-01T10:24Z [CODE] Fixed blank/zero advance save failure by omitting the `payment` key from the Supabase RPC payload unless advance is positive; hardened SQL migrations/setup to process payment only when `jsonb_typeof(p_payload -> 'payment') = 'object'`.
 - 2026-07-01T10:27Z [CODE] Added a red `Delete Order` button to opened order detail pages; browser confirmation is required before calling a Supabase-backed delete action.
+- 2026-07-01T10:55Z [CODE] Fixed delete-order failure by clearing `customer_measurement_profiles.source_order_id` before deleting orders and adding migration `202607010005_order_delete_profile_fk.sql` to make that FK `on delete set null`; also removed hard-coded new-order customer defaults and added crotch-based measurement section breaks in new-order grids and store-copy receipts.
 
 ## [DISCOVERIES]
 - 2026-07-01T06:24Z [TOOL] `IMG_1174.JPG` is a 5712x4284 JPEG, likely the bill reference image, but no `public/Logo.PNG` logo file exists.
@@ -43,6 +44,8 @@
 - 2026-07-01T09:19Z [TOOL] `pdfimages -list` confirmed logo embedding: customer/store PDFs each contain one 447x447 image; combined PDF is one A4 landscape page and contains two 447x447 images.
 - 2026-07-01T10:24Z [TOOL] Root cause for `null value in column "amount" of relation "payments"`: JSON payload included `payment: null`; PostgreSQL `p_payload -> 'payment' is not null` treated JSON null as present and inserted a payment row with null amount.
 - 2026-07-01T10:27Z [TOOL] Order deletion uses existing `orders` foreign-key cascades, so deleting from `orders` also removes dependent order items, measurements, payments, and status history.
+- 2026-07-01T10:55Z [TOOL] Root cause for production delete generic Server Components error: `customer_measurement_profiles.source_order_id` referenced `orders(id)` without delete behavior, so orders with measurement profile snapshots could fail deletion. Client action now returns explicit `{ok,message}` errors.
+- 2026-07-01T10:55Z [TOOL] Local `/orders/new` reads Supabase-backed templates when `.env.local` is configured; code-only changes to `baseMeasurementCodes` require matching Supabase `measurement_template_fields` updates for deployed/live forms to show the same fields.
 
 ## [OUTCOMES]
 - 2026-07-01T06:39Z [TOOL] Verification passed: `npm run lint`, `npm run typecheck`, `npm run test` (4 files, 10 tests), `npm run build`, `npm audit --omit=dev`, and HTTP smoke checks for `/dashboard`, `/receipts/order-1/combined`, and `/api/receipts/order-1/combined`.
@@ -60,3 +63,4 @@
 - 2026-07-01T09:19Z [TOOL] Verification passed after PDF logo update: `npm run lint`, `npm run typecheck`, `npm run test` (12 files, 30 tests), `npm run build`, `npm audit --omit=dev`; restarted built server on `http://localhost:3000` and downloaded customer/store/combined PDFs for Bebu with HTTP 200.
 - 2026-07-01T10:24Z [TOOL] Verification passed after payment-null fix: focused RED/GREEN save-service test, `npm run lint`, `npm run typecheck`, `npm run test` (13 files, 32 tests), `npm audit --omit=dev`, `npm run build`.
 - 2026-07-01T10:27Z [TOOL] Verification passed after delete-order feature: focused RED/GREEN delete-service test, `npm run lint`, `npm run typecheck`, `npm run test` (14 files, 33 tests), `npm audit --omit=dev`, `npm run build`; restarted built server on `http://localhost:3000` and confirmed Bebu order detail page includes `Delete Order`.
+- 2026-07-01T10:55Z [TOOL] Verification passed after delete fix, blank new-order customer fields, and crotch section breaks: focused tests, `npm run lint`, `npm run typecheck`, `npm run test` (15 files, 37 tests), `npm audit --omit=dev`, `npm run build`.

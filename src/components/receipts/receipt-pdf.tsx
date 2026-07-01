@@ -1,7 +1,9 @@
 import { Document, Image, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
+import { Fragment } from "react";
 import type { OrderWithCustomer, ReceiptType, StoreSettings } from "@/types/domain";
 import { formatINR } from "@/lib/utils/money";
 import { formatMeasurementValue } from "@/lib/utils/measurement-display";
+import { shouldBreakAfterMeasurement } from "@/lib/utils/measurement-sections";
 
 const customerReceiptFooter = [
   "Delivery date is approximate. Please bring this receipt at the time of delivery.",
@@ -83,6 +85,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#e8dcca",
     padding: 3
+  },
+  measureBreak: {
+    width: "100%",
+    borderTopWidth: 1,
+    borderTopColor: "#d8c7b4",
+    marginVertical: 2
   },
   clothSample: {
     width: 120,
@@ -181,11 +189,14 @@ function PdfPanel({
           <Text>Measurements</Text>
           <View style={styles.measureGrid}>
             {order.measurements.map((measurement) => (
-              <View key={measurement.id} style={styles.measure}>
-                <Text>
-                  {measurement.displayCode}: {formatMeasurementValue(measurement.value, measurement.unit)}
-                </Text>
-              </View>
+              <Fragment key={measurement.id}>
+                <View style={styles.measure}>
+                  <Text>
+                    {measurement.displayCode}: {formatMeasurementValue(measurement.value, measurement.unit)}
+                  </Text>
+                </View>
+                {shouldBreakAfterMeasurement(measurement) ? <View style={styles.measureBreak} /> : null}
+              </Fragment>
             ))}
           </View>
         </View>

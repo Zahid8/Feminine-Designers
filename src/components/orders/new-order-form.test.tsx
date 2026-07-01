@@ -72,4 +72,10 @@ describe("NewOrderForm actions", () => {
     expect(screen.getByText("AR")).toBeDefined();
     expect(screen.getByText("Ankle Round")).toBeDefined();
   });
+
+  it("adds a measurement section break after crotch", () => {
+    render(<NewOrderForm />);
+
+    expect(screen.getAllByTestId("measurement-section-break").length).toBeGreaterThan(0);
+  });
 });

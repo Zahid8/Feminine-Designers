@@ -1,5 +1,6 @@
 import type { MeasurementTemplate, MeasurementValue } from "@/types/domain";
 import { Input, Textarea } from "@/components/ui/input";
+import { shouldBreakAfterMeasurement } from "@/lib/utils/measurement-sections";
 
 export function MeasurementGrid({
   template,
@@ -20,23 +21,32 @@ export function MeasurementGrid({
       {fields.map((field) => {
         const value = "value" in field ? field.value : "";
         return (
-          <label key={field.id} className="grid gap-1 rounded-md border border-[#eadfce] bg-white p-3 text-sm">
-            <span className="flex items-center justify-between gap-2">
-              <strong className="text-[#4c1525]">{field.displayCode}</strong>
-              <span className="text-xs text-[#7c6d66]">
-                {"longLabel" in field && field.longLabel ? field.longLabel : field.displayLabel}
+          <div key={field.id} className="contents">
+            <label className="grid gap-1 rounded-md border border-[#eadfce] bg-white p-3 text-sm">
+              <span className="flex items-center justify-between gap-2">
+                <strong className="text-[#4c1525]">{field.displayCode}</strong>
+                <span className="text-xs text-[#7c6d66]">
+                  {"longLabel" in field && field.longLabel ? field.longLabel : field.displayLabel}
+                </span>
               </span>
-            </span>
-            {editable ? (
-              <>
-                <input type="hidden" name={`${metaPrefix}.${field.fieldKey}.displayCode`} value={field.displayCode} />
-                <input type="hidden" name={`${metaPrefix}.${field.fieldKey}.displayLabel`} value={field.displayLabel} />
-                <input type="hidden" name={`${metaPrefix}.${field.fieldKey}.unit`} value={field.unit} />
-                <input type="hidden" name={`${metaPrefix}.${field.fieldKey}.sortOrder`} value={field.sortOrder} />
-              </>
+              {editable ? (
+                <>
+                  <input type="hidden" name={`${metaPrefix}.${field.fieldKey}.displayCode`} value={field.displayCode} />
+                  <input type="hidden" name={`${metaPrefix}.${field.fieldKey}.displayLabel`} value={field.displayLabel} />
+                  <input type="hidden" name={`${metaPrefix}.${field.fieldKey}.unit`} value={field.unit} />
+                  <input type="hidden" name={`${metaPrefix}.${field.fieldKey}.sortOrder`} value={field.sortOrder} />
+                </>
+              ) : null}
+              {editable ? <Input name={`${valuePrefix}.${field.fieldKey}`} defaultValue={value} inputMode="decimal" /> : <span>{value || "-"}</span>}
+            </label>
+            {shouldBreakAfterMeasurement(field) ? (
+              <div
+                className="h-px bg-[#d8c7b4] sm:col-span-2 xl:col-span-3"
+                data-testid="measurement-section-break"
+                aria-hidden="true"
+              />
             ) : null}
-            {editable ? <Input name={`${valuePrefix}.${field.fieldKey}`} defaultValue={value} inputMode="decimal" /> : <span>{value || "-"}</span>}
-          </label>
+          </div>
         );
       })}
       {editable ? (

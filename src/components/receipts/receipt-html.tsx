@@ -8,6 +8,7 @@ import { LogoMark } from "@/components/shared/logo-mark";
 import { formatDate } from "@/lib/utils/date";
 import { formatINR } from "@/lib/utils/money";
 import { formatMeasurementValue } from "@/lib/utils/measurement-display";
+import { shouldBreakAfterMeasurement } from "@/lib/utils/measurement-sections";
 import { receiptFileName } from "@/lib/utils/receipt-file-name";
 
 const customerReceiptFooter = [
@@ -140,9 +141,12 @@ function ReceiptPanel({
           <h3 className="font-serif text-xl font-semibold text-[#4c1525]">Measurements</h3>
           <div className="mt-2 grid grid-cols-3 gap-2">
             {order.measurements.map((measurement) => (
-              <div key={measurement.id} className="border border-[#eadfce] px-2 py-1">
-                <span className="font-semibold">{measurement.displayCode}</span>
-                <span className="float-right">{formatMeasurementValue(measurement.value, measurement.unit)}</span>
+              <div key={measurement.id} className="contents">
+                <div className="border border-[#eadfce] px-2 py-1">
+                  <span className="font-semibold">{measurement.displayCode}</span>
+                  <span className="float-right">{formatMeasurementValue(measurement.value, measurement.unit)}</span>
+                </div>
+                {shouldBreakAfterMeasurement(measurement) ? <div className="col-span-3 h-px bg-[#d8c7b4]" aria-hidden="true" /> : null}
               </div>
             ))}
           </div>
