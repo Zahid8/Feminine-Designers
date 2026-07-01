@@ -4,7 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import type { OrderWithCustomer, ReceiptType, StoreSettings } from "@/types/domain";
 import { Button } from "@/components/ui/button";
-import { LogoMark } from "@/components/shared/logo-mark";
 import { formatDate } from "@/lib/utils/date";
 import { formatINR } from "@/lib/utils/money";
 import { formatMeasurementValue, isPrintableMeasurementValue } from "@/lib/utils/measurement-display";
@@ -85,12 +84,25 @@ function ReceiptPanel({
   return (
     <section className={compact ? "text-[11px]" : "text-sm"}>
       <header className="border-b border-[#d8c7b4] pb-3">
-        <LogoMark compact={compact} />
-        <p className="mt-2 font-semibold">{settings.storeName}</p>
-        <p className="mt-2 whitespace-pre-line text-xs text-[#6f625d]">{settings.addressLines.join("\n")}</p>
-        <p className="mt-1 text-xs text-[#6f625d]">
-          GSTIN {settings.gstin} · {settings.phonePrimary} / {settings.phoneSecondary}
-        </p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className={compact ? "font-serif text-lg font-semibold leading-tight text-[#4c1525]" : "font-serif text-2xl font-semibold leading-tight text-[#4c1525]"}>
+              {settings.storeName}
+            </p>
+            <p className="mt-2 whitespace-pre-line text-xs text-[#6f625d]">{settings.addressLines.join("\n")}</p>
+            <p className="mt-1 text-xs text-[#6f625d]">
+              GSTIN {settings.gstin} · {settings.phonePrimary} / {settings.phoneSecondary}
+            </p>
+          </div>
+          <Image
+            src="/Logo.PNG"
+            alt={`${settings.storeName} logo`}
+            width={compact ? 40 : 48}
+            height={compact ? 40 : 48}
+            className={compact ? "h-10 w-10 rounded-md object-cover" : "h-12 w-12 rounded-md object-cover"}
+            priority={!compact}
+          />
+        </div>
       </header>
       <div className="grid grid-cols-2 gap-3 border-b border-[#eadfce] py-3">
         <Info label="Receipt" value={order.receiptNumber ?? "Draft"} />
