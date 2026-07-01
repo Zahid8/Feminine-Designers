@@ -2,7 +2,7 @@ import { Document, Image, Page, StyleSheet, Text, View } from "@react-pdf/render
 import { Fragment } from "react";
 import type { OrderWithCustomer, ReceiptType, StoreSettings } from "@/types/domain";
 import { formatINR } from "@/lib/utils/money";
-import { formatMeasurementValue } from "@/lib/utils/measurement-display";
+import { formatMeasurementValue, isPrintableMeasurementValue } from "@/lib/utils/measurement-display";
 import { shouldBreakAfterMeasurement } from "@/lib/utils/measurement-sections";
 
 const customerReceiptFooter = [
@@ -141,6 +141,8 @@ function PdfPanel({
   settings: StoreSettings;
   mode: "customer" | "store";
 }) {
+  const printableMeasurements = order.measurements.filter((measurement) => isPrintableMeasurementValue(measurement.value));
+
   return (
     <View>
       <View style={styles.header}>
@@ -186,19 +188,23 @@ function PdfPanel({
               <Image src={order.clothSampleImageUrl} style={styles.clothSample} />
             </View>
           ) : null}
-          <Text>Measurements</Text>
-          <View style={styles.measureGrid}>
-            {order.measurements.map((measurement) => (
-              <Fragment key={measurement.id}>
-                <View style={styles.measure}>
-                  <Text>
-                    {measurement.displayCode}: {formatMeasurementValue(measurement.value, measurement.unit)}
-                  </Text>
-                </View>
-                {shouldBreakAfterMeasurement(measurement) ? <View style={styles.measureBreak} /> : null}
-              </Fragment>
-            ))}
-          </View>
+          {printableMeasurements.length > 0 ? (
+            <>
+              <Text>Measurements</Text>
+              <View style={styles.measureGrid}>
+                {printableMeasurements.map((measurement) => (
+                  <Fragment key={measurement.id}>
+                    <View style={styles.measure}>
+                      <Text>
+                        {measurement.displayCode}: {formatMeasurementValue(measurement.value, measurement.unit)}
+                      </Text>
+                    </View>
+                    {shouldBreakAfterMeasurement(measurement) ? <View style={styles.measureBreak} /> : null}
+                  </Fragment>
+                ))}
+              </View>
+            </>
+          ) : null}
         </View>
       ) : null}
       <View style={styles.section}>

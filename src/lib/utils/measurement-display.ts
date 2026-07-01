@@ -10,3 +10,8 @@ export function formatMeasurementValue(value: string, unit?: string) {
 
   return `${normalizedValue} ${unit}`;
 }
+
+export function isPrintableMeasurementValue(value: string) {
+  const normalizedValue = value.trim();
+  return Boolean(normalizedValue) && normalizedValue.toUpperCase() !== "NA";
+}

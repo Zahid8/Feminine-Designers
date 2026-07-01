@@ -28,6 +28,7 @@
 - 2026-07-01T10:24Z [CODE] Fixed blank/zero advance save failure by omitting the `payment` key from the Supabase RPC payload unless advance is positive; hardened SQL migrations/setup to process payment only when `jsonb_typeof(p_payload -> 'payment') = 'object'`.
 - 2026-07-01T10:27Z [CODE] Added a red `Delete Order` button to opened order detail pages; browser confirmation is required before calling a Supabase-backed delete action.
 - 2026-07-01T10:55Z [CODE] Fixed delete-order failure by clearing `customer_measurement_profiles.source_order_id` before deleting orders and adding migration `202607010005_order_delete_profile_fk.sql` to make that FK `on delete set null`; also removed hard-coded new-order customer defaults and added crotch-based measurement section breaks in new-order grids and store-copy receipts.
+- 2026-07-01T11:11Z [CODE] Receipt renderers now filter measurements before display, so blank values and `NA` values are omitted from store-copy and combined-copy measurement grids instead of printing as bill fields.
 
 ## [DISCOVERIES]
 - 2026-07-01T06:24Z [TOOL] `IMG_1174.JPG` is a 5712x4284 JPEG, likely the bill reference image, but no `public/Logo.PNG` logo file exists.
@@ -46,6 +47,7 @@
 - 2026-07-01T10:27Z [TOOL] Order deletion uses existing `orders` foreign-key cascades, so deleting from `orders` also removes dependent order items, measurements, payments, and status history.
 - 2026-07-01T10:55Z [TOOL] Root cause for production delete generic Server Components error: `customer_measurement_profiles.source_order_id` referenced `orders(id)` without delete behavior, so orders with measurement profile snapshots could fail deletion. Client action now returns explicit `{ok,message}` errors.
 - 2026-07-01T10:55Z [TOOL] Local `/orders/new` reads Supabase-backed templates when `.env.local` is configured; code-only changes to `baseMeasurementCodes` require matching Supabase `measurement_template_fields` updates for deployed/live forms to show the same fields.
+- 2026-07-01T11:11Z [TOOL] Receipt PDFs are generated from saved `order_measurements`; existing saved orders do not automatically gain newly added `baseMeasurementCodes` rows unless the order measurements are updated or the order is recreated after the template change.
 
 ## [OUTCOMES]
 - 2026-07-01T06:39Z [TOOL] Verification passed: `npm run lint`, `npm run typecheck`, `npm run test` (4 files, 10 tests), `npm run build`, `npm audit --omit=dev`, and HTTP smoke checks for `/dashboard`, `/receipts/order-1/combined`, and `/api/receipts/order-1/combined`.
@@ -64,3 +66,4 @@
 - 2026-07-01T10:24Z [TOOL] Verification passed after payment-null fix: focused RED/GREEN save-service test, `npm run lint`, `npm run typecheck`, `npm run test` (13 files, 32 tests), `npm audit --omit=dev`, `npm run build`.
 - 2026-07-01T10:27Z [TOOL] Verification passed after delete-order feature: focused RED/GREEN delete-service test, `npm run lint`, `npm run typecheck`, `npm run test` (14 files, 33 tests), `npm audit --omit=dev`, `npm run build`; restarted built server on `http://localhost:3000` and confirmed Bebu order detail page includes `Delete Order`.
 - 2026-07-01T10:55Z [TOOL] Verification passed after delete fix, blank new-order customer fields, and crotch section breaks: focused tests, `npm run lint`, `npm run typecheck`, `npm run test` (15 files, 37 tests), `npm audit --omit=dev`, `npm run build`.
+- 2026-07-01T11:11Z [TOOL] Verification passed after receipt measurement filtering: `/orders/new` HTTP 200 includes `Crotch`, `Lower Length`, `Belt`, `Asan`, `Ankle`, `Knee`, and `measurement-section-break`; store HTML/PDF and combined PDF for order `a63f15a3-3221-47c7-b0ec-9016e96dbbac` returned HTTP 200 and did not contain printed `NA`; `npm run lint`, `npm run typecheck`, `npm run test` (16 files, 41 tests), `npm audit --omit=dev`, and `npm run build` passed.
