@@ -44,11 +44,15 @@ function lineItemFromForm(order: OrderWithCustomer, formData: FormData, index: n
   const quantity = readNumber(formData, `items.${index}.quantity`, fallback.quantity);
   const ratePaise = rupeesToPaise(readNumber(formData, `items.${index}.rateRupees`, paiseToRupees(fallback.ratePaise)));
   const discountPaise = fallback.discountPaise;
+  const stitchingCostPaise = rupeesToPaise(
+    readNumber(formData, `items.${index}.stitchingCostRupees`, paiseToRupees(fallback.stitchingCostPaise))
+  );
 
   return {
     quantity,
     ratePaise,
-    discountPaise
+    discountPaise,
+    stitchingCostPaise
   };
 }
 
@@ -70,16 +74,16 @@ export async function updateOrderFromForm(order: OrderWithCustomer, formData: Fo
     itemIndexes.includes(index)
       ? lineItemFromForm(order, formData, index)
       : {
-          quantity: item.quantity,
-          ratePaise: item.ratePaise,
-          discountPaise: item.discountPaise
-        }
+        quantity: item.quantity,
+        ratePaise: item.ratePaise,
+        discountPaise: item.discountPaise,
+        stitchingCostPaise: item.stitchingCostPaise
+      }
   );
 
   const totals = calculateOrderTotals({
     items: editedLineItems,
     accessoriesCostPaise: rupeesToPaise(readNumber(formData, "accessoriesCostRupees", paiseToRupees(order.totals.accessoriesCostPaise))),
-    stitchingCostPaise: rupeesToPaise(readNumber(formData, "stitchingCostRupees", paiseToRupees(order.totals.stitchingCostPaise))),
     orderDiscountPaise: rupeesToPaise(readNumber(formData, "orderDiscountRupees", paiseToRupees(order.totals.orderDiscountPaise))),
     cgstRate: order.totals.cgstRate,
     sgstRate: order.totals.sgstRate,
@@ -136,7 +140,10 @@ export async function updateOrderFromForm(order: OrderWithCustomer, formData: Fo
     const draft = {
       quantity,
       ratePaise: rupeesToPaise(rateRupees),
-      discountPaise: item.discountPaise
+      discountPaise: item.discountPaise,
+      stitchingCostPaise: rupeesToPaise(
+        readNumber(formData, `items.${index}.stitchingCostRupees`, paiseToRupees(item.stitchingCostPaise))
+      )
     };
 
     await assertUpdate(
@@ -147,6 +154,7 @@ export async function updateOrderFromForm(order: OrderWithCustomer, formData: Fo
           quantity: String(quantity),
           rate: rateRupees.toFixed(2),
           discount_amount: toRupeesDecimal(item.discountPaise),
+          stitching_cost: toRupeesDecimal(draft.stitchingCostPaise),
           line_total: toRupeesDecimal(calculateLineTotal(draft)),
           fabric_length: readString(formData, `items.${index}.fabricLength`, item.fabricLength ?? "") || null,
           fabric_color: readString(formData, `items.${index}.fabricColor`, item.fabricColor ?? "") || null,

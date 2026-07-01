@@ -27,21 +27,23 @@ describe("order calculations", () => {
     expect(totals.paymentStatus).toBe("Partial");
   });
 
-  it("adds accessories and stitching costs globally before bill-level discount and tax", () => {
+  it("adds stitching costs per garment item before bill-level discount and tax", () => {
     const totals = calculateOrderTotals({
-      items: [{ quantity: 1, ratePaise: 100000, discountPaise: 0 }],
+      items: [
+        { quantity: 1, ratePaise: 100000, discountPaise: 0, stitchingCostPaise: 50000 },
+        { quantity: 1, ratePaise: 40000, discountPaise: 0, stitchingCostPaise: 15000 }
+      ],
       accessoriesCostPaise: 25000,
-      stitchingCostPaise: 50000,
       orderDiscountPaise: 10000,
       cgstRate: 2.5,
       sgstRate: 2.5
     });
 
     expect(totals.accessoriesCostPaise).toBe(25000);
-    expect(totals.stitchingCostPaise).toBe(50000);
-    expect(totals.subtotalPaise).toBe(175000);
-    expect(totals.taxableAmountPaise).toBe(165000);
-    expect(totals.grandTotalPaise).toBe(173250);
+    expect(totals.stitchingCostPaise).toBe(65000);
+    expect(totals.subtotalPaise).toBe(230000);
+    expect(totals.taxableAmountPaise).toBe(220000);
+    expect(totals.grandTotalPaise).toBe(231000);
   });
 
   it("detects overdue orders but excludes delivered and cancelled records", () => {

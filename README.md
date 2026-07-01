@@ -246,6 +246,8 @@ The database files are:
 - `supabase/migrations/202607010002_order_save_rpc_and_cloth_sample.sql`
 - `supabase/migrations/202607010003_settings_driven_templates_and_garments.sql`
 - `supabase/migrations/202607010004_reload_postgrest_schema.sql`
+- `supabase/migrations/202607010005_order_delete_profile_fk.sql`
+- `supabase/migrations/202607010006_item_stitching_cost.sql`
 - `supabase/seed.sql`
 
 ### Option A: Use Supabase SQL Editor
@@ -277,6 +279,10 @@ If you prefer to run the files one by one:
 13. Create another query.
 14. Paste the full contents of `supabase/migrations/202607010004_reload_postgrest_schema.sql`.
 15. Run it.
+16. Paste the full contents of `supabase/migrations/202607010005_order_delete_profile_fk.sql`.
+17. Run it.
+18. Paste the full contents of `supabase/migrations/202607010006_item_stitching_cost.sql`.
+19. Run it.
 16. Create another query.
 17. Paste the full contents of `supabase/seed.sql`.
 18. Run it.

@@ -80,10 +80,11 @@ export function NewOrderForm({
 }) {
   const [state, formAction, isPending] = useActionState(action, initialOrderActionState);
   const [clothCount, setClothCount] = useState(1);
-  const [items, setItems] = useState([{ quantity: 1, rate: 1500, garmentType: garmentTypes.find((type) => type.active)?.name ?? "Blouse" }]);
+  const [items, setItems] = useState([
+    { quantity: 1, rate: 1500, stitchingCost: 0, garmentType: garmentTypes.find((type) => type.active)?.name ?? "Blouse" }
+  ]);
   const [orderDiscount, setOrderDiscount] = useState(0);
   const [accessoriesCost, setAccessoriesCost] = useState(0);
-  const [stitchingCost, setStitchingCost] = useState(0);
   const [advance, setAdvance] = useState(500);
   const [clothSampleDataUrl, setClothSampleDataUrl] = useState("");
   const [clothSampleError, setClothSampleError] = useState("");
@@ -98,16 +99,16 @@ export function NewOrderForm({
         items: visibleItems.map((item) => ({
           quantity: item.quantity,
           ratePaise: rupeesToPaise(item.rate),
-          discountPaise: 0
+          discountPaise: 0,
+          stitchingCostPaise: rupeesToPaise(item.stitchingCost)
         })),
         accessoriesCostPaise: rupeesToPaise(accessoriesCost),
-        stitchingCostPaise: rupeesToPaise(stitchingCost),
         orderDiscountPaise: rupeesToPaise(orderDiscount),
         cgstRate: STORE_SETTINGS.defaultCgstRate,
         sgstRate: STORE_SETTINGS.defaultSgstRate,
         payments: advance > 0 ? [{ amountPaise: rupeesToPaise(advance) }] : []
       }),
-    [accessoriesCost, advance, orderDiscount, stitchingCost, visibleItems]
+    [accessoriesCost, advance, orderDiscount, visibleItems]
   );
 
   useEffect(() => {
@@ -142,12 +143,13 @@ export function NewOrderForm({
       Array.from({ length: boundedCount }, (_, index) => current[index] ?? {
         quantity: 1,
         rate: 1500,
+        stitchingCost: 0,
         garmentType: activeGarmentTypes[0]?.name ?? "Blouse"
       })
     );
   }
 
-  function updateItem(index: number, patch: Partial<{ quantity: number; rate: number; garmentType: string }>) {
+  function updateItem(index: number, patch: Partial<{ quantity: number; rate: number; stitchingCost: number; garmentType: string }>) {
     setItems((current) =>
       current.map((item, itemIndex) => (itemIndex === index ? { ...item, ...patch } : item))
     );
@@ -281,6 +283,15 @@ export function NewOrderForm({
                       onChange={(event) => updateItem(index, { rate: Number(event.target.value) })}
                     />
                   </Field>
+                  <Field label="Stitching cost">
+                    <Input
+                      name={`items.${index}.stitchingCostRupees`}
+                      type="number"
+                      min={0}
+                      value={item.stitchingCost}
+                      onChange={(event) => updateItem(index, { stitchingCost: Number(event.target.value) })}
+                    />
+                  </Field>
                   <Field label="Fabric length">
                     <Input name={`items.${index}.fabricLength`} placeholder="Example: 2.5 m" />
                   </Field>
@@ -378,7 +389,7 @@ export function NewOrderForm({
           <CardTitle>Payment and Tax</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 lg:grid-cols-[1fr_320px]">
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2">
             <Field label="Advance paid">
               <Input name="advancePaidRupees" type="number" min={0} value={advance} onChange={(event) => setAdvance(Number(event.target.value))} />
             </Field>
@@ -412,20 +423,11 @@ export function NewOrderForm({
                 onChange={(event) => setAccessoriesCost(Number(event.target.value))}
               />
             </Field>
-            <Field label="Stitching cost">
-              <Input
-                name="stitchingCostRupees"
-                type="number"
-                min={0}
-                value={stitchingCost}
-                onChange={(event) => setStitchingCost(Number(event.target.value))}
-              />
-            </Field>
-            <label className="grid gap-1 text-sm font-medium md:col-span-3">
+            <label className="grid gap-1 text-sm font-medium md:col-span-2">
               <span>Customer-facing notes</span>
               <Textarea name="customerNotes" placeholder="Shown on customer copy" />
             </label>
-            <label className="grid gap-1 text-sm font-medium md:col-span-3">
+            <label className="grid gap-1 text-sm font-medium md:col-span-2">
               <span>Internal notes</span>
               <Textarea name="internalNotes" placeholder="Private stitching/workshop note" />
             </label>

@@ -7,6 +7,7 @@ export const orderItemSchema = z.object({
   quantity: z.coerce.number().min(1).max(99),
   rateRupees: z.coerce.number().min(0),
   discountRupees: z.coerce.number().min(0).default(0),
+  stitchingCostRupees: z.coerce.number().min(0).default(0),
   fabricLength: z.string().optional(),
   fabricColor: z.string().optional(),
   designReference: z.string().optional(),
@@ -25,7 +26,6 @@ export const newOrderSchema = z.object({
   customerNotes: z.string().optional(),
   orderDiscountRupees: z.coerce.number().min(0).default(0),
   accessoriesCostRupees: z.coerce.number().min(0).default(0),
-  stitchingCostRupees: z.coerce.number().min(0).default(0),
   advancePaidRupees: z.coerce.number().min(0).default(0),
   paymentMethod: z.enum(["Cash", "UPI", "Card", "Bank Transfer", "Mixed"]),
   items: z.array(orderItemSchema).min(1)

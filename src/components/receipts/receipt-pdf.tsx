@@ -131,9 +131,9 @@ const styles = StyleSheet.create({
   itemRowCompact: {
     paddingVertical: 4
   },
-  itemName: { width: "45%" },
-  itemFabric: { width: "19%" },
-  numeric: { width: "18%", textAlign: "right" },
+  itemName: { width: "34%" },
+  itemFabric: { width: "18%" },
+  numeric: { width: "12%", textAlign: "right" },
   itemInstruction: {
     marginTop: 2,
     color: "#6f625d",
@@ -318,6 +318,7 @@ function PdfPanel({
           <Text style={[styles.itemFabric, styles.label]}>Fabric</Text>
           <Text style={[styles.numeric, styles.label]}>Qty</Text>
           <Text style={[styles.numeric, styles.label]}>Rate</Text>
+          <Text style={[styles.numeric, styles.label]}>Stitching</Text>
           <Text style={[styles.numeric, styles.label]}>Amount</Text>
         </View>
         {order.items.map((item) => (
@@ -331,6 +332,7 @@ function PdfPanel({
             <Text style={styles.itemFabric}>{item.fabricLength ?? "-"}</Text>
             <Text style={styles.numeric}>{item.quantity}</Text>
             <Text style={styles.numeric}>{formatPdfINR(item.ratePaise)}</Text>
+            <Text style={styles.numeric}>{formatPdfINR(item.stitchingCostPaise)}</Text>
             <Text style={styles.numeric}>{formatPdfINR(item.lineTotalPaise)}</Text>
           </View>
         ))}

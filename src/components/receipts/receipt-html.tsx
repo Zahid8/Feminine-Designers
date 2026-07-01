@@ -121,6 +121,7 @@ function ReceiptPanel({
             <th className="py-2">Fabric</th>
             <th className="py-2 text-right">Qty</th>
             <th className="py-2 text-right">Rate</th>
+            <th className="py-2 text-right">Stitching</th>
             <th className="py-2 text-right">Amount</th>
           </tr>
         </thead>
@@ -134,6 +135,7 @@ function ReceiptPanel({
               <td className="py-2">{item.fabricLength ?? "-"}</td>
               <td className="py-2 text-right">{item.quantity}</td>
               <td className="py-2 text-right">{formatINR(item.ratePaise)}</td>
+              <td className="py-2 text-right">{formatINR(item.stitchingCostPaise)}</td>
               <td className="py-2 text-right">{formatINR(item.lineTotalPaise)}</td>
             </tr>
           ))}

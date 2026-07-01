@@ -126,6 +126,7 @@ create table order_items (
   quantity numeric(8,2) not null check (quantity > 0),
   rate numeric(12,2) not null check (rate >= 0),
   discount_amount numeric(12,2) not null default 0 check (discount_amount >= 0),
+  stitching_cost numeric(12,2) not null default 0 check (stitching_cost >= 0),
   line_total numeric(12,2) not null check (line_total >= 0),
   fabric_length text,
   delivered boolean not null default false,
@@ -359,6 +360,7 @@ begin
       quantity,
       rate,
       discount_amount,
+      stitching_cost,
       line_total,
       fabric_length,
       fabric_color,
@@ -373,6 +375,7 @@ begin
       (v_item ->> 'quantity')::numeric,
       (v_item ->> 'rate')::numeric,
       (v_item ->> 'discount_amount')::numeric,
+      coalesce((v_item ->> 'stitching_cost')::numeric, 0),
       (v_item ->> 'line_total')::numeric,
       nullif(v_item ->> 'fabric_length', ''),
       nullif(v_item ->> 'fabric_color', ''),
@@ -507,7 +510,8 @@ add column if not exists stitching_cost numeric(12,2) not null default 0;
 alter table order_items
 add column if not exists fabric_length text,
 add column if not exists delivered boolean not null default false,
-add column if not exists delivered_at timestamptz;
+add column if not exists delivered_at timestamptz,
+add column if not exists stitching_cost numeric(12,2) not null default 0;
 
 create or replace function create_order_from_payload(p_payload jsonb)
 returns jsonb
@@ -613,6 +617,7 @@ begin
       quantity,
       rate,
       discount_amount,
+      stitching_cost,
       line_total,
       fabric_length,
       fabric_color,
@@ -627,6 +632,7 @@ begin
       (v_item ->> 'quantity')::numeric,
       (v_item ->> 'rate')::numeric,
       (v_item ->> 'discount_amount')::numeric,
+      coalesce((v_item ->> 'stitching_cost')::numeric, 0),
       (v_item ->> 'line_total')::numeric,
       nullif(v_item ->> 'fabric_length', ''),
       nullif(v_item ->> 'fabric_color', ''),

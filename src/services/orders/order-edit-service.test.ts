@@ -28,13 +28,13 @@ describe("order-edit-service", () => {
     formData.set("assignedTailor", "Shakir");
     formData.set("orderDiscountRupees", "100");
     formData.set("accessoriesCostRupees", "50");
-    formData.set("stitchingCostRupees", "75");
     formData.set("customerNotes", "Call before pickup.");
     formData.set("internalNotes", "Steam press before packing.");
     formData.set("items.0.id", orders[0].items[0].id);
     formData.set("items.0.garmentType", "Blouse");
     formData.set("items.0.quantity", "3");
     formData.set("items.0.rateRupees", "1400");
+    formData.set("items.0.stitchingCostRupees", "75");
     formData.set("items.0.fabricLength", "3 m");
     formData.set("items.0.fabricColor", "Pink");
     formData.set("items.0.designReference", "Deep back");
@@ -68,6 +68,8 @@ describe("order-edit-service", () => {
       expect.objectContaining({
         quantity: "3",
         rate: "1400.00",
+        stitching_cost: "75.00",
+        line_total: "4175.00",
         fabric_length: "3 m",
         stitching_instructions: "Add margin inside."
       })
@@ -81,4 +83,3 @@ describe("order-edit-service", () => {
     );
   });
 });
-

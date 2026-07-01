@@ -77,6 +77,11 @@ export function parseOrderFormData(formData: FormData): ParsedOrderForm {
     quantity: readString(formData, `items.${itemIndex}.quantity`, readString(formData, "quantity", "1")),
     rateRupees: readString(formData, `items.${itemIndex}.rateRupees`, readString(formData, "rateRupees", "0")),
     discountRupees: "0",
+    stitchingCostRupees: readString(
+      formData,
+      `items.${itemIndex}.stitchingCostRupees`,
+      itemIndex === 0 ? readString(formData, "stitchingCostRupees", "0") : "0"
+    ),
     fabricLength: readString(formData, `items.${itemIndex}.fabricLength`, readString(formData, "fabricLength")),
     fabricColor: readString(formData, `items.${itemIndex}.fabricColor`, readString(formData, "fabricColor")),
     designReference: readString(formData, `items.${itemIndex}.designReference`, readString(formData, "designReference")),
@@ -99,7 +104,6 @@ export function parseOrderFormData(formData: FormData): ParsedOrderForm {
     customerNotes: readString(formData, "customerNotes"),
     orderDiscountRupees: readString(formData, "orderDiscountRupees", "0"),
     accessoriesCostRupees: readString(formData, "accessoriesCostRupees", "0"),
-    stitchingCostRupees: readString(formData, "stitchingCostRupees", "0"),
     advancePaidRupees: readString(formData, "advancePaidRupees", "0"),
     paymentMethod: readString(formData, "paymentMethod", "Cash"),
     items

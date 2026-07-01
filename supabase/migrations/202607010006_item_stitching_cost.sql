@@ -1,15 +1,5 @@
-alter table orders
-add column if not exists cloth_sample_image_url text;
-
-alter table orders
-add column if not exists accessories_cost numeric(12,2) not null default 0,
-add column if not exists stitching_cost numeric(12,2) not null default 0;
-
 alter table order_items
-add column if not exists fabric_length text,
-add column if not exists delivered boolean not null default false,
-add column if not exists delivered_at timestamptz,
-add column if not exists stitching_cost numeric(12,2) not null default 0;
+add column if not exists stitching_cost numeric(12,2) not null default 0 check (stitching_cost >= 0);
 
 create or replace function create_order_from_payload(p_payload jsonb)
 returns jsonb
@@ -207,30 +197,4 @@ begin
 end;
 $$;
 
-insert into measurement_template_fields(template_id, field_key, display_code, display_label, long_label, input_type, unit, is_required, sort_order)
-select
-  t.id,
-  f.field_key,
-  f.display_code,
-  f.display_code,
-  f.long_label,
-  'number',
-  'in',
-  false,
-  f.sort_order
-from measurement_templates t
-cross join (
-  values
-    ('collar', 'CL', 'Collar', 19),
-    ('thigh', 'TH', 'Thigh', 20),
-    ('knee', 'KN', 'Knee', 21),
-    ('cup_size', 'CP', 'Cup Size', 22),
-    ('backcross', 'BC', 'Backcross', 23),
-    ('frontcross', 'FC', 'Frontcross', 24)
-) as f(field_key, display_code, long_label, sort_order)
-on conflict (template_id, field_key) do update set
-  display_code = excluded.display_code,
-  display_label = excluded.display_label,
-  long_label = excluded.long_label,
-  sort_order = excluded.sort_order,
-  updated_at = now();
+notify pgrst, 'reload schema';

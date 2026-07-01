@@ -56,7 +56,8 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                 <div key={item.id} className="rounded-md border border-[#eadfce] p-3">
                   <p className="font-semibold text-[#4c1525]">{item.garmentType}</p>
                   <p className="text-sm text-[#7c6d66]">
-                    Qty {item.quantity} · Rate {formatINR(item.ratePaise)} · Total {formatINR(item.lineTotalPaise)}
+                    Qty {item.quantity} · Rate {formatINR(item.ratePaise)} · Stitching {formatINR(item.stitchingCostPaise)} · Total{" "}
+                    {formatINR(item.lineTotalPaise)}
                   </p>
                   {item.fabricLength ? <p className="text-sm text-[#7c6d66]">Fabric length: {item.fabricLength}</p> : null}
                   <p className="mt-1 text-xs font-semibold text-[#4c1525]">

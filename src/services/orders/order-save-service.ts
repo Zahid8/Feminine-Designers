@@ -25,14 +25,14 @@ export async function saveParsedOrder(parsed: ParsedOrderForm): Promise<SavedOrd
   const itemDrafts = parsed.order.items.map((item) => ({
     quantity: item.quantity,
     ratePaise: rupeesToPaise(item.rateRupees),
-    discountPaise: 0
+    discountPaise: 0,
+    stitchingCostPaise: rupeesToPaise(item.stitchingCostRupees)
   }));
   const payment = parsed.order.advancePaidRupees > 0 ? [{ amountPaise: rupeesToPaise(parsed.order.advancePaidRupees) }] : [];
   const totals = calculateOrderTotals({
     items: itemDrafts,
     orderDiscountPaise: rupeesToPaise(parsed.order.orderDiscountRupees),
     accessoriesCostPaise: rupeesToPaise(parsed.order.accessoriesCostRupees),
-    stitchingCostPaise: rupeesToPaise(parsed.order.stitchingCostRupees),
     cgstRate: 2.5,
     sgstRate: 2.5,
     payments: payment
@@ -82,6 +82,7 @@ export async function saveParsedOrder(parsed: ParsedOrderForm): Promise<SavedOrd
       quantity: item.quantity,
       rate: item.rateRupees.toFixed(2),
       discount_amount: "0.00",
+      stitching_cost: item.stitchingCostRupees.toFixed(2),
       line_total: toRupeesDecimal(calculateLineTotal(itemDrafts[index])),
       fabric_length: item.fabricLength || null,
       fabric_color: item.fabricColor || null,

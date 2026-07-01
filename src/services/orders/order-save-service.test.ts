@@ -23,7 +23,6 @@ function makeParsedOrder(advancePaidRupees: number): ParsedOrderForm {
       customerNotes: "",
       orderDiscountRupees: 0,
       accessoriesCostRupees: 0,
-      stitchingCostRupees: 0,
       advancePaidRupees,
       paymentMethod: "Cash",
       items: [
@@ -33,6 +32,7 @@ function makeParsedOrder(advancePaidRupees: number): ParsedOrderForm {
           quantity: 1,
           rateRupees: 1000,
           discountRupees: 0,
+          stitchingCostRupees: 125,
           fabricLength: "",
           fabricColor: "",
           designReference: "",
@@ -105,5 +105,28 @@ describe("saveParsedOrder", () => {
         notes: "Check shoulder slope before cutting."
       })
     ]);
+  });
+
+  it("sends stitching cost on each garment item and totals it on the order", async () => {
+    const { saveParsedOrder } = await import("./order-save-service");
+
+    await saveParsedOrder(makeParsedOrder(0));
+
+    const payload = mockRpc.mock.calls[0]?.[1]?.p_payload as {
+      order?: Record<string, unknown>;
+      items?: Array<Record<string, unknown>>;
+    };
+    expect(payload.order).toEqual(
+      expect.objectContaining({
+        stitching_cost: "125.00",
+        subtotal: "1125.00"
+      })
+    );
+    expect(payload.items?.[0]).toEqual(
+      expect.objectContaining({
+        stitching_cost: "125.00",
+        line_total: "1125.00"
+      })
+    );
   });
 });

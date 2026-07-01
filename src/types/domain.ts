@@ -63,6 +63,7 @@ export interface OrderItem {
   quantity: number;
   ratePaise: number;
   discountPaise: number;
+  stitchingCostPaise: number;
   lineTotalPaise: number;
   fabricLength?: string;
   delivered?: boolean;

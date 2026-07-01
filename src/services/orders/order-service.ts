@@ -43,6 +43,7 @@ interface SupabaseOrderItemRecord {
   quantity: string | number;
   rate: string | number;
   discount_amount: string | number;
+  stitching_cost?: string | number | null;
   line_total: string | number;
   fabric_length: string | null;
   delivered: boolean | null;
@@ -175,6 +176,7 @@ function mapOrder(record: SupabaseOrderRecord): OrderWithCustomer {
         quantity: Number(item.quantity),
         ratePaise: moneyToPaise(item.rate),
         discountPaise: moneyToPaise(item.discount_amount),
+        stitchingCostPaise: moneyToPaise(item.stitching_cost ?? 0),
         lineTotalPaise: moneyToPaise(item.line_total),
         fabricLength: item.fabric_length ?? undefined,
         delivered: Boolean(item.delivered),

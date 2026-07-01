@@ -103,7 +103,7 @@ describe("parseOrderFormData", () => {
     ]);
   });
 
-  it("parses multiple garment sections with one global measurement set and global charges", () => {
+  it("parses multiple garment sections with one global measurement set and per-dress stitching costs", () => {
     const formData = new FormData();
     formData.set("intent", "order");
     formData.set("customerName", "Ayesha Khan");
@@ -114,14 +114,15 @@ describe("parseOrderFormData", () => {
     formData.set("items.0.garmentType", "Blouse");
     formData.set("items.0.quantity", "1");
     formData.set("items.0.rateRupees", "1200");
+    formData.set("items.0.stitchingCostRupees", "500");
     formData.set("items.0.fabricLength", "2.5 m");
     formData.set("items.1.garmentType", "Kurti");
     formData.set("items.1.quantity", "2");
     formData.set("items.1.rateRupees", "900");
+    formData.set("items.1.stitchingCostRupees", "750");
     formData.set("items.1.fabricLength", "4 m");
     formData.set("orderDiscountRupees", "100");
     formData.set("accessoriesCostRupees", "250");
-    formData.set("stitchingCostRupees", "500");
     formData.set("advancePaidRupees", "500");
     formData.set("paymentMethod", "Cash");
     formData.set("measurement.length", "14");
@@ -132,14 +133,27 @@ describe("parseOrderFormData", () => {
     const parsed = parseOrderFormData(formData);
 
     expect(parsed.order.items).toEqual([
-      expect.objectContaining({ garmentType: "Blouse", quantity: 1, rateRupees: 1200, fabricLength: "2.5 m", discountRupees: 0 }),
-      expect.objectContaining({ garmentType: "Kurti", quantity: 2, rateRupees: 900, fabricLength: "4 m", discountRupees: 0 })
+      expect.objectContaining({
+        garmentType: "Blouse",
+        quantity: 1,
+        rateRupees: 1200,
+        stitchingCostRupees: 500,
+        fabricLength: "2.5 m",
+        discountRupees: 0
+      }),
+      expect.objectContaining({
+        garmentType: "Kurti",
+        quantity: 2,
+        rateRupees: 900,
+        stitchingCostRupees: 750,
+        fabricLength: "4 m",
+        discountRupees: 0
+      })
     ]);
     expect(parsed.order).toEqual(
       expect.objectContaining({
         orderDiscountRupees: 100,
-        accessoriesCostRupees: 250,
-        stitchingCostRupees: 500
+        accessoriesCostRupees: 250
       })
     );
     expect(parsed.measurements).toEqual(

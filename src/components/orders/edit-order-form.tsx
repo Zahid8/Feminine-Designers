@@ -55,7 +55,7 @@ export function EditOrderForm({
           <div key={item.id} className="rounded-md border border-[#eadfce] bg-white p-4">
             <input type="hidden" name={`items.${index}.id`} value={item.id} />
             <p className="mb-3 text-sm font-bold text-[#4c1525]">Dress {index + 1}</p>
-            <div className="grid gap-4 lg:grid-cols-[1.2fr_.5fr_.7fr_.7fr]">
+            <div className="grid gap-4 lg:grid-cols-[1.2fr_.5fr_.7fr_.7fr_.7fr]">
               <Field label="Garment type">
                 <Input name={`items.${index}.garmentType`} defaultValue={item.garmentType} />
               </Field>
@@ -64,6 +64,15 @@ export function EditOrderForm({
               </Field>
               <Field label="Rate">
                 <Input name={`items.${index}.rateRupees`} type="number" min={0} step="0.01" defaultValue={paiseToRupees(item.ratePaise)} />
+              </Field>
+              <Field label="Stitching cost">
+                <Input
+                  name={`items.${index}.stitchingCostRupees`}
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  defaultValue={paiseToRupees(item.stitchingCostPaise)}
+                />
               </Field>
               <Field label="Fabric length">
                 <Input name={`items.${index}.fabricLength`} defaultValue={item.fabricLength ?? ""} />
@@ -103,21 +112,18 @@ export function EditOrderForm({
         </label>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         <Field label="Order discount">
           <Input name="orderDiscountRupees" type="number" min={0} step="0.01" defaultValue={paiseToRupees(order.totals.orderDiscountPaise)} />
         </Field>
         <Field label="Accessories cost">
           <Input name="accessoriesCostRupees" type="number" min={0} step="0.01" defaultValue={paiseToRupees(order.totals.accessoriesCostPaise)} />
         </Field>
-        <Field label="Stitching cost">
-          <Input name="stitchingCostRupees" type="number" min={0} step="0.01" defaultValue={paiseToRupees(order.totals.stitchingCostPaise)} />
-        </Field>
-        <label className="grid gap-1.5 text-sm font-medium text-[#3b312d] md:col-span-3">
+        <label className="grid gap-1.5 text-sm font-medium text-[#3b312d] md:col-span-2">
           <span>Customer notes</span>
           <Textarea name="customerNotes" defaultValue={order.customerNotes ?? ""} />
         </label>
-        <label className="grid gap-1.5 text-sm font-medium text-[#3b312d] md:col-span-3">
+        <label className="grid gap-1.5 text-sm font-medium text-[#3b312d] md:col-span-2">
           <span>Internal notes</span>
           <Textarea name="internalNotes" defaultValue={order.internalNotes ?? ""} />
         </label>

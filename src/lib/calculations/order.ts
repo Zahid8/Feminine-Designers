@@ -5,12 +5,14 @@ export interface DraftOrderItem {
   quantity: number;
   ratePaise: number;
   discountPaise?: number;
+  stitchingCostPaise?: number;
 }
 
 export function calculateLineTotal(item: DraftOrderItem): number {
   const gross = clampPaise(item.quantity * item.ratePaise);
   const discount = clampPaise(item.discountPaise ?? 0);
-  return Math.max(0, gross - discount);
+  const stitchingCost = clampPaise(item.stitchingCostPaise ?? 0);
+  return Math.max(0, gross - discount + stitchingCost);
 }
 
 export function calculatePaymentStatus(grandTotalPaise: number, totalPaidPaise: number): PaymentStatus {
@@ -31,9 +33,10 @@ export function calculateOrderTotals(params: {
 }) {
   const itemLineTotals = params.items.map(calculateLineTotal);
   const accessoriesCostPaise = clampPaise(params.accessoriesCostPaise ?? 0);
-  const stitchingCostPaise = clampPaise(params.stitchingCostPaise ?? 0);
+  const itemStitchingCostPaise = params.items.reduce((sum, item) => sum + clampPaise(item.stitchingCostPaise ?? 0), 0);
+  const stitchingCostPaise = itemStitchingCostPaise + clampPaise(params.stitchingCostPaise ?? 0);
   const itemsSubtotalPaise = itemLineTotals.reduce((sum, total) => sum + total, 0);
-  const subtotalPaise = itemsSubtotalPaise + accessoriesCostPaise + stitchingCostPaise;
+  const subtotalPaise = itemsSubtotalPaise + accessoriesCostPaise + clampPaise(params.stitchingCostPaise ?? 0);
   const rawItemDiscount = params.items.reduce((sum, item) => sum + clampPaise(item.discountPaise ?? 0), 0);
   const orderDiscountPaise = Math.min(clampPaise(params.orderDiscountPaise ?? 0), subtotalPaise);
   const taxableAmountPaise = Math.max(0, subtotalPaise - orderDiscountPaise);
