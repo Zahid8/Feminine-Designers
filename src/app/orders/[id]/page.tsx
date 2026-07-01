@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MeasurementGrid } from "@/components/measurements/measurement-grid";
 import { OrderItemDeliveryTracker } from "@/components/orders/order-item-delivery-tracker";
+import { DeleteOrderButton } from "@/components/orders/delete-order-button";
 import { PaymentBadge, PriorityBadge, StatusBadge } from "@/components/ui/status-badge";
 import { getOrderById } from "@/services/orders/order-service";
 import { formatDate } from "@/lib/utils/date";
@@ -33,6 +34,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             <Link href={`/receipts/${order.id}/combined`}>
               <Button>Combined Print</Button>
             </Link>
+            <DeleteOrderButton orderId={order.id} receiptNumber={order.receiptNumber} />
           </div>
         }
       />

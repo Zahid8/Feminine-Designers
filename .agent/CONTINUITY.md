@@ -25,6 +25,8 @@
 - 2026-07-01T08:58Z [CODE] Fixed Customers page persistence visibility by changing `src/services/customers/customer-service.ts` to read from Supabase `customers` first, with mock fallback only when Supabase is unavailable/schema-missing; customer profiles now use Supabase-backed orders for history.
 - 2026-07-01T09:06Z [CODE] Added Orders page Current/Past tabs plus an order-level Complete checkbox. Complete updates order status to `Delivered`, marks all garment items delivered, and revalidates order views; past classification also includes cancelled orders and orders with delivery dates before today.
 - 2026-07-01T09:19Z [CODE] Added `public/Logo.PNG` to PDF receipt headers in `src/components/receipts/receipt-pdf.tsx`; customer/store PDFs render one logo and combined PDFs render one logo in each panel.
+- 2026-07-01T10:24Z [CODE] Fixed blank/zero advance save failure by omitting the `payment` key from the Supabase RPC payload unless advance is positive; hardened SQL migrations/setup to process payment only when `jsonb_typeof(p_payload -> 'payment') = 'object'`.
+- 2026-07-01T10:27Z [CODE] Added a red `Delete Order` button to opened order detail pages; browser confirmation is required before calling a Supabase-backed delete action.
 
 ## [DISCOVERIES]
 - 2026-07-01T06:24Z [TOOL] `IMG_1174.JPG` is a 5712x4284 JPEG, likely the bill reference image, but no `public/Logo.PNG` logo file exists.
@@ -39,6 +41,8 @@
 - 2026-07-01T08:58Z [TOOL] Root cause for missing Customers page entries: save RPC inserted/upserted into Supabase `customers`, but `customer-service.ts` still read only the hard-coded mock arrays, so new saved customers were invisible on `/customers`.
 - 2026-07-01T09:06Z [TOOL] Orders tab behavior implemented without schema changes by using existing `orders.status` and `order_items.delivered` fields. Unchecking a completed future-delivery order sets status back to `Ready`; past delivery-date orders remain under Past Orders by date.
 - 2026-07-01T09:19Z [TOOL] `pdfimages -list` confirmed logo embedding: customer/store PDFs each contain one 447x447 image; combined PDF is one A4 landscape page and contains two 447x447 images.
+- 2026-07-01T10:24Z [TOOL] Root cause for `null value in column "amount" of relation "payments"`: JSON payload included `payment: null`; PostgreSQL `p_payload -> 'payment' is not null` treated JSON null as present and inserted a payment row with null amount.
+- 2026-07-01T10:27Z [TOOL] Order deletion uses existing `orders` foreign-key cascades, so deleting from `orders` also removes dependent order items, measurements, payments, and status history.
 
 ## [OUTCOMES]
 - 2026-07-01T06:39Z [TOOL] Verification passed: `npm run lint`, `npm run typecheck`, `npm run test` (4 files, 10 tests), `npm run build`, `npm audit --omit=dev`, and HTTP smoke checks for `/dashboard`, `/receipts/order-1/combined`, and `/api/receipts/order-1/combined`.
@@ -54,3 +58,5 @@
 - 2026-07-01T08:58Z [TOOL] Verification passed after Customers page fix: focused regression test, `npm run lint`, `npm run typecheck`, `npm run test` (11 files, 28 tests), `npm audit --omit=dev`, `npm run build`; restarted built server on `http://localhost:3000` and verified `/customers` plus `/customers?q=Bebu` return HTTP 200 and include `Bebu`/`9000000001`.
 - 2026-07-01T09:06Z [TOOL] Verification passed after Orders Current/Past feature: focused RED/GREEN tests, `npm run lint`, `npm run typecheck`, `npm run test` (12 files, 30 tests), `npm audit --omit=dev`, `npm run build`; restarted built server on `http://localhost:3000` and smoke checked `/orders`, `/orders?view=past`, and `/orders?view=past&status=All` with HTTP 200 plus expected tab/Complete markers.
 - 2026-07-01T09:19Z [TOOL] Verification passed after PDF logo update: `npm run lint`, `npm run typecheck`, `npm run test` (12 files, 30 tests), `npm run build`, `npm audit --omit=dev`; restarted built server on `http://localhost:3000` and downloaded customer/store/combined PDFs for Bebu with HTTP 200.
+- 2026-07-01T10:24Z [TOOL] Verification passed after payment-null fix: focused RED/GREEN save-service test, `npm run lint`, `npm run typecheck`, `npm run test` (13 files, 32 tests), `npm audit --omit=dev`, `npm run build`.
+- 2026-07-01T10:27Z [TOOL] Verification passed after delete-order feature: focused RED/GREEN delete-service test, `npm run lint`, `npm run typecheck`, `npm run test` (14 files, 33 tests), `npm audit --omit=dev`, `npm run build`; restarted built server on `http://localhost:3000` and confirmed Bebu order detail page includes `Delete Order`.

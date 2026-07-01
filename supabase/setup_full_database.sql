@@ -428,7 +428,7 @@ begin
     end if;
   end loop;
 
-  if p_payload -> 'payment' is not null then
+  if jsonb_typeof(p_payload -> 'payment') = 'object' then
     insert into payments(order_id, amount, payment_method, payment_reference, notes)
     values (
       v_order_id,
@@ -682,7 +682,7 @@ begin
     end if;
   end loop;
 
-  if p_payload -> 'payment' is not null then
+  if jsonb_typeof(p_payload -> 'payment') = 'object' then
     insert into payments(order_id, amount, payment_method, payment_reference, notes)
     values (
       v_order_id,

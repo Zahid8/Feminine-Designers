@@ -37,6 +37,15 @@ export async function saveParsedOrder(parsed: ParsedOrderForm): Promise<SavedOrd
     sgstRate: 2.5,
     payments: payment
   });
+  const paymentPayload =
+    parsed.order.advancePaidRupees > 0
+      ? {
+          amount: parsed.order.advancePaidRupees.toFixed(2),
+          payment_method: parsed.order.paymentMethod,
+          payment_reference: null,
+          notes: "Advance collected at order creation"
+        }
+      : undefined;
 
   const payload = {
     customer: {
@@ -90,15 +99,7 @@ export async function saveParsedOrder(parsed: ParsedOrderForm): Promise<SavedOrd
       notes: measurement.notes || null,
       sort_order: measurement.sortOrder
     })),
-    payment:
-      parsed.order.advancePaidRupees > 0
-        ? {
-            amount: parsed.order.advancePaidRupees.toFixed(2),
-            payment_method: parsed.order.paymentMethod,
-            payment_reference: null,
-            notes: "Advance collected at order creation"
-          }
-        : null
+    ...(paymentPayload ? { payment: paymentPayload } : {})
   };
 
   const { data, error } = await admin.rpc("create_order_from_payload", { p_payload: payload as Json });
