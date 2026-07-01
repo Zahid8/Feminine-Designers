@@ -51,6 +51,37 @@ function mapTemplate(row: TemplateRow): MeasurementTemplate {
   };
 }
 
+function codeTemplateFor(template: MeasurementTemplate) {
+  return (
+    MEASUREMENT_TEMPLATES.find((codeTemplate) => codeTemplate.name === template.name) ??
+    MEASUREMENT_TEMPLATES.find((codeTemplate) =>
+      codeTemplate.garmentCategories.some((category) => template.garmentCategories.includes(category))
+    )
+  );
+}
+
+function mergeCodeDefinedFields(template: MeasurementTemplate): MeasurementTemplate {
+  const codeTemplate = codeTemplateFor(template);
+  if (!codeTemplate) return template;
+
+  const codeFieldKeys = new Set(codeTemplate.fields.map((field) => field.fieldKey));
+  const extraDatabaseFields = template.fields.filter((field) => !codeFieldKeys.has(field.fieldKey));
+
+  return {
+    ...template,
+    fields: [
+      ...codeTemplate.fields.map((field) => ({
+        ...field,
+        id: `${template.id}-${field.fieldKey}`
+      })),
+      ...extraDatabaseFields.map((field, index) => ({
+        ...field,
+        sortOrder: codeTemplate.fields.length + index + 1
+      }))
+    ]
+  };
+}
+
 export async function listMeasurementTemplates() {
   if (!hasSupabaseAdminEnv()) return MEASUREMENT_TEMPLATES;
 
@@ -65,7 +96,7 @@ export async function listMeasurementTemplates() {
     throw new Error(error.message);
   }
 
-  return (data as unknown as TemplateRow[]).map(mapTemplate);
+  return (data as unknown as TemplateRow[]).map(mapTemplate).map(mergeCodeDefinedFields);
 }
 
 export async function getMeasurementTemplateForGarment(garmentType: string) {

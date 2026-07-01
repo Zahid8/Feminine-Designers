@@ -71,18 +71,26 @@ const baseMeasurementCodes = [
 ] as const;
 
 function makeFields(templateId: string) {
-  return baseMeasurementCodes.map(([fieldKey, code, longLabel], index) => ({
-    id: `${templateId}-${fieldKey}`,
-    fieldKey,
-    displayCode: code,
-    displayLabel: code,
-    longLabel,
-    inputType: "number" as const,
-    unit: "in" as const,
-    isRequired: index < 6,
-    sortOrder: index + 1,
-    active: true
-  }));
+  const seenFieldKeys = new Map<string, number>();
+
+  return baseMeasurementCodes.map(([baseFieldKey, code, longLabel], index) => {
+    const fieldKeyCount = seenFieldKeys.get(baseFieldKey) ?? 0;
+    seenFieldKeys.set(baseFieldKey, fieldKeyCount + 1);
+    const fieldKey = fieldKeyCount === 0 ? baseFieldKey : `${baseFieldKey}_${fieldKeyCount + 1}`;
+
+    return {
+      id: `${templateId}-${fieldKey}`,
+      fieldKey,
+      displayCode: code,
+      displayLabel: code,
+      longLabel,
+      inputType: "number" as const,
+      unit: "in" as const,
+      isRequired: index < 6,
+      sortOrder: index + 1,
+      active: true
+    };
+  });
 }
 
 export const MEASUREMENT_TEMPLATES: MeasurementTemplate[] = [
