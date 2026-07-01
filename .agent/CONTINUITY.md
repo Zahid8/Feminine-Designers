@@ -1,0 +1,56 @@
+# Feminine Designer Continuity
+
+## [PLANS]
+- 2026-07-01T06:23Z [USER] Implement `implementation_plan.md` fully end to end for the empty `/home/zahid/Projects/Zahid/Feminine_Designer` workspace.
+- 2026-07-01T06:25Z [ASSUMPTION] Scaffold a current Next.js App Router app in place because the folder is not a git repository and contains no existing app code.
+
+## [DECISIONS]
+- 2026-07-01T06:24Z [TOOL] Current timestamp established with `date -Is`: `2026-07-01T01:23:02-05:00`.
+- 2026-07-01T06:24Z [TOOL] Context7 resolved official Next.js docs to `/vercel/next.js` with latest listed version `v16.2.9`; npm registry confirmed `next@16.2.9`.
+- 2026-07-01T06:24Z [TOOL] Context7 resolved Supabase SSR docs to `/supabase/ssr`; app will use `@supabase/ssr` and `@supabase/supabase-js`.
+- 2026-07-01T06:24Z [USER] Do not run graphify in this workflow; prior workspace memory records graphify as prohibited even though pasted project notes mention it.
+
+## [PROGRESS]
+- 2026-07-01T06:24Z [TOOL] Repository assessment found only `implementation_plan.md` and `IMG_1174.JPG`; no package manager metadata, framework, database files, env files, styles, or tests existed.
+- 2026-07-01T06:39Z [CODE] Implemented Next.js 16 App Router scaffold, typed domain model, calculation utilities, local seed services, Supabase schema/seed, operational pages, receipt previews, PDF endpoints, tests, and documentation.
+- 2026-07-01T06:41Z [CODE] Copied existing `Logo.png` to required `public/Logo.PNG` path and wired UI/receipt logo display with text fallback.
+- 2026-07-01T07:01Z [CODE] Expanded `README.md` into a practical setup guide covering installs, local run commands, Supabase project creation, environment variables, database schema application, staff users, app usage, receipt/PDF routes, and Vercel deployment.
+- 2026-07-01T07:24Z [CODE] Added measurement codes `CL`, `TH`, `KN`, `CP`, `BC`, `FC`; replaced inert new-order buttons with server-action submit intents; added tablet cloth-sample capture/preview, order detail display, store-copy-only receipt rendering, and Supabase RPC persistence.
+- 2026-07-01T07:36Z [CODE] Made Settings database-driven for garment types, measurement templates, and measurement fields; new-order page now reads Supabase-backed garments/templates and order parsing preserves dynamic measurement metadata.
+- 2026-07-01T07:45Z [CODE] Fixed cloth-sample Server Action size failure by compressing tablet camera photos client-side and setting Next.js `experimental.serverActions.bodySizeLimit` to `4mb`.
+- 2026-07-01T07:46Z [CODE] Added `suppressHydrationWarning` to the root `<html>` element to silence unavoidable Dark Reader-injected attribute mismatches.
+- 2026-07-01T07:54Z [CODE] Created ignored `.env.local` at repo root, scrubbed `.env.example` back to placeholders, normalized blank submitted measurements to `NA`, and formatted receipt/PDF measurement display so `NA` does not include units.
+- 2026-07-01T08:02Z [CODE] Added detection for missing Supabase RPC/schema-cache errors, improved save-order setup error text, added `202607010004_reload_postgrest_schema.sql`, and documented the SQL check for `create_order_from_payload(jsonb)`.
+- 2026-07-01T08:38Z [TOOL] Live Supabase smoke test after empty-project SQL setup saved a real order for customer `Bebu`: order `fa8fe878-7c03-4e16-874c-781464b1629d`, receipt `SJD-2026-000001`, two garment items, global accessories/stitching costs, payment, and item-linked measurements.
+- 2026-07-01T08:58Z [CODE] Fixed Customers page persistence visibility by changing `src/services/customers/customer-service.ts` to read from Supabase `customers` first, with mock fallback only when Supabase is unavailable/schema-missing; customer profiles now use Supabase-backed orders for history.
+- 2026-07-01T09:06Z [CODE] Added Orders page Current/Past tabs plus an order-level Complete checkbox. Complete updates order status to `Delivered`, marks all garment items delivered, and revalidates order views; past classification also includes cancelled orders and orders with delivery dates before today.
+- 2026-07-01T09:19Z [CODE] Added `public/Logo.PNG` to PDF receipt headers in `src/components/receipts/receipt-pdf.tsx`; customer/store PDFs render one logo and combined PDFs render one logo in each panel.
+
+## [DISCOVERIES]
+- 2026-07-01T06:24Z [TOOL] `IMG_1174.JPG` is a 5712x4284 JPEG, likely the bill reference image, but no `public/Logo.PNG` logo file exists.
+- 2026-07-01T06:38Z [TOOL] `npm audit --omit=dev` initially flagged Next's nested PostCSS version; adding npm override `postcss@8.5.16` resolved audit to zero vulnerabilities without downgrading Next.
+- 2026-07-01T07:23Z [TOOL] An unintended dependency pair, `package` and `package.json`, pulled vulnerable transitive packages; removing them returned `npm audit --omit=dev` to zero vulnerabilities.
+- 2026-07-01T07:36Z [TOOL] Settings smoke HTML on built server includes forms for Add garment type, Add Template, and Add Measurement Field; `/settings`, `/orders/new`, and `/receipts/order-1/combined` all returned HTTP 200.
+- 2026-07-01T07:45Z [TOOL] Next.js v16.2.9 docs confirm Server Actions default request body limit is 1MB and `experimental.serverActions.bodySizeLimit` accepts values like `4mb`; raw camera Data URLs in hidden form input caused the reported failure.
+- 2026-07-01T07:46Z [TOOL] User-reported hydration diff showed only `data-darkreader-white-flash-suppressor` removed from `<html>`, confirming a browser-extension attribute mismatch rather than app-rendered unstable data.
+- 2026-07-01T07:54Z [TOOL] With `.env.local` present, Supabase responded that `public.orders` is missing from the schema cache; this means the live project still needs the SQL migrations applied before real saves will work.
+- 2026-07-01T08:02Z [TOOL] User-reported save failure `Could not find the function public.create_order_from_payload(p_payload) in the schema cache`; local migration 002 defines it with `create or replace function`, so remote Supabase needs migration 002 and a PostgREST schema reload at minimum.
+- 2026-07-01T08:38Z [TOOL] Live Supabase query confirmed `Bebu` persisted with 2 order items, 4 item-linked measurements, `accessories_cost=250`, `stitching_cost=500`, `grand_total=3517.5`, and 1 payment row.
+- 2026-07-01T08:58Z [TOOL] Root cause for missing Customers page entries: save RPC inserted/upserted into Supabase `customers`, but `customer-service.ts` still read only the hard-coded mock arrays, so new saved customers were invisible on `/customers`.
+- 2026-07-01T09:06Z [TOOL] Orders tab behavior implemented without schema changes by using existing `orders.status` and `order_items.delivered` fields. Unchecking a completed future-delivery order sets status back to `Ready`; past delivery-date orders remain under Past Orders by date.
+- 2026-07-01T09:19Z [TOOL] `pdfimages -list` confirmed logo embedding: customer/store PDFs each contain one 447x447 image; combined PDF is one A4 landscape page and contains two 447x447 images.
+
+## [OUTCOMES]
+- 2026-07-01T06:39Z [TOOL] Verification passed: `npm run lint`, `npm run typecheck`, `npm run test` (4 files, 10 tests), `npm run build`, `npm audit --omit=dev`, and HTTP smoke checks for `/dashboard`, `/receipts/order-1/combined`, and `/api/receipts/order-1/combined`.
+- 2026-07-01T06:39Z [TOOL] Built server is running at `http://localhost:3000` via `npm run start -- -p 3000`.
+- 2026-07-01T06:41Z [TOOL] Final verification repeated after logo wiring: `npm run lint`, `npm run typecheck`, `npm run test` (4 files, 10 tests), `npm run build`, and smoke checks for dashboard, order detail, combined receipt preview, and combined PDF download.
+- 2026-07-01T07:24Z [TOOL] Final verification passed after save/cloth-sample work: `npm run lint`, `npm run typecheck`, `npm run test` (7 files, 15 tests), `npm audit --omit=dev`, `npm run build`; smoke checked `/orders/new`, `/orders/order-1`, `/receipts/order-1/combined`, and combined PDF download on port 3002.
+- 2026-07-01T07:36Z [TOOL] Final verification passed after settings-driven configuration work: `npm run lint`, `npm run typecheck`, `npm run test` (8 files, 19 tests), `npm run build`, `npm audit --omit=dev`; smoke checked `/settings`, `/orders/new`, and `/receipts/order-1/combined` on port 3000.
+- 2026-07-01T07:45Z [TOOL] Verification passed after Server Action body-size fix: `npm run lint`, `npm run typecheck`, `npm run test` (8 files, 19 tests), `npm run build`, `npm audit --omit=dev`; restarted built server on `http://localhost:3000` and smoke checked `/orders/new` with HTTP 200.
+- 2026-07-01T07:46Z [TOOL] Verification passed after Dark Reader hydration fix: `npm run lint`, `npm run typecheck`, `npm run test` (8 files, 19 tests), `npm run build`; restarted built server on `http://localhost:3000` and smoke checked `/orders/new` with HTTP 200.
+- 2026-07-01T07:54Z [TOOL] Verification passed after env and `NA` measurement changes: focused RED/GREEN tests, `npm run lint`, `npm run typecheck`, `npm run test` (10 files, 24 tests), `npm run build` with `.env.local`, `npm audit --omit=dev`; smoke checked `/orders/new`, `/settings`, and `/dashboard` with HTTP 200.
+- 2026-07-01T08:02Z [TOOL] Verification passed after RPC setup guidance change: focused missing-function regression test, `npm run lint`, `npm run typecheck`, `npm run test` (10 files, 25 tests), `npm run build`, `npm audit --omit=dev`; restarted built server on `http://localhost:3000` and smoke checked `/orders/new`, `/settings`, and `/dashboard` with HTTP 200.
+- 2026-07-01T08:38Z [TOOL] Smoke verification passed after user completed Supabase setup: `npm run lint`, `npm run typecheck`, `npm run test` (10 files, 27 tests), `npm audit --omit=dev`, `npm run build`; post-build HTTP checks returned 200 for the Bebu order page and customer/store/combined PDF endpoints. Combined PDF is 1 page, A4 landscape (`841.89 x 595.28 pts`).
+- 2026-07-01T08:58Z [TOOL] Verification passed after Customers page fix: focused regression test, `npm run lint`, `npm run typecheck`, `npm run test` (11 files, 28 tests), `npm audit --omit=dev`, `npm run build`; restarted built server on `http://localhost:3000` and verified `/customers` plus `/customers?q=Bebu` return HTTP 200 and include `Bebu`/`9000000001`.
+- 2026-07-01T09:06Z [TOOL] Verification passed after Orders Current/Past feature: focused RED/GREEN tests, `npm run lint`, `npm run typecheck`, `npm run test` (12 files, 30 tests), `npm audit --omit=dev`, `npm run build`; restarted built server on `http://localhost:3000` and smoke checked `/orders`, `/orders?view=past`, and `/orders?view=past&status=All` with HTTP 200 plus expected tab/Complete markers.
+- 2026-07-01T09:19Z [TOOL] Verification passed after PDF logo update: `npm run lint`, `npm run typecheck`, `npm run test` (12 files, 30 tests), `npm run build`, `npm audit --omit=dev`; restarted built server on `http://localhost:3000` and downloaded customer/store/combined PDFs for Bebu with HTTP 200.
