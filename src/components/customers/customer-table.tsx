@@ -43,7 +43,7 @@ export function CustomerTable({ customers }: { customers: Customer[] }) {
           <Link
             href={`/customers/${customer.id}`}
             key={customer.id}
-            className="grid gap-3 rounded-lg border border-[#e8dcca] bg-white p-4 transition hover:border-[#7d1f36] md:grid-cols-[1.4fr_1fr_1fr_1fr_auto]"
+            className="group grid gap-3 rounded-lg border border-[#e8dcca] bg-white p-4 transition hover:border-[#7d1f36] md:grid-cols-[1.4fr_1fr_1fr_1fr_auto]"
           >
             {visibleColumns.customer ? <div>
               <p className="font-semibold text-[#4c1525]">{customer.fullName}</p>
@@ -52,7 +52,11 @@ export function CustomerTable({ customers }: { customers: Customer[] }) {
             {visibleColumns.phone ? <p className="text-sm">{customer.phonePrimary}</p> : null}
             {visibleColumns.orders ? <p className="text-sm">{customerOrders.length} orders</p> : null}
             {visibleColumns.outstanding ? <p className="text-sm font-semibold">{formatINR(outstanding)}</p> : null}
-            {visibleColumns.action ? <p className="text-sm font-semibold text-[#7d1f36]">Open</p> : null}
+            {visibleColumns.action ? (
+              <span className="inline-flex min-h-9 items-center justify-center rounded-md border border-[#d8c7b4] bg-white px-3 py-1.5 text-sm font-semibold text-[#4c1525] transition group-hover:border-[#7d1f36] group-hover:bg-[#f7efe2]">
+                Open
+              </span>
+            ) : null}
           </Link>
         );
       })}

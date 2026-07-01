@@ -6,6 +6,7 @@ import { paiseToRupees } from "@/lib/utils/money";
 import { formatMeasurementValue, isPrintableMeasurementValue } from "@/lib/utils/measurement-display";
 import { shouldBreakAfterMeasurement } from "@/lib/utils/measurement-sections";
 import { getPublicPngDataUri } from "@/lib/utils/pdf-assets";
+import { uniqueMeasurementNotes } from "@/lib/utils/receipt-notes";
 
 const customerReceiptFooter = [
   "Delivery date is approximate. Please bring this receipt at the time of delivery.",
@@ -213,6 +214,12 @@ const styles = StyleSheet.create({
     borderColor: "#eadfce",
     padding: 6
   },
+  noteBox: {
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: "#eadfce",
+    padding: 6
+  },
   footer: {
     marginTop: 18,
     paddingTop: 9,
@@ -282,6 +289,7 @@ function PdfPanel({
   compact?: boolean;
 }) {
   const printableMeasurements = order.measurements.filter((measurement) => isPrintableMeasurementValue(measurement.value));
+  const specialNotes = uniqueMeasurementNotes(order.measurements);
 
   return (
     <View style={compact ? styles.panelCompact : styles.panel}>
@@ -352,6 +360,11 @@ function PdfPanel({
               </View>
             </View>
           ) : null}
+          {specialNotes.map((note) => (
+            <Text key={note} style={styles.noteBox}>
+              Special Notes: {note}
+            </Text>
+          ))}
           {order.internalNotes ? <Text style={styles.internalNote}>Internal: {order.internalNotes}</Text> : null}
         </View>
       ) : null}
@@ -368,11 +381,14 @@ function PdfPanel({
       </View>
       <View style={compact ? [styles.footer, styles.footerCompact] : styles.footer}>
         {mode === "customer" ? (
-          customerReceiptFooter.map((paragraph) => (
-            <Text key={paragraph} style={styles.footerParagraph}>
-              {paragraph}
-            </Text>
-          ))
+          <>
+            {order.customerNotes ? <Text style={styles.noteBox}>Customer Notes: {order.customerNotes}</Text> : null}
+            {customerReceiptFooter.map((paragraph) => (
+              <Text key={paragraph} style={styles.footerParagraph}>
+                {paragraph}
+              </Text>
+            ))}
+          </>
         ) : (
           <>
             <Text style={styles.footerParagraph}>{settings.termsAndConditions}</Text>

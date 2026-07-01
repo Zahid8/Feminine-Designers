@@ -44,9 +44,15 @@ export function parseOrderFormData(formData: FormData): ParsedOrderForm {
   const effectiveItemIndexes = itemIndexes.length ? itemIndexes : [0];
   const measurementValues: Record<string, Record<string, string>> = {};
   const measurementMeta: Record<string, Record<string, Record<string, string>>> = {};
+  const measurementNotes: Record<string, string> = {};
 
   for (const [key, value] of formData.entries()) {
-    if (key.startsWith("measurements.") && typeof value === "string") {
+    if (key === "measurementNotes" && typeof value === "string") {
+      measurementNotes.global = value.trim();
+    } else if (key.startsWith("measurements.") && key.endsWith("Notes") && typeof value === "string") {
+      const [, itemIndex] = key.match(/^measurements\.(\d+)Notes$/) ?? [];
+      if (itemIndex) measurementNotes[itemIndex] = value.trim();
+    } else if (key.startsWith("measurements.") && typeof value === "string") {
       const [, itemIndex, fieldKey] = key.split(".");
       measurementValues[itemIndex] = { ...(measurementValues[itemIndex] ?? {}), [fieldKey]: value.trim() };
     } else if (key.startsWith("measurement.") && typeof value === "string") {
@@ -111,6 +117,7 @@ export function parseOrderFormData(formData: FormData): ParsedOrderForm {
         displayLabel: meta.displayLabel || meta.displayCode || fieldKey,
         value: normalizedValue,
         unit: meta.unit || "in",
+        notes: index === 0 ? measurementNotes[itemIndex] || undefined : undefined,
         sortOrder: Number(meta.sortOrder || index + 1)
       };
     })

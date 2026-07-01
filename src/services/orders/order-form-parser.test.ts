@@ -87,6 +87,7 @@ describe("parseOrderFormData", () => {
     formData.set("measurementMeta.collar.displayLabel", "Collar");
     formData.set("measurementMeta.collar.unit", "in");
     formData.set("measurementMeta.collar.sortOrder", "19");
+    formData.set("measurementNotes", "Check shoulder slope before cutting.");
 
     expect(parseOrderFormData(formData).measurements).toEqual([
       expect.objectContaining({
@@ -96,7 +97,8 @@ describe("parseOrderFormData", () => {
         value: "NA",
         unit: "in",
         sortOrder: 19,
-        orderItemSortOrder: undefined
+        orderItemSortOrder: undefined,
+        notes: "Check shoulder slope before cutting."
       })
     ]);
   });

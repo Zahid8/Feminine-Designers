@@ -1,0 +1,131 @@
+import { Button } from "@/components/ui/button";
+import { Field, Input, Textarea } from "@/components/ui/input";
+import { ORDER_STATUSES } from "@/lib/constants/business";
+import { paiseToRupees } from "@/lib/utils/money";
+import { uniqueMeasurementNotes } from "@/lib/utils/receipt-notes";
+import type { OrderWithCustomer, Priority } from "@/types/domain";
+
+const priorities: Priority[] = ["Normal", "Urgent", "Express"];
+
+export function EditOrderForm({
+  order,
+  action
+}: {
+  order: OrderWithCustomer;
+  action: (formData: FormData) => void | Promise<void>;
+}) {
+  const specialNotes = uniqueMeasurementNotes(order.measurements).join("\n");
+
+  return (
+    <form action={action} className="grid gap-5">
+      <div className="grid gap-4 md:grid-cols-2">
+        <Field label="Customer name">
+          <Input name="customerName" defaultValue={order.customer.fullName} />
+        </Field>
+        <Field label="Phone number">
+          <Input name="phonePrimary" defaultValue={order.customer.phonePrimary} />
+        </Field>
+        <Field label="Order date">
+          <Input name="orderDate" type="date" defaultValue={order.orderDate} />
+        </Field>
+        <Field label="Delivery date">
+          <Input name="deliveryDate" type="date" defaultValue={order.deliveryDate} />
+        </Field>
+        <Field label="Status">
+          <select name="status" className="h-10 rounded-md border border-[#d8c7b4] bg-white px-3 text-sm" defaultValue={order.status}>
+            {ORDER_STATUSES.map((status) => (
+              <option key={status}>{status}</option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Priority">
+          <select name="priority" className="h-10 rounded-md border border-[#d8c7b4] bg-white px-3 text-sm" defaultValue={order.priority}>
+            {priorities.map((priority) => (
+              <option key={priority}>{priority}</option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Assigned tailor">
+          <Input name="assignedTailor" defaultValue={order.assignedTailor ?? ""} />
+        </Field>
+      </div>
+
+      <div className="grid gap-3">
+        {order.items.map((item, index) => (
+          <div key={item.id} className="rounded-md border border-[#eadfce] bg-white p-4">
+            <input type="hidden" name={`items.${index}.id`} value={item.id} />
+            <p className="mb-3 text-sm font-bold text-[#4c1525]">Dress {index + 1}</p>
+            <div className="grid gap-4 lg:grid-cols-[1.2fr_.5fr_.7fr_.7fr]">
+              <Field label="Garment type">
+                <Input name={`items.${index}.garmentType`} defaultValue={item.garmentType} />
+              </Field>
+              <Field label="Quantity">
+                <Input name={`items.${index}.quantity`} type="number" min={1} step="1" defaultValue={item.quantity} />
+              </Field>
+              <Field label="Rate">
+                <Input name={`items.${index}.rateRupees`} type="number" min={0} step="0.01" defaultValue={paiseToRupees(item.ratePaise)} />
+              </Field>
+              <Field label="Fabric length">
+                <Input name={`items.${index}.fabricLength`} defaultValue={item.fabricLength ?? ""} />
+              </Field>
+              <Field label="Fabric/color">
+                <Input name={`items.${index}.fabricColor`} defaultValue={item.fabricColor ?? ""} />
+              </Field>
+              <Field label="Design reference">
+                <Input name={`items.${index}.designReference`} defaultValue={item.designReference ?? ""} />
+              </Field>
+              <label className="grid gap-1.5 text-sm font-medium text-[#3b312d] lg:col-span-4">
+                <span>Stitching instructions</span>
+                <Textarea name={`items.${index}.stitchingInstructions`} defaultValue={item.stitchingInstructions ?? ""} />
+              </label>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="rounded-md border border-[#eadfce] bg-white p-4">
+        <p className="mb-3 text-sm font-bold text-[#4c1525]">Measurements</p>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {order.measurements.map((measurement, index) => (
+            <label key={measurement.id} className="grid gap-1 rounded-md border border-[#eadfce] bg-white p-3 text-sm">
+              <input type="hidden" name={`measurements.${index}.id`} value={measurement.id} />
+              <span className="flex items-center justify-between gap-2">
+                <strong className="text-[#4c1525]">{measurement.displayCode}</strong>
+                <span className="text-xs text-[#7c6d66]">{measurement.displayLabel}</span>
+              </span>
+              <Input name={`measurements.${index}.value`} defaultValue={measurement.value} inputMode="decimal" />
+            </label>
+          ))}
+        </div>
+        <label className="mt-3 grid gap-1.5 text-sm font-medium text-[#3b312d]">
+          <span>Special Notes</span>
+          <Textarea name="measurementNotes" defaultValue={specialNotes} />
+        </label>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <Field label="Order discount">
+          <Input name="orderDiscountRupees" type="number" min={0} step="0.01" defaultValue={paiseToRupees(order.totals.orderDiscountPaise)} />
+        </Field>
+        <Field label="Accessories cost">
+          <Input name="accessoriesCostRupees" type="number" min={0} step="0.01" defaultValue={paiseToRupees(order.totals.accessoriesCostPaise)} />
+        </Field>
+        <Field label="Stitching cost">
+          <Input name="stitchingCostRupees" type="number" min={0} step="0.01" defaultValue={paiseToRupees(order.totals.stitchingCostPaise)} />
+        </Field>
+        <label className="grid gap-1.5 text-sm font-medium text-[#3b312d] md:col-span-3">
+          <span>Customer notes</span>
+          <Textarea name="customerNotes" defaultValue={order.customerNotes ?? ""} />
+        </label>
+        <label className="grid gap-1.5 text-sm font-medium text-[#3b312d] md:col-span-3">
+          <span>Internal notes</span>
+          <Textarea name="internalNotes" defaultValue={order.internalNotes ?? ""} />
+        </label>
+      </div>
+
+      <div className="flex justify-end">
+        <Button type="submit">Save Edited Bill</Button>
+      </div>
+    </form>
+  );
+}

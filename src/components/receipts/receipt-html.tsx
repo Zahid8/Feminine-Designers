@@ -9,6 +9,7 @@ import { formatINR } from "@/lib/utils/money";
 import { formatMeasurementValue, isPrintableMeasurementValue } from "@/lib/utils/measurement-display";
 import { shouldBreakAfterMeasurement } from "@/lib/utils/measurement-sections";
 import { receiptFileName } from "@/lib/utils/receipt-file-name";
+import { uniqueMeasurementNotes } from "@/lib/utils/receipt-notes";
 
 const customerReceiptFooter = [
   "Delivery date is approximate. Please bring this receipt at the time of delivery.",
@@ -80,6 +81,7 @@ function ReceiptPanel({
   compact?: boolean;
 }) {
   const printableMeasurements = order.measurements.filter((measurement) => isPrintableMeasurementValue(measurement.value));
+  const specialNotes = uniqueMeasurementNotes(order.measurements);
 
   return (
     <section className={compact ? "text-[11px]" : "text-sm"}>
@@ -168,6 +170,11 @@ function ReceiptPanel({
               </div>
             </>
           ) : null}
+          {specialNotes.map((note) => (
+            <p key={note} className="mt-3 border border-[#eadfce] p-2">
+              Special Notes: {note}
+            </p>
+          ))}
           {order.internalNotes ? <p className="mt-3 border border-[#eadfce] p-2">Internal: {order.internalNotes}</p> : null}
         </div>
       ) : null}
@@ -185,6 +192,7 @@ function ReceiptPanel({
       <footer className="mt-5 border-t border-[#eadfce] pt-3 text-xs text-[#6f625d]">
         {mode === "customer" ? (
           <div className="grid gap-2 text-[10px] leading-4">
+            {order.customerNotes ? <p className="border border-[#eadfce] p-2">Customer Notes: {order.customerNotes}</p> : null}
             {customerReceiptFooter.map((paragraph) => (
               <p key={paragraph}>{paragraph}</p>
             ))}

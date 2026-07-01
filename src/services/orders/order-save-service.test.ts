@@ -89,6 +89,7 @@ describe("saveParsedOrder", () => {
         displayLabel: "Length",
         value: "14",
         unit: "in",
+        notes: "Check shoulder slope before cutting.",
         sortOrder: 1
       }
     ];
@@ -100,7 +101,8 @@ describe("saveParsedOrder", () => {
       expect.objectContaining({
         field_key: "length",
         value: "14",
-        item_sort_order: null
+        item_sort_order: null,
+        notes: "Check shoulder slope before cutting."
       })
     ]);
   });

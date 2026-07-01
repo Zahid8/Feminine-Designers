@@ -8,10 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MeasurementGrid } from "@/components/measurements/measurement-grid";
 import { OrderItemDeliveryTracker } from "@/components/orders/order-item-delivery-tracker";
 import { DeleteOrderButton } from "@/components/orders/delete-order-button";
+import { EditOrderForm } from "@/components/orders/edit-order-form";
 import { PaymentBadge, PriorityBadge, StatusBadge } from "@/components/ui/status-badge";
 import { getOrderById } from "@/services/orders/order-service";
 import { formatDate } from "@/lib/utils/date";
 import { formatINR } from "@/lib/utils/money";
+import { updateOrderAction } from "@/app/orders/[id]/actions";
 
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -122,6 +124,14 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           </Card>
         </div>
       </div>
+      <Card className="mt-5">
+        <CardHeader>
+          <CardTitle>Edit Saved Bill</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <EditOrderForm order={order} action={updateOrderAction.bind(null, order.id)} />
+        </CardContent>
+      </Card>
     </AppShell>
   );
 }

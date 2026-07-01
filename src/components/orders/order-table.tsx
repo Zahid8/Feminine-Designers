@@ -118,7 +118,10 @@ export function OrderTable({ orders }: { orders: (OrderWithCustomer & { overdue?
                 {visibleColumns.total ? <td className="px-4 py-4">{formatINR(order.totals.grandTotalPaise)}</td> : null}
                 {visibleColumns.balance ? <td className="px-4 py-4 font-semibold">{formatINR(order.totals.balanceDuePaise)}</td> : null}
                 {visibleColumns.action ? <td className="px-4 py-4">
-                  <Link className="font-semibold text-[#7d1f36]" href={`/orders/${order.id}`}>
+                  <Link
+                    className="inline-flex min-h-9 items-center justify-center rounded-md border border-[#d8c7b4] bg-white px-3 py-1.5 text-sm font-semibold text-[#4c1525] transition hover:border-[#7d1f36] hover:bg-[#f7efe2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7d1f36]"
+                    href={`/orders/${order.id}`}
+                  >
                     Open
                   </Link>
                 </td> : null}

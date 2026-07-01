@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { updateAllOrderItemsDelivered, updateOrderItemDelivered } from "@/services/orders/order-item-delivery-service";
 import { deleteOrderById } from "@/services/orders/order-delete-service";
+import { updateOrderFromForm } from "@/services/orders/order-edit-service";
+import { getOrderById } from "@/services/orders/order-service";
 
 export async function setOrderItemDeliveredAction(orderId: string, itemId: string, delivered: boolean) {
   await updateOrderItemDelivered(itemId, delivered);
@@ -29,4 +31,20 @@ export async function deleteOrderAction(orderId: string) {
       message: error instanceof Error ? error.message : "Could not delete order."
     };
   }
+}
+
+export async function updateOrderAction(orderId: string, formData: FormData) {
+  const order = await getOrderById(orderId);
+  if (!order) {
+    throw new Error("Order was not found.");
+  }
+
+  await updateOrderFromForm(order, formData);
+  revalidatePath(`/orders/${orderId}`);
+  revalidatePath(`/receipts/${orderId}/customer`);
+  revalidatePath(`/receipts/${orderId}/store`);
+  revalidatePath(`/receipts/${orderId}/combined`);
+  revalidatePath("/orders");
+  revalidatePath("/customers");
+  revalidatePath("/dashboard");
 }
