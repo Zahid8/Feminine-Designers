@@ -6,7 +6,9 @@ const mockSelect = vi.fn(() => ({ eq: mockSelectEq }));
 const mockUpdateEq = vi.fn();
 const mockUpdate = vi.fn(() => ({ eq: mockUpdateEq }));
 const mockInsert = vi.fn();
-const mockFrom = vi.fn(() => ({ insert: mockInsert, select: mockSelect, update: mockUpdate }));
+const mockDeleteEq = vi.fn();
+const mockDelete = vi.fn(() => ({ eq: mockDeleteEq }));
+const mockFrom = vi.fn(() => ({ delete: mockDelete, insert: mockInsert, select: mockSelect, update: mockUpdate }));
 
 vi.mock("@/lib/supabase/admin", () => ({
   hasSupabaseAdminEnv: vi.fn(() => true),
@@ -26,6 +28,7 @@ describe("payment service", () => {
     });
     mockInsert.mockResolvedValue({ error: null });
     mockUpdateEq.mockResolvedValue({ error: null });
+    mockDeleteEq.mockResolvedValue({ error: null });
   });
 
   it("settles an order balance by inserting a payment and marking the order paid", async () => {
@@ -72,5 +75,44 @@ describe("payment service", () => {
     await expect(settleOrderBalance("order-1")).rejects.toThrow("This order has no outstanding balance.");
     expect(mockInsert).not.toHaveBeenCalled();
     expect(mockUpdate).not.toHaveBeenCalled();
+  });
+
+  it("reverses a collected payment and restores order balance", async () => {
+    mockSingle
+      .mockResolvedValueOnce({
+        data: {
+          order_id: "order-1",
+          amount: "1200.00"
+        },
+        error: null
+      })
+      .mockResolvedValueOnce({
+        data: {
+          advance_paid: "1700.00",
+          balance_due: "0.00",
+          grand_total: "1700.00"
+        },
+        error: null
+      });
+    const { reversePayment } = await import("./payment-service");
+
+    const result = await reversePayment("payment-1");
+
+    expect(result).toEqual({ orderId: "order-1" });
+    expect(mockFrom).toHaveBeenNthCalledWith(1, "payments");
+    expect(mockSelect).toHaveBeenNthCalledWith(1, "order_id,amount");
+    expect(mockSelectEq).toHaveBeenNthCalledWith(1, "id", "payment-1");
+    expect(mockFrom).toHaveBeenNthCalledWith(3, "payments");
+    expect(mockDelete).toHaveBeenCalled();
+    expect(mockDeleteEq).toHaveBeenCalledWith("id", "payment-1");
+    expect(mockFrom).toHaveBeenNthCalledWith(4, "orders");
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        advance_paid: "500.00",
+        balance_due: "1200.00",
+        payment_status: "Partial"
+      })
+    );
+    expect(mockUpdateEq).toHaveBeenCalledWith("id", "order-1");
   });
 });

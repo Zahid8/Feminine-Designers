@@ -53,7 +53,6 @@ export default async function CustomerMeasurementsPage({
           {profile.values.length ? (
             editing ? (
               <form action={updateAction} className="grid gap-5">
-                <input type="hidden" name="sourceOrderId" value={profile.sourceOrderId ?? ""} />
                 <MeasurementGrid values={profile.values} editable />
                 <div className="flex flex-wrap justify-end gap-2">
                   <Link href={`/customers/${id}/measurements`}>

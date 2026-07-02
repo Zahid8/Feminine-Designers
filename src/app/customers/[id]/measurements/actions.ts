@@ -30,8 +30,7 @@ function parseMeasurements(formData: FormData): MeasurementValue[] {
 }
 
 export async function updateCustomerMeasurementsAction(customerId: string, formData: FormData) {
-  const sourceOrderId = formValue(formData, "sourceOrderId") || undefined;
-  await saveCustomerMeasurementProfile(customerId, parseMeasurements(formData), sourceOrderId);
+  await saveCustomerMeasurementProfile(customerId, parseMeasurements(formData));
   revalidatePath("/customers");
   revalidatePath(`/customers/${customerId}`);
   revalidatePath(`/customers/${customerId}/measurements`);

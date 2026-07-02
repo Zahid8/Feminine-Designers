@@ -33,6 +33,10 @@ function latestOrderWithMeasurements(orders: OrderWithCustomer[]) {
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
 }
 
+function manualProfileRows(records: CustomerMeasurementProfileRecord[]) {
+  return records.filter((record) => !record.source_order_id);
+}
+
 function buildProfileValues(records: CustomerMeasurementProfileRecord[], sourceOrder?: OrderWithCustomer) {
   const sourceByField = new Map(sourceOrder?.measurements.map((measurement) => [measurement.fieldKey, measurement]));
   const latestByField = new Map<string, CustomerMeasurementProfileRecord>();
@@ -87,9 +91,11 @@ export async function getCustomerMeasurementProfile(customerId: string): Promise
 
   const orders = (await listOrders()).filter((order) => order.customerId === customerId);
   const records = await fetchProfileRows(customerId);
-  const sourceOrderId = records?.find((record) => record.source_order_id)?.source_order_id;
-  const sourceOrder = orders.find((order) => order.id === sourceOrderId) ?? latestOrderWithMeasurements(orders);
-  const values = records?.length ? buildProfileValues(records, sourceOrder) : sourceOrder?.measurements ?? [];
+  const sourceOrder = latestOrderWithMeasurements(orders);
+  const manuallyEditedRows = records?.length ? manualProfileRows(records) : [];
+  const values = manuallyEditedRows.length
+    ? buildProfileValues(manuallyEditedRows, sourceOrder)
+    : sourceOrder?.measurements ?? (records?.length ? buildProfileValues(records, sourceOrder) : []);
 
   return {
     customer,
@@ -99,17 +105,17 @@ export async function getCustomerMeasurementProfile(customerId: string): Promise
   };
 }
 
-function measurementRows(customerId: string, values: MeasurementValue[], sourceOrderId?: string) {
+function measurementRows(customerId: string, values: MeasurementValue[]) {
   return values.map((value) => ({
     customer_id: customerId,
     field_key: value.fieldKey,
     value: value.value.trim() || "NA",
     unit: value.unit || "in",
-    source_order_id: sourceOrderId ?? null
+    source_order_id: null
   }));
 }
 
-export async function saveCustomerMeasurementProfile(customerId: string, values: MeasurementValue[], sourceOrderId?: string) {
+export async function saveCustomerMeasurementProfile(customerId: string, values: MeasurementValue[]) {
   if (!hasSupabaseAdminEnv()) {
     throw new Error("Supabase is not configured. Customer measurement edits require the database.");
   }
@@ -120,6 +126,6 @@ export async function saveCustomerMeasurementProfile(customerId: string, values:
 
   if (values.length === 0) return;
 
-  const { error: insertError } = await admin.from("customer_measurement_profiles").insert(measurementRows(customerId, values, sourceOrderId));
+  const { error: insertError } = await admin.from("customer_measurement_profiles").insert(measurementRows(customerId, values));
   if (insertError) throw new Error(insertError.message);
 }

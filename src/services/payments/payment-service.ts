@@ -9,6 +9,11 @@ interface SupabaseOrderPaymentTotals {
   grand_total: string | number;
 }
 
+interface SupabasePaymentRecord {
+  order_id: string;
+  amount: string | number;
+}
+
 export async function listPaymentsForOrder(orderId: string) {
   return orders.find((order) => order.id === orderId)?.payments ?? [];
 }
@@ -68,4 +73,56 @@ export async function settleOrderBalance(orderId: string, method: PaymentMethod 
     .eq("id", orderId);
 
   if (updateError) throw new Error(updateError.message);
+}
+
+function paymentStatus(grandTotalPaise: number, paidPaise: number) {
+  if (paidPaise <= 0) return "Unpaid";
+  if (paidPaise === grandTotalPaise) return "Paid";
+  if (paidPaise > grandTotalPaise) return "Credit";
+  return "Partial";
+}
+
+export async function reversePayment(paymentId: string) {
+  ensureSupabasePayments();
+
+  const admin = createSupabaseAdminClient();
+  const { data: payment, error: paymentFetchError } = await admin.from("payments").select("order_id,amount").eq("id", paymentId).single();
+
+  if (paymentFetchError) throw new Error(paymentFetchError.message);
+  if (!payment) throw new Error("Payment was not found.");
+
+  const paymentRecord = payment as SupabasePaymentRecord;
+  const { data: order, error: orderFetchError } = await admin
+    .from("orders")
+    .select("advance_paid,balance_due,grand_total")
+    .eq("id", paymentRecord.order_id)
+    .single();
+
+  if (orderFetchError) throw new Error(orderFetchError.message);
+  if (!order) throw new Error("Order was not found.");
+
+  const totals = order as SupabaseOrderPaymentTotals;
+  const paymentPaise = rupeesToPaise(Number(paymentRecord.amount));
+  const currentAdvancePaise = rupeesToPaise(Number(totals.advance_paid));
+  const grandTotalPaise = rupeesToPaise(Number(totals.grand_total));
+  const nextAdvancePaise = Math.max(0, currentAdvancePaise - paymentPaise);
+  const nextBalancePaise = grandTotalPaise - nextAdvancePaise;
+  const updatedAt = new Date().toISOString();
+
+  const { error: deleteError } = await admin.from("payments").delete().eq("id", paymentId);
+  if (deleteError) throw new Error(deleteError.message);
+
+  const { error: updateError } = await admin
+    .from("orders")
+    .update({
+      advance_paid: toRupeesDecimal(nextAdvancePaise),
+      balance_due: toRupeesDecimal(nextBalancePaise),
+      payment_status: paymentStatus(grandTotalPaise, nextAdvancePaise),
+      updated_at: updatedAt
+    })
+    .eq("id", paymentRecord.order_id);
+
+  if (updateError) throw new Error(updateError.message);
+
+  return { orderId: paymentRecord.order_id };
 }

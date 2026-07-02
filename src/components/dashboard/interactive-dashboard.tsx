@@ -5,7 +5,7 @@ import { AlertTriangle, ArrowRight, Banknote, CalendarDays, CheckCircle2, Clock,
 import { startTransition, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ComponentType } from "react";
-import { setOrderCompletedAction, settleOrderBalanceAction } from "@/app/orders/actions";
+import { reversePaymentAction, setOrderCompletedAction, settleOrderBalanceAction } from "@/app/orders/actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PaymentBadge, PriorityBadge, StatusBadge } from "@/components/ui/status-badge";
 import { cn } from "@/lib/utils/cn";
@@ -86,7 +86,6 @@ function OrderQueue({
   emptyText,
   pendingOrderIds,
   pendingPaidOrderIds,
-  showPaidControl,
   onSetComplete,
   onSetPaid
 }: {
@@ -94,7 +93,6 @@ function OrderQueue({
   emptyText: string;
   pendingOrderIds: string[];
   pendingPaidOrderIds: string[];
-  showPaidControl: boolean;
   onSetComplete: (orderId: string, completed: boolean) => void;
   onSetPaid: (orderId: string) => void;
 }) {
@@ -113,21 +111,19 @@ function OrderQueue({
               <p className="text-sm text-[#7c6d66]">{order.customer.phonePrimary}</p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              {showPaidControl ? (
-                <label className="inline-flex min-h-8 items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-2 text-xs font-semibold text-emerald-800">
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4"
-                    checked={false}
-                    disabled={pendingPaidOrderIds.includes(order.id)}
-                    onChange={(event) => {
-                      if (event.target.checked) onSetPaid(order.id);
-                    }}
-                    aria-label={`Mark ${order.receiptNumber ?? order.customer.fullName} paid`}
-                  />
-                  Paid
-                </label>
-              ) : null}
+              <label className="inline-flex min-h-8 items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-2 text-xs font-semibold text-emerald-800">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4"
+                  checked={order.totals.balanceDuePaise <= 0}
+                  disabled={pendingPaidOrderIds.includes(order.id) || order.totals.balanceDuePaise <= 0}
+                  onChange={(event) => {
+                    if (event.target.checked) onSetPaid(order.id);
+                  }}
+                  aria-label={`Mark ${order.receiptNumber ?? order.customer.fullName} paid`}
+                />
+                Paid
+              </label>
               <label className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#d8c7b4] bg-white px-2 text-xs font-semibold text-[#4c1525]">
                 <input
                   type="checkbox"
@@ -175,29 +171,64 @@ function OrderQueue({
   );
 }
 
-function PaymentQueue({ payments, emptyText }: { payments: DashboardPaymentRow[]; emptyText: string }) {
-  if (payments.length === 0) {
+function PaymentQueue({
+  payments,
+  emptyText,
+  hiddenPaymentIds,
+  pendingPaymentIds,
+  onSetNotPaid
+}: {
+  payments: DashboardPaymentRow[];
+  emptyText: string;
+  hiddenPaymentIds: string[];
+  pendingPaymentIds: string[];
+  onSetNotPaid: (payment: DashboardPaymentRow) => void;
+}) {
+  const visiblePayments = payments.filter((payment) => !hiddenPaymentIds.includes(payment.id));
+
+  if (visiblePayments.length === 0) {
     return <div className="rounded-md border border-dashed border-[#d8c7b4] bg-white p-8 text-center text-sm text-[#7c6d66]">{emptyText}</div>;
   }
 
   return (
     <div className="grid gap-3">
-      {payments.map((payment) => (
-        <Link key={payment.id} href={`/orders/${payment.orderId}`} className="rounded-md border border-[#eadfce] bg-white p-4 transition hover:border-[#7d1f36]">
+      {visiblePayments.map((payment) => (
+        <div key={payment.id} className="rounded-md border border-[#eadfce] bg-white p-4 transition hover:border-[#7d1f36]">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#7c6d66]">{payment.receiptNumber}</p>
               <h3 className="mt-1 text-lg font-semibold text-[#4c1525]">{payment.customerName}</h3>
               <p className="text-sm text-[#7c6d66]">{payment.customerPhone}</p>
             </div>
-            <div className="text-right">
+            <div className="flex flex-wrap items-center justify-end gap-3 text-right">
+              <label className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#d8c7b4] bg-white px-2 text-xs font-semibold text-[#4c1525]">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4"
+                  checked={false}
+                  disabled={pendingPaymentIds.includes(payment.id)}
+                  onChange={(event) => {
+                    if (event.target.checked) onSetNotPaid(payment);
+                  }}
+                  aria-label={`Mark payment for ${payment.receiptNumber} not paid`}
+                />
+                Not paid
+              </label>
+              <Link
+                href={`/orders/${payment.orderId}`}
+                className="inline-flex min-h-9 items-center justify-center rounded-md border border-[#d8c7b4] bg-white px-3 py-1.5 text-sm font-semibold text-[#4c1525] transition hover:border-[#7d1f36] hover:bg-[#f7efe2]"
+              >
+                Open
+              </Link>
+              <div>
               <p className="text-2xl font-bold text-[#4c1525]">{formatINR(payment.amountPaise)}</p>
               <p className="text-sm text-[#7c6d66]">
                 {payment.method} · {formatISODateLabel(payment.paidAt)}
               </p>
+              </div>
             </div>
           </div>
-        </Link>
+        </div>
       ))}
     </div>
   );
@@ -296,12 +327,15 @@ export function InteractiveDashboard({ model }: { model: DashboardModel }) {
   const [selectedViewId, setSelectedViewId] = useState<DashboardViewId>("pending");
   const [hiddenCompletedOrderIds, setHiddenCompletedOrderIds] = useState<string[]>([]);
   const [hiddenPaidOrderIds, setHiddenPaidOrderIds] = useState<string[]>([]);
+  const [hiddenPaymentIds, setHiddenPaymentIds] = useState<string[]>([]);
   const [pendingOrderIds, setPendingOrderIds] = useState<string[]>([]);
   const [pendingPaidOrderIds, setPendingPaidOrderIds] = useState<string[]>([]);
+  const [pendingPaymentIds, setPendingPaymentIds] = useState<string[]>([]);
   const selectedView = model.views[selectedViewId];
   const selectedCard = useMemo(() => model.cards.find((card) => card.id === selectedViewId), [model.cards, selectedViewId]);
   const visibleSelectedOrders = selectedView.orders.filter((order) => !hiddenCompletedOrderIds.includes(order.id) && !hiddenPaidOrderIds.includes(order.id));
-  const selectedCount = selectedViewId === "collected-today" ? selectedView.payments.length : visibleSelectedOrders.length;
+  const visibleSelectedPayments = selectedView.payments.filter((payment) => !hiddenPaymentIds.includes(payment.id));
+  const selectedCount = selectedViewId === "collected-today" ? visibleSelectedPayments.length : visibleSelectedOrders.length;
 
   function setOrderComplete(orderId: string, completed: boolean) {
     setPendingOrderIds((current) => [...current, orderId]);
@@ -339,6 +373,23 @@ export function InteractiveDashboard({ model }: { model: DashboardModel }) {
     });
   }
 
+  function setPaymentNotPaid(payment: DashboardPaymentRow) {
+    setPendingPaymentIds((current) => [...current, payment.id]);
+    setHiddenPaymentIds((current) => (current.includes(payment.id) ? current : [...current, payment.id]));
+
+    startTransition(() => {
+      void reversePaymentAction(payment.id, payment.orderId)
+        .then(() => router.refresh())
+        .catch((error) => {
+          setHiddenPaymentIds((current) => current.filter((id) => id !== payment.id));
+          window.alert(error instanceof Error ? error.message : "Could not mark payment not paid.");
+        })
+        .finally(() => {
+          setPendingPaymentIds((current) => current.filter((id) => id !== payment.id));
+        });
+    });
+  }
+
   return (
     <div className="grid gap-5">
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
@@ -364,14 +415,19 @@ export function InteractiveDashboard({ model }: { model: DashboardModel }) {
           </CardHeader>
           <CardContent>
             {selectedViewId === "collected-today" ? (
-              <PaymentQueue payments={selectedView.payments} emptyText={selectedView.emptyText} />
+              <PaymentQueue
+                payments={selectedView.payments}
+                emptyText={selectedView.emptyText}
+                hiddenPaymentIds={hiddenPaymentIds}
+                pendingPaymentIds={pendingPaymentIds}
+                onSetNotPaid={setPaymentNotPaid}
+              />
             ) : (
               <OrderQueue
                 orders={visibleSelectedOrders}
                 emptyText={selectedView.emptyText}
                 pendingOrderIds={pendingOrderIds}
                 pendingPaidOrderIds={pendingPaidOrderIds}
-                showPaidControl={selectedViewId === "outstanding"}
                 onSetComplete={setOrderComplete}
                 onSetPaid={setOrderPaid}
               />
