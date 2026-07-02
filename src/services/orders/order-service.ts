@@ -45,6 +45,8 @@ interface SupabaseOrderItemRecord {
   rate: string | number;
   discount_amount: string | number;
   stitching_cost?: string | number | null;
+  fabric_price?: string | number | null;
+  dye_price?: string | number | null;
   line_total: string | number;
   fabric_length: string | null;
   delivered: boolean | null;
@@ -178,6 +180,8 @@ function mapOrder(record: SupabaseOrderRecord): OrderWithCustomer {
         ratePaise: moneyToPaise(item.rate),
         discountPaise: moneyToPaise(item.discount_amount),
         stitchingCostPaise: moneyToPaise(item.stitching_cost ?? 0),
+        fabricPricePaise: moneyToPaise(item.fabric_price ?? 0),
+        dyePricePaise: moneyToPaise(item.dye_price ?? 0),
         lineTotalPaise: moneyToPaise(item.line_total),
         fabricLength: item.fabric_length ?? undefined,
         delivered: Boolean(item.delivered),
@@ -216,6 +220,8 @@ function mapOrder(record: SupabaseOrderRecord): OrderWithCustomer {
       orderDiscountPaise: moneyToPaise(record.order_discount_amount),
       accessoriesCostPaise: moneyToPaise(record.accessories_cost ?? 0),
       stitchingCostPaise: moneyToPaise(record.stitching_cost ?? 0),
+      fabricPricePaise: record.items.reduce((sum, item) => sum + moneyToPaise(item.fabric_price ?? 0), 0),
+      dyePricePaise: record.items.reduce((sum, item) => sum + moneyToPaise(item.dye_price ?? 0), 0),
       taxableAmountPaise: moneyToPaise(record.taxable_amount),
       cgstRate: Number(record.cgst_rate),
       cgstAmountPaise: moneyToPaise(record.cgst_amount),

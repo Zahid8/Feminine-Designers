@@ -86,6 +86,36 @@ describe("NewOrderForm actions", () => {
     expect(container.querySelector('[name="measurementMeta.0.length.displayCode"]')).toBeNull();
   });
 
+  it("renders per-dress fabric and dye price fields", () => {
+    const { container } = render(<NewOrderForm />);
+
+    expect(container.querySelector('[name="items.0.fabricPriceRupees"]')).toBeDefined();
+    expect(container.querySelector('[name="items.0.dyePriceRupees"]')).toBeDefined();
+  });
+
+  it("keeps typed measurement values across rerenders", () => {
+    const { container, rerender } = render(<NewOrderForm nextReceiptNumber="SJD-2026-000011" />);
+    const lengthInput = container.querySelector('[name="measurement.length"]') as HTMLInputElement;
+
+    fireEvent.change(lengthInput, { target: { value: "37.5" } });
+    rerender(<NewOrderForm nextReceiptNumber="SJD-2026-000012" />);
+
+    expect((container.querySelector('[name="measurement.length"]') as HTMLInputElement).value).toBe("37.5");
+  });
+
+  it("keeps typed item costs across rerenders", () => {
+    const { container, rerender } = render(<NewOrderForm nextReceiptNumber="SJD-2026-000011" />);
+    const fabricInput = container.querySelector('[name="items.0.fabricPriceRupees"]') as HTMLInputElement;
+    const dyeInput = container.querySelector('[name="items.0.dyePriceRupees"]') as HTMLInputElement;
+
+    fireEvent.change(fabricInput, { target: { value: "650" } });
+    fireEvent.change(dyeInput, { target: { value: "125" } });
+    rerender(<NewOrderForm nextReceiptNumber="SJD-2026-000012" />);
+
+    expect((container.querySelector('[name="items.0.fabricPriceRupees"]') as HTMLInputElement).value).toBe("650");
+    expect((container.querySelector('[name="items.0.dyePriceRupees"]') as HTMLInputElement).value).toBe("125");
+  });
+
   it("adds a measurement section break after crotch", () => {
     render(<NewOrderForm />);
 

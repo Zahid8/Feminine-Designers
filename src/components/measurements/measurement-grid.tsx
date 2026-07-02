@@ -6,6 +6,8 @@ export function MeasurementGrid({
   template,
   values,
   defaultValues,
+  controlledValues,
+  onValueChange,
   editable = false,
   valuePrefix = "measurement",
   metaPrefix = "measurementMeta"
@@ -13,6 +15,8 @@ export function MeasurementGrid({
   template?: MeasurementTemplate;
   values?: MeasurementValue[];
   defaultValues?: MeasurementValue[];
+  controlledValues?: Record<string, string>;
+  onValueChange?: (fieldKey: string, value: string) => void;
   editable?: boolean;
   valuePrefix?: string;
   metaPrefix?: string;
@@ -22,7 +26,9 @@ export function MeasurementGrid({
   return (
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
       {fields.map((field) => {
-        const value = "value" in field ? field.value : defaultValueByField.get(field.fieldKey) ?? "";
+        const rawValue = "value" in field ? field.value : defaultValueByField.get(field.fieldKey) ?? "";
+        const value = rawValue === "NA" ? "" : rawValue;
+        const controlledValue = controlledValues?.[field.fieldKey];
         return (
           <div key={field.id} className="contents">
             <label className="grid gap-1 rounded-md border border-[#eadfce] bg-white p-3 text-sm">
@@ -40,7 +46,20 @@ export function MeasurementGrid({
                   <input type="hidden" name={`${metaPrefix}.${field.fieldKey}.sortOrder`} value={field.sortOrder} />
                 </>
               ) : null}
-              {editable ? <Input name={`${valuePrefix}.${field.fieldKey}`} defaultValue={value} inputMode="decimal" /> : <span>{value || "-"}</span>}
+              {editable ? (
+                controlledValues ? (
+                  <Input
+                    name={`${valuePrefix}.${field.fieldKey}`}
+                    value={controlledValue ?? ""}
+                    onChange={(event) => onValueChange?.(field.fieldKey, event.target.value)}
+                    inputMode="decimal"
+                  />
+                ) : (
+                  <Input name={`${valuePrefix}.${field.fieldKey}`} defaultValue={value} inputMode="decimal" />
+                )
+              ) : (
+                <span>{value || "-"}</span>
+              )}
             </label>
             {shouldBreakAfterMeasurement(field) ? (
               <div

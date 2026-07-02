@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import { formatMeasurementValue, isPrintableMeasurementValue } from "@/lib/utils/measurement-display";
 
 describe("formatMeasurementValue", () => {
-  it("shows NA without a unit for missing measurements", () => {
-    expect(formatMeasurementValue("NA", "in")).toBe("NA");
-    expect(formatMeasurementValue("", "in")).toBe("NA");
+  it("keeps missing measurements blank", () => {
+    expect(formatMeasurementValue("NA", "in")).toBe("");
+    expect(formatMeasurementValue("", "in")).toBe("");
   });
 
   it("shows units for filled measurements", () => {

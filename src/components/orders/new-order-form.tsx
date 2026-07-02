@@ -93,10 +93,18 @@ export function NewOrderForm({
   const [selectedReturningCustomerId, setSelectedReturningCustomerId] = useState("");
   const [returningCustomerStatus, setReturningCustomerStatus] = useState<"idle" | "searching" | "error">("idle");
   const [appliedMeasurements, setAppliedMeasurements] = useState<ReturningCustomerMatch["measurements"]>([]);
+  const [measurementValues, setMeasurementValues] = useState<Record<string, string>>({});
   const [measurementGridKey, setMeasurementGridKey] = useState("new");
   const [clothCount, setClothCount] = useState(1);
   const [items, setItems] = useState([
-    { quantity: 1, rate: 1500, stitchingCost: 0, garmentType: garmentTypes.find((type) => type.active)?.name ?? "Blouse" }
+    {
+      quantity: 1,
+      rate: 1500,
+      stitchingCost: 0,
+      fabricPrice: 0,
+      dyePrice: 0,
+      garmentType: garmentTypes.find((type) => type.active)?.name ?? "Blouse"
+    }
   ]);
   const [orderDiscount, setOrderDiscount] = useState(0);
   const [accessoriesCost, setAccessoriesCost] = useState(0);
@@ -115,7 +123,9 @@ export function NewOrderForm({
           quantity: item.quantity,
           ratePaise: rupeesToPaise(item.rate),
           discountPaise: 0,
-          stitchingCostPaise: rupeesToPaise(item.stitchingCost)
+          stitchingCostPaise: rupeesToPaise(item.stitchingCost),
+          fabricPricePaise: rupeesToPaise(item.fabricPrice),
+          dyePricePaise: rupeesToPaise(item.dyePrice)
         })),
         accessoriesCostPaise: rupeesToPaise(accessoriesCost),
         orderDiscountPaise: rupeesToPaise(orderDiscount),
@@ -192,12 +202,17 @@ export function NewOrderForm({
         quantity: 1,
         rate: 1500,
         stitchingCost: 0,
+        fabricPrice: 0,
+        dyePrice: 0,
         garmentType: activeGarmentTypes[0]?.name ?? "Blouse"
       })
     );
   }
 
-  function updateItem(index: number, patch: Partial<{ quantity: number; rate: number; stitchingCost: number; garmentType: string }>) {
+  function updateItem(
+    index: number,
+    patch: Partial<{ quantity: number; rate: number; stitchingCost: number; fabricPrice: number; dyePrice: number; garmentType: string }>
+  ) {
     setItems((current) =>
       current.map((item, itemIndex) => (itemIndex === index ? { ...item, ...patch } : item))
     );
@@ -219,8 +234,13 @@ export function NewOrderForm({
     setCustomerName(match.fullName);
     setPhonePrimary(match.phonePrimary);
     setAppliedMeasurements(match.measurements);
+    setMeasurementValues(Object.fromEntries(match.measurements.map((measurement) => [measurement.fieldKey, measurement.value === "NA" ? "" : measurement.value])));
     setReturningCustomerQuery(match.fullName);
-        setMeasurementGridKey(`${match.id}-${Date.now()}`);
+    setMeasurementGridKey(`${match.id}-${Date.now()}`);
+  }
+
+  function updateMeasurementValue(fieldKey: string, value: string) {
+    setMeasurementValues((current) => ({ ...current, [fieldKey]: value }));
   }
 
   function templateForGarment(garmentType: string) {
@@ -363,7 +383,7 @@ export function NewOrderForm({
                 <summary className="cursor-pointer text-sm font-bold text-[#4c1525]">
                   Dress {index + 1}: {item.garmentType}
                 </summary>
-                <div className="mt-4 grid gap-4 lg:grid-cols-[1.2fr_.6fr_.7fr_.7fr]">
+                <div className="mt-4 grid gap-4 lg:grid-cols-[1.2fr_.6fr_.7fr_.7fr_.7fr_.7fr]">
                   <Field label="Garment type">
                     <select
                       name={`items.${index}.garmentType`}
@@ -403,6 +423,24 @@ export function NewOrderForm({
                       onChange={(event) => updateItem(index, { stitchingCost: Number(event.target.value) })}
                     />
                   </Field>
+                  <Field label="Fabric price">
+                    <Input
+                      name={`items.${index}.fabricPriceRupees`}
+                      type="number"
+                      min={0}
+                      value={item.fabricPrice}
+                      onChange={(event) => updateItem(index, { fabricPrice: Number(event.target.value) })}
+                    />
+                  </Field>
+                  <Field label="Dye price">
+                    <Input
+                      name={`items.${index}.dyePriceRupees`}
+                      type="number"
+                      min={0}
+                      value={item.dyePrice}
+                      onChange={(event) => updateItem(index, { dyePrice: Number(event.target.value) })}
+                    />
+                  </Field>
                   <Field label="Fabric length">
                     <Input name={`items.${index}.fabricLength`} placeholder="Example: 2.5 m" />
                   </Field>
@@ -430,6 +468,8 @@ export function NewOrderForm({
                 key={measurementGridKey}
                 template={globalMeasurementTemplate}
                 defaultValues={appliedMeasurements}
+                controlledValues={measurementValues}
+                onValueChange={updateMeasurementValue}
                 editable
                 valuePrefix="measurement"
                 metaPrefix="measurementMeta"
@@ -554,6 +594,8 @@ export function NewOrderForm({
               ["Subtotal", totals.subtotalPaise],
               ["Accessories", totals.accessoriesCostPaise],
               ["Stitching", totals.stitchingCostPaise],
+              ["Fabric price", totals.fabricPricePaise],
+              ["Dye price", totals.dyePricePaise],
               ["Discount", -totals.orderDiscountPaise],
               ["CGST", totals.cgstAmountPaise],
               ["SGST", totals.sgstAmountPaise],

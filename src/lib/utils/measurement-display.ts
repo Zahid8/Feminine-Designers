@@ -1,7 +1,7 @@
 export function formatMeasurementValue(value: string, unit?: string) {
   const normalizedValue = value.trim();
   if (!normalizedValue || normalizedValue.toUpperCase() === "NA") {
-    return "NA";
+    return "";
   }
 
   if (!unit || unit === "text" || unit === "boolean") {

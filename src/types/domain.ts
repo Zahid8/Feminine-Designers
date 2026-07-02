@@ -64,6 +64,8 @@ export interface OrderItem {
   ratePaise: number;
   discountPaise: number;
   stitchingCostPaise: number;
+  fabricPricePaise: number;
+  dyePricePaise: number;
   lineTotalPaise: number;
   fabricLength?: string;
   delivered?: boolean;
@@ -135,6 +137,8 @@ export interface OrderTotals {
   orderDiscountPaise: number;
   accessoriesCostPaise: number;
   stitchingCostPaise: number;
+  fabricPricePaise: number;
+  dyePricePaise: number;
   taxableAmountPaise: number;
   cgstRate: number;
   cgstAmountPaise: number;

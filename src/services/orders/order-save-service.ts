@@ -29,7 +29,7 @@ async function syncCustomerMeasurementSnapshot(admin: ReturnType<typeof createSu
   const rows = parsed.measurements.map((measurement) => ({
     customer_id: customerId,
     field_key: measurement.fieldKey,
-    value: measurement.value.trim() || "NA",
+    value: measurement.value.trim(),
     unit: measurement.unit || "in",
     source_order_id: orderId
   }));
@@ -52,7 +52,7 @@ async function syncOrderMeasurementsIfMissing(admin: ReturnType<typeof createSup
     field_key: measurement.fieldKey,
     display_code: measurement.displayCode,
     display_label: measurement.displayLabel,
-    value: measurement.value.trim() || "NA",
+    value: measurement.value.trim(),
     unit: measurement.unit || "in",
     notes: measurement.notes || null,
     sort_order: measurement.sortOrder
@@ -74,7 +74,9 @@ export async function saveParsedOrder(parsed: ParsedOrderForm): Promise<SavedOrd
     quantity: item.quantity,
     ratePaise: rupeesToPaise(item.rateRupees),
     discountPaise: 0,
-    stitchingCostPaise: rupeesToPaise(item.stitchingCostRupees)
+    stitchingCostPaise: rupeesToPaise(item.stitchingCostRupees),
+    fabricPricePaise: rupeesToPaise(item.fabricPriceRupees),
+    dyePricePaise: rupeesToPaise(item.dyePriceRupees)
   }));
   const payment = parsed.order.advancePaidRupees > 0 ? [{ amountPaise: rupeesToPaise(parsed.order.advancePaidRupees) }] : [];
   const totals = calculateOrderTotals({
@@ -131,6 +133,8 @@ export async function saveParsedOrder(parsed: ParsedOrderForm): Promise<SavedOrd
       rate: item.rateRupees.toFixed(2),
       discount_amount: "0.00",
       stitching_cost: item.stitchingCostRupees.toFixed(2),
+      fabric_price: item.fabricPriceRupees.toFixed(2),
+      dye_price: item.dyePriceRupees.toFixed(2),
       line_total: toRupeesDecimal(calculateLineTotal(itemDrafts[index])),
       fabric_length: item.fabricLength || null,
       fabric_color: item.fabricColor || null,

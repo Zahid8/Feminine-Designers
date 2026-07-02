@@ -83,6 +83,8 @@ export function parseOrderFormData(formData: FormData): ParsedOrderForm {
       `items.${itemIndex}.stitchingCostRupees`,
       itemIndex === 0 ? readString(formData, "stitchingCostRupees", "0") : "0"
     ),
+    fabricPriceRupees: readString(formData, `items.${itemIndex}.fabricPriceRupees`, "0"),
+    dyePriceRupees: readString(formData, `items.${itemIndex}.dyePriceRupees`, "0"),
     fabricLength: readString(formData, `items.${itemIndex}.fabricLength`, readString(formData, "fabricLength")),
     fabricColor: readString(formData, `items.${itemIndex}.fabricColor`, readString(formData, "fabricColor")),
     designReference: readString(formData, `items.${itemIndex}.designReference`, readString(formData, "designReference")),
@@ -113,14 +115,13 @@ export function parseOrderFormData(formData: FormData): ParsedOrderForm {
   const measurements: MeasurementValue[] = Object.entries(measurementValues).flatMap(([itemIndex, fields]) =>
     Object.entries(fields).map(([fieldKey, value], index) => {
       const meta = measurementMeta[itemIndex]?.[fieldKey] ?? {};
-      const normalizedValue = value.trim() === "" ? "NA" : value;
       return {
         id: `form-${measurementIdPrefix(itemIndex)}-${fieldKey}`,
         orderItemSortOrder: measurementOrderItemSortOrder(itemIndex),
         fieldKey,
         displayCode: meta.displayCode || fieldKey.toUpperCase(),
         displayLabel: meta.displayLabel || meta.displayCode || fieldKey,
-        value: normalizedValue,
+        value,
         unit: meta.unit || "in",
         notes: index === 0 ? measurementNotes[itemIndex] || undefined : undefined,
         sortOrder: Number(meta.sortOrder || index + 1)

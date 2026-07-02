@@ -38,6 +38,8 @@ describe("order-edit-service", () => {
     formData.set("items.0.quantity", "3");
     formData.set("items.0.rateRupees", "1400");
     formData.set("items.0.stitchingCostRupees", "75");
+    formData.set("items.0.fabricPriceRupees", "300");
+    formData.set("items.0.dyePriceRupees", "125");
     formData.set("items.0.fabricLength", "3 m");
     formData.set("items.0.fabricColor", "Pink");
     formData.set("items.0.designReference", "Deep back");
@@ -74,7 +76,9 @@ describe("order-edit-service", () => {
         quantity: "3",
         rate: "1400.00",
         stitching_cost: "75.00",
-        line_total: "4175.00",
+        fabric_price: "300.00",
+        dye_price: "125.00",
+        line_total: "4600.00",
         fabric_length: "3 m",
         stitching_instructions: "Add margin inside."
       })
@@ -153,7 +157,7 @@ describe("order-edit-service", () => {
     ]);
   });
 
-  it("recalculates item rows and order totals when only unit or stitching cost changes", async () => {
+  it("recalculates item rows and order totals when item costs change", async () => {
     const { updateOrderFromForm } = await import("./order-edit-service");
     const formData = new FormData();
     const order = orders[0];
@@ -170,6 +174,8 @@ describe("order-edit-service", () => {
     formData.set("items.0.quantity", "1");
     formData.set("items.0.rateRupees", "1500");
     formData.set("items.0.stitchingCostRupees", "250");
+    formData.set("items.0.fabricPriceRupees", "400");
+    formData.set("items.0.dyePriceRupees", "100");
 
     await updateOrderFromForm(order, formData);
 
@@ -177,18 +183,20 @@ describe("order-edit-service", () => {
       expect.objectContaining({
         rate: "1500.00",
         stitching_cost: "250.00",
-        line_total: "1650.00"
+        fabric_price: "400.00",
+        dye_price: "100.00",
+        line_total: "2150.00"
       })
     );
     expect(mockUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
-        subtotal: "1900.00",
+        subtotal: "2400.00",
         stitching_cost: "250.00",
-        taxable_amount: "1900.00",
-        cgst_amount: "47.50",
-        sgst_amount: "47.50",
-        grand_total: "1995.00",
-        balance_due: "495.00",
+        taxable_amount: "2400.00",
+        cgst_amount: "60.00",
+        sgst_amount: "60.00",
+        grand_total: "2520.00",
+        balance_due: "1020.00",
         payment_status: "Partial"
       })
     );

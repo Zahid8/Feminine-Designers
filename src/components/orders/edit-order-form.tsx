@@ -48,7 +48,7 @@ export function EditOrderForm({
           <div key={item.id} className="rounded-md border border-[#eadfce] bg-white p-4">
             <input type="hidden" name={`items.${index}.id`} value={item.id} />
             <p className="mb-3 text-sm font-bold text-[#4c1525]">Dress {index + 1}</p>
-            <div className="grid gap-4 lg:grid-cols-[1.2fr_.5fr_.7fr_.7fr_.7fr]">
+            <div className="grid gap-4 lg:grid-cols-[1.2fr_.5fr_.7fr_.7fr_.7fr_.7fr_.7fr]">
               <Field label="Garment type">
                 <Input name={`items.${index}.garmentType`} defaultValue={item.garmentType} />
               </Field>
@@ -65,6 +65,24 @@ export function EditOrderForm({
                   min={0}
                   step="0.01"
                   defaultValue={paiseToRupees(item.stitchingCostPaise)}
+                />
+              </Field>
+              <Field label="Fabric price">
+                <Input
+                  name={`items.${index}.fabricPriceRupees`}
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  defaultValue={paiseToRupees(item.fabricPricePaise)}
+                />
+              </Field>
+              <Field label="Dye price">
+                <Input
+                  name={`items.${index}.dyePriceRupees`}
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  defaultValue={paiseToRupees(item.dyePricePaise)}
                 />
               </Field>
               <Field label="Fabric length">

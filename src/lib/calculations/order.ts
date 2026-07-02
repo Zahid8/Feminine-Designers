@@ -6,13 +6,17 @@ export interface DraftOrderItem {
   ratePaise: number;
   discountPaise?: number;
   stitchingCostPaise?: number;
+  fabricPricePaise?: number;
+  dyePricePaise?: number;
 }
 
 export function calculateLineTotal(item: DraftOrderItem): number {
   const gross = clampPaise(item.quantity * item.ratePaise);
   const discount = clampPaise(item.discountPaise ?? 0);
   const stitchingCost = clampPaise(item.stitchingCostPaise ?? 0);
-  return Math.max(0, gross - discount + stitchingCost);
+  const fabricPrice = clampPaise(item.fabricPricePaise ?? 0);
+  const dyePrice = clampPaise(item.dyePricePaise ?? 0);
+  return Math.max(0, gross - discount + stitchingCost + fabricPrice + dyePrice);
 }
 
 export function calculatePaymentStatus(grandTotalPaise: number, totalPaidPaise: number): PaymentStatus {
@@ -34,6 +38,8 @@ export function calculateOrderTotals(params: {
   const itemLineTotals = params.items.map(calculateLineTotal);
   const accessoriesCostPaise = clampPaise(params.accessoriesCostPaise ?? 0);
   const itemStitchingCostPaise = params.items.reduce((sum, item) => sum + clampPaise(item.stitchingCostPaise ?? 0), 0);
+  const fabricPricePaise = params.items.reduce((sum, item) => sum + clampPaise(item.fabricPricePaise ?? 0), 0);
+  const dyePricePaise = params.items.reduce((sum, item) => sum + clampPaise(item.dyePricePaise ?? 0), 0);
   const stitchingCostPaise = itemStitchingCostPaise + clampPaise(params.stitchingCostPaise ?? 0);
   const itemsSubtotalPaise = itemLineTotals.reduce((sum, total) => sum + total, 0);
   const subtotalPaise = itemsSubtotalPaise + accessoriesCostPaise + clampPaise(params.stitchingCostPaise ?? 0);
@@ -52,6 +58,8 @@ export function calculateOrderTotals(params: {
     orderDiscountPaise,
     accessoriesCostPaise,
     stitchingCostPaise,
+    fabricPricePaise,
+    dyePricePaise,
     taxableAmountPaise,
     cgstRate: params.cgstRate,
     cgstAmountPaise,

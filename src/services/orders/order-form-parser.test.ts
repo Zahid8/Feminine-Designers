@@ -68,7 +68,7 @@ describe("parseOrderFormData", () => {
     expect(parseOrderFormData(formData).order.status).toBe("Draft");
   });
 
-  it("keeps blank global measurement fields as NA before receipt filtering", () => {
+  it("keeps blank global measurement fields blank before receipt filtering", () => {
     const formData = new FormData();
     formData.set("intent", "order");
     formData.set("customerName", "Ayesha Khan");
@@ -94,7 +94,7 @@ describe("parseOrderFormData", () => {
         fieldKey: "collar",
         displayCode: "CL",
         displayLabel: "Collar",
-        value: "NA",
+        value: "",
         unit: "in",
         sortOrder: 19,
         orderItemSortOrder: undefined,
@@ -103,7 +103,7 @@ describe("parseOrderFormData", () => {
     ]);
   });
 
-  it("parses multiple garment sections with one global measurement set and per-dress stitching costs", () => {
+  it("parses multiple garment sections with one global measurement set and per-dress costs", () => {
     const formData = new FormData();
     formData.set("intent", "order");
     formData.set("customerName", "Ayesha Khan");
@@ -115,11 +115,15 @@ describe("parseOrderFormData", () => {
     formData.set("items.0.quantity", "1");
     formData.set("items.0.rateRupees", "1200");
     formData.set("items.0.stitchingCostRupees", "500");
+    formData.set("items.0.fabricPriceRupees", "300");
+    formData.set("items.0.dyePriceRupees", "150");
     formData.set("items.0.fabricLength", "2.5 m");
     formData.set("items.1.garmentType", "Kurti");
     formData.set("items.1.quantity", "2");
     formData.set("items.1.rateRupees", "900");
     formData.set("items.1.stitchingCostRupees", "750");
+    formData.set("items.1.fabricPriceRupees", "450");
+    formData.set("items.1.dyePriceRupees", "0");
     formData.set("items.1.fabricLength", "4 m");
     formData.set("orderDiscountRupees", "100");
     formData.set("accessoriesCostRupees", "250");
@@ -138,6 +142,8 @@ describe("parseOrderFormData", () => {
         quantity: 1,
         rateRupees: 1200,
         stitchingCostRupees: 500,
+        fabricPriceRupees: 300,
+        dyePriceRupees: 150,
         fabricLength: "2.5 m",
         discountRupees: 0
       }),
@@ -146,6 +152,8 @@ describe("parseOrderFormData", () => {
         quantity: 2,
         rateRupees: 900,
         stitchingCostRupees: 750,
+        fabricPriceRupees: 450,
+        dyePriceRupees: 0,
         fabricLength: "4 m",
         discountRupees: 0
       })

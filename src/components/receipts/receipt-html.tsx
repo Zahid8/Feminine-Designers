@@ -122,6 +122,8 @@ function ReceiptPanel({
             <th className="py-2 text-right">Qty</th>
             <th className="py-2 text-right">Rate</th>
             <th className="py-2 text-right">Stitching</th>
+            <th className="py-2 text-right">Fabric Price</th>
+            <th className="py-2 text-right">Dye</th>
             <th className="py-2 text-right">Amount</th>
           </tr>
         </thead>
@@ -136,6 +138,8 @@ function ReceiptPanel({
               <td className="py-2 text-right">{item.quantity}</td>
               <td className="py-2 text-right">{formatINR(item.ratePaise)}</td>
               <td className="py-2 text-right">{formatINR(item.stitchingCostPaise)}</td>
+              <td className="py-2 text-right">{formatINR(item.fabricPricePaise)}</td>
+              <td className="py-2 text-right">{formatINR(item.dyePricePaise)}</td>
               <td className="py-2 text-right">{formatINR(item.lineTotalPaise)}</td>
             </tr>
           ))}
@@ -184,6 +188,8 @@ function ReceiptPanel({
         <Total label="Subtotal" value={order.totals.subtotalPaise} />
         <Total label="Accessories" value={order.totals.accessoriesCostPaise} />
         <Total label="Stitching" value={order.totals.stitchingCostPaise} />
+        <Total label="Fabric price" value={order.totals.fabricPricePaise} />
+        <Total label="Dye price" value={order.totals.dyePricePaise} />
         <Total label="Discount" value={-order.totals.orderDiscountPaise} />
         <Total label="CGST" value={order.totals.cgstAmountPaise} />
         <Total label="SGST" value={order.totals.sgstAmountPaise} />

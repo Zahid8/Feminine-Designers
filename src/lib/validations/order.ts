@@ -8,6 +8,8 @@ export const orderItemSchema = z.object({
   rateRupees: z.coerce.number().min(0),
   discountRupees: z.coerce.number().min(0).default(0),
   stitchingCostRupees: z.coerce.number().min(0).default(0),
+  fabricPriceRupees: z.coerce.number().min(0).default(0),
+  dyePriceRupees: z.coerce.number().min(0).default(0),
   fabricLength: z.string().optional(),
   fabricColor: z.string().optional(),
   designReference: z.string().optional(),

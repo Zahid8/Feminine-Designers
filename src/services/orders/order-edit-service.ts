@@ -64,12 +64,12 @@ function newMeasurementRows(order: OrderWithCustomer, formData: FormData) {
       field_key: fieldKey,
       display_code: readString(formData, `newMeasurementMeta.${fieldKey}.displayCode`, fieldKey.toUpperCase()),
       display_label: readString(formData, `newMeasurementMeta.${fieldKey}.displayLabel`, fieldKey),
-      value: readString(formData, `newMeasurement.${fieldKey}`) || "NA",
+      value: readString(formData, `newMeasurement.${fieldKey}`),
       unit: readString(formData, `newMeasurementMeta.${fieldKey}.unit`, "in"),
       notes: index === 0 ? notes || null : null,
       sort_order: readNumber(formData, `newMeasurementMeta.${fieldKey}.sortOrder`, index + 1)
     }))
-    .filter((row) => row.value !== "NA");
+    .filter((row) => row.value !== "");
 }
 
 function editedItemDraft(order: OrderWithCustomer, index: number) {
@@ -84,12 +84,20 @@ function lineItemFromForm(order: OrderWithCustomer, formData: FormData, index: n
   const stitchingCostPaise = rupeesToPaise(
     readNumber(formData, `items.${index}.stitchingCostRupees`, paiseToRupees(fallback.stitchingCostPaise))
   );
+  const fabricPricePaise = rupeesToPaise(
+    readNumber(formData, `items.${index}.fabricPriceRupees`, paiseToRupees(fallback.fabricPricePaise))
+  );
+  const dyePricePaise = rupeesToPaise(
+    readNumber(formData, `items.${index}.dyePriceRupees`, paiseToRupees(fallback.dyePricePaise))
+  );
 
   return {
     quantity,
     ratePaise,
     discountPaise,
-    stitchingCostPaise
+    stitchingCostPaise,
+    fabricPricePaise,
+    dyePricePaise
   };
 }
 
@@ -118,7 +126,9 @@ export async function updateOrderFromForm(order: OrderWithCustomer, formData: Fo
         quantity: item.quantity,
         ratePaise: item.ratePaise,
         discountPaise: item.discountPaise,
-        stitchingCostPaise: item.stitchingCostPaise
+        stitchingCostPaise: item.stitchingCostPaise,
+        fabricPricePaise: item.fabricPricePaise,
+        dyePricePaise: item.dyePricePaise
       }
   );
 
@@ -185,7 +195,11 @@ export async function updateOrderFromForm(order: OrderWithCustomer, formData: Fo
       discountPaise: item.discountPaise,
       stitchingCostPaise: rupeesToPaise(
         readNumber(formData, `items.${index}.stitchingCostRupees`, paiseToRupees(item.stitchingCostPaise))
-      )
+      ),
+      fabricPricePaise: rupeesToPaise(
+        readNumber(formData, `items.${index}.fabricPriceRupees`, paiseToRupees(item.fabricPricePaise))
+      ),
+      dyePricePaise: rupeesToPaise(readNumber(formData, `items.${index}.dyePriceRupees`, paiseToRupees(item.dyePricePaise)))
     };
 
     await assertUpdate(
@@ -197,6 +211,8 @@ export async function updateOrderFromForm(order: OrderWithCustomer, formData: Fo
           rate: rateRupees.toFixed(2),
           discount_amount: toRupeesDecimal(item.discountPaise),
           stitching_cost: toRupeesDecimal(draft.stitchingCostPaise),
+          fabric_price: toRupeesDecimal(draft.fabricPricePaise),
+          dye_price: toRupeesDecimal(draft.dyePricePaise),
           line_total: toRupeesDecimal(calculateLineTotal(draft)),
           fabric_length: readString(formData, `items.${index}.fabricLength`, item.fabricLength ?? "") || null,
           fabric_color: readString(formData, `items.${index}.fabricColor`, item.fabricColor ?? "") || null,
@@ -216,7 +232,7 @@ export async function updateOrderFromForm(order: OrderWithCustomer, formData: Fo
       await admin
         .from("order_measurements")
         .update({
-          value: readString(formData, `measurements.${index}.value`, measurement.value) || "NA",
+          value: readString(formData, `measurements.${index}.value`, measurement.value),
           notes: index === 0 ? measurementNote || null : null,
           updated_at: now
         })

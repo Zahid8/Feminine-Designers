@@ -46,6 +46,30 @@ describe("order calculations", () => {
     expect(totals.grandTotalPaise).toBe(231000);
   });
 
+  it("adds fabric and dye costs per garment item before bill-level discount and tax", () => {
+    const totals = calculateOrderTotals({
+      items: [
+        {
+          quantity: 1,
+          ratePaise: 100000,
+          discountPaise: 0,
+          stitchingCostPaise: 25000,
+          fabricPricePaise: 40000,
+          dyePricePaise: 10000
+        }
+      ],
+      orderDiscountPaise: 5000,
+      cgstRate: 2.5,
+      sgstRate: 2.5
+    });
+
+    expect(totals.fabricPricePaise).toBe(40000);
+    expect(totals.dyePricePaise).toBe(10000);
+    expect(totals.subtotalPaise).toBe(175000);
+    expect(totals.taxableAmountPaise).toBe(170000);
+    expect(totals.grandTotalPaise).toBe(178500);
+  });
+
   it("detects overdue orders but excludes delivered and cancelled records", () => {
     const today = new Date("2026-07-05T12:00:00+05:30");
     expect(isOrderOverdue("2026-07-04", "Ready", today)).toBe(true);

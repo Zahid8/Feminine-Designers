@@ -131,9 +131,9 @@ const styles = StyleSheet.create({
   itemRowCompact: {
     paddingVertical: 4
   },
-  itemName: { width: "34%" },
-  itemFabric: { width: "18%" },
-  numeric: { width: "12%", textAlign: "right" },
+  itemName: { width: "28%" },
+  itemFabric: { width: "15%" },
+  numeric: { width: "9.5%", textAlign: "right" },
   itemInstruction: {
     marginTop: 2,
     color: "#6f625d",
@@ -319,6 +319,8 @@ function PdfPanel({
           <Text style={[styles.numeric, styles.label]}>Qty</Text>
           <Text style={[styles.numeric, styles.label]}>Rate</Text>
           <Text style={[styles.numeric, styles.label]}>Stitching</Text>
+          <Text style={[styles.numeric, styles.label]}>Fabric</Text>
+          <Text style={[styles.numeric, styles.label]}>Dye</Text>
           <Text style={[styles.numeric, styles.label]}>Amount</Text>
         </View>
         {order.items.map((item) => (
@@ -333,6 +335,8 @@ function PdfPanel({
             <Text style={styles.numeric}>{item.quantity}</Text>
             <Text style={styles.numeric}>{formatPdfINR(item.ratePaise)}</Text>
             <Text style={styles.numeric}>{formatPdfINR(item.stitchingCostPaise)}</Text>
+            <Text style={styles.numeric}>{formatPdfINR(item.fabricPricePaise)}</Text>
+            <Text style={styles.numeric}>{formatPdfINR(item.dyePricePaise)}</Text>
             <Text style={styles.numeric}>{formatPdfINR(item.lineTotalPaise)}</Text>
           </View>
         ))}
@@ -374,6 +378,8 @@ function PdfPanel({
         <Total label="Subtotal" value={order.totals.subtotalPaise} />
         <Total label="Accessories" value={order.totals.accessoriesCostPaise} />
         <Total label="Stitching" value={order.totals.stitchingCostPaise} />
+        <Total label="Fabric price" value={order.totals.fabricPricePaise} />
+        <Total label="Dye price" value={order.totals.dyePricePaise} />
         <Total label="Discount" value={-order.totals.orderDiscountPaise} />
         <Total label="CGST" value={order.totals.cgstAmountPaise} />
         <Total label="SGST" value={order.totals.sgstAmountPaise} />

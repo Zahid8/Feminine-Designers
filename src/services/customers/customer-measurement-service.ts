@@ -109,7 +109,7 @@ function measurementRows(customerId: string, values: MeasurementValue[]) {
   return values.map((value) => ({
     customer_id: customerId,
     field_key: value.fieldKey,
-    value: value.value.trim() || "NA",
+    value: value.value.trim(),
     unit: value.unit || "in",
     source_order_id: null
   }));

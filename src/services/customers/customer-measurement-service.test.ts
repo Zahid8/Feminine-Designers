@@ -81,7 +81,7 @@ describe("customer measurement service", () => {
       {
         customer_id: "customer-1",
         field_key: "crotch",
-        value: "NA",
+        value: "",
         unit: "in",
         source_order_id: null
       }
