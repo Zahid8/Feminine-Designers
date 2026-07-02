@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockOrder = vi.fn();
-const mockSelect = vi.fn(() => ({ order: mockOrder }));
+const mockIs = vi.fn(() => ({ order: mockOrder }));
+const mockSelect = vi.fn(() => ({ is: mockIs }));
 const mockFrom = vi.fn(() => ({ select: mockSelect }));
 
 vi.mock("@/lib/supabase/admin", () => ({
@@ -41,6 +42,7 @@ describe("customer-service", () => {
     const customers = await listCustomers("bebu");
 
     expect(mockFrom).toHaveBeenCalledWith("customers");
+    expect(mockIs).toHaveBeenCalledWith("archived_at", null);
     expect(customers).toHaveLength(1);
     expect(customers[0]).toMatchObject({
       id: "customer-live-1",

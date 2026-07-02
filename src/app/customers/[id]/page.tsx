@@ -19,9 +19,16 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
         title={profile.customer.fullName}
         description={`${profile.customer.phonePrimary} · ${profile.customer.preferredCommunication} · Outstanding ${formatINR(profile.outstandingPaise)}`}
         action={
-          <Link href="/orders/new">
-            <Button>Create New Order</Button>
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link href={`/customers/${id}/measurements`}>
+              <Button type="button" variant="secondary">
+                Measurements
+              </Button>
+            </Link>
+            <Link href="/orders/new">
+              <Button>Create New Order</Button>
+            </Link>
+          </div>
         }
       />
       <div className="grid gap-5 xl:grid-cols-[.8fr_1.2fr]">

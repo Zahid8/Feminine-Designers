@@ -6,18 +6,27 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Field, Input } from "@/components/ui/input";
 import { CustomerTable } from "@/components/customers/customer-table";
 import { listCustomers } from "@/services/customers/customer-service";
+import { listOrders } from "@/services/orders/order-service";
 
 export default async function CustomersPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const params = await searchParams;
-  const customers = await listCustomers(params.q);
+  const [customers, orders] = await Promise.all([listCustomers(params.q), listOrders()]);
+  const orderStats = orders.reduce<Record<string, { orderCount: number; outstandingPaise: number }>>((stats, order) => {
+    const current = stats[order.customerId] ?? { orderCount: 0, outstandingPaise: 0 };
+    current.orderCount += 1;
+    current.outstandingPaise += Math.max(0, order.totals.balanceDuePaise);
+    stats[order.customerId] = current;
+    return stats;
+  }, {});
+
   return (
     <AppShell>
       <PageHeading
         title="Customers"
         description="Customer profiles preserve contact information, order history, balances, notes, and reusable measurement snapshots."
         action={
-          <Link href="/orders/new">
-            <Button>New Customer Order</Button>
+          <Link href="/customers/new">
+            <Button>Add Customer</Button>
           </Link>
         }
       />
@@ -33,7 +42,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
           </form>
         </CardContent>
       </Card>
-      <CustomerTable customers={customers} />
+      <CustomerTable customers={customers} orderStats={orderStats} />
     </AppShell>
   );
 }

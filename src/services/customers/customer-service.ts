@@ -16,6 +16,7 @@ interface SupabaseCustomerRecord {
   notes: string | null;
   preferred_communication: string | null;
   tags: string[] | null;
+  archived_at?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -42,7 +43,7 @@ async function fetchSupabaseCustomers() {
   if (!hasSupabaseAdminEnv()) return undefined;
 
   const admin = createSupabaseAdminClient();
-  const { data, error } = await admin.from("customers").select("*").order("created_at", { ascending: false });
+  const { data, error } = await admin.from("customers").select("*").is("archived_at", null).order("created_at", { ascending: false });
 
   if (error) {
     if (isMissingSupabaseSchemaError(error)) return undefined;
