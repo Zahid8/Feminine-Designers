@@ -15,4 +15,20 @@ describe("EditOrderForm", () => {
     expect(orderDateInput.value).toBe(orders[0].orderDate);
     expect(deliveryDateInput.value).toBe(orders[0].deliveryDate);
   });
+
+  it("normalizes timestamp-like saved dates before filling calendar inputs", () => {
+    render(
+      <EditOrderForm
+        order={{
+          ...orders[0],
+          orderDate: "2026-06-15T00:00:00+05:30",
+          deliveryDate: "2026-06-22T00:00:00+05:30"
+        }}
+        action={vi.fn()}
+      />
+    );
+
+    expect((screen.getByLabelText(/^order date$/i) as HTMLInputElement).value).toBe("2026-06-15");
+    expect((screen.getByLabelText(/^delivery date$/i) as HTMLInputElement).value).toBe("2026-06-22");
+  });
 });

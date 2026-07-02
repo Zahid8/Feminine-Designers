@@ -201,4 +201,25 @@ describe("order-edit-service", () => {
       })
     );
   });
+
+  it("preserves existing order dates when unchanged date inputs submit blank values", async () => {
+    const { updateOrderFromForm } = await import("./order-edit-service");
+    const formData = new FormData();
+    const order = orders[0];
+    formData.set("customerName", order.customer.fullName);
+    formData.set("phonePrimary", order.customer.phonePrimary);
+    formData.set("orderDate", "");
+    formData.set("deliveryDate", "");
+    formData.set("status", order.status);
+    formData.set("priority", order.priority);
+
+    await updateOrderFromForm(order, formData);
+
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        order_date: order.orderDate,
+        delivery_date: order.deliveryDate
+      })
+    );
+  });
 });

@@ -56,6 +56,7 @@
 - 2026-07-02T12:17Z [CODE] Dashboard order value cards now have explicit regression coverage that backfilled/past-order-date records are excluded from `Order Value Today`; interactive work queue rows now show `Order date`, and pending/overdue queues sort by `orderDate` descending.
 - 2026-07-02T12:21Z [CODE] Restored native browser calendar controls for New Order and Edit Saved Bill order/delivery date fields by using `type="date"` inputs while preserving ISO form submission for existing date normalization.
 - 2026-07-02T12:26Z [CODE] Store-copy downloaded PDFs now display delivery date minus 3 days, including the store pane inside combined PDFs only; customer PDFs, HTML receipt previews, saved orders, dashboard, and order lists continue using the saved delivery date. New Order advance payment now defaults to `0` instead of `500`.
+- 2026-07-02T12:32Z [CODE] Fixed saved-order edit date resets by normalizing existing order/delivery dates before filling native date inputs and preserving existing dates if unchanged date fields submit blank values.
 
 ## [DISCOVERIES]
 - 2026-07-01T06:24Z [TOOL] `IMG_1174.JPG` is a 5712x4284 JPEG, likely the bill reference image, but no `public/Logo.PNG` logo file exists.
@@ -95,6 +96,7 @@
 - 2026-07-02T12:03Z [TOOL] New Order measurement inputs were previously uncontrolled; they could lose typed values across action-driven rerenders after validation errors. They are now controlled by local form state, matching the existing controlled cost fields.
 - 2026-07-02T12:21Z [TOOL] Calendar dropdown regression root cause: order/delivery form controls had been changed to text inputs with `inputMode="numeric"` and `dd/mm/yyyy` formatted defaults; native pickers require `type="date"` and ISO `YYYY-MM-DD` values.
 - 2026-07-02T12:26Z [TOOL] React-PDF output can be regression-tested by rendering `ReceiptPdfDocument` to a buffer and extracting text with local `pdftotext`; RED coverage confirmed store/combined PDFs originally printed the unadjusted delivery date.
+- 2026-07-02T12:32Z [TOOL] Root cause for edit-date reset: native date inputs render blank if fed timestamp-like saved date values, and the update service previously treated submitted blank date values as real updates instead of falling back to the existing order dates.
 
 ## [OUTCOMES]
 - 2026-07-01T06:39Z [TOOL] Verification passed: `npm run lint`, `npm run typecheck`, `npm run test` (4 files, 10 tests), `npm run build`, `npm audit --omit=dev`, and HTTP smoke checks for `/dashboard`, `/receipts/order-1/combined`, and `/api/receipts/order-1/combined`.
@@ -134,3 +136,4 @@
 - 2026-07-02T12:17Z [TOOL] Verification passed after dashboard order-date sorting/display change: focused dashboard tests passed; `npm run typecheck`, `npm run lint`, `npm run test` (30 files, 88 tests), and `npm run build` passed. Built-server smoke on port 3014 returned `/dashboard` HTTP 200 and included `Order date` plus `Order Value Today`.
 - 2026-07-02T12:21Z [TOOL] Verification passed after calendar date input restoration: RED tests failed with `expected 'text' to be 'date'`; GREEN focused tests passed (`4 passed`, `19 passed`), then `npm run typecheck`, `npm run lint`, `npm run test` (31 files, 89 tests), and `npm run build` all passed.
 - 2026-07-02T12:26Z [TOOL] Verification passed after store-PDF delivery offset and advance-default changes: PDF RED tests failed on missing `02/07/2026`; New Order RED test failed with `expected '500' to be '0'`; focused tests then passed (`4 files`, `19 tests`), followed by `npm run typecheck`, `npm run lint`, `npm run test` (32 files, 92 tests), and `npm run build`.
+- 2026-07-02T12:32Z [TOOL] Verification passed after saved-order edit date preservation fix: RED tests failed on blank calendar inputs and blank dates being written; focused tests passed (`4 files`, `21 tests`), then `npm run typecheck`, `npm run lint`, `npm run test` (32 files, 94 tests), and `npm run build` all passed.

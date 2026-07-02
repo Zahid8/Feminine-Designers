@@ -9,6 +9,10 @@ function readString(formData: FormData, key: string, fallback = "") {
   return typeof value === "string" ? value.trim() : fallback;
 }
 
+function readRequiredString(formData: FormData, key: string, fallback = "") {
+  return readString(formData, key, fallback) || fallback;
+}
+
 function readNumber(formData: FormData, key: string, fallback: number) {
   const value = Number(readString(formData, key, String(fallback)));
   return Number.isFinite(value) ? value : fallback;
@@ -158,8 +162,8 @@ export async function updateOrderFromForm(order: OrderWithCustomer, formData: Fo
       .update({
         status: nextStatus,
         priority: nextPriority,
-        order_date: normalizeDateInput(readString(formData, "orderDate", order.orderDate)),
-        delivery_date: normalizeDateInput(readString(formData, "deliveryDate", order.deliveryDate)),
+        order_date: normalizeDateInput(readRequiredString(formData, "orderDate", order.orderDate)),
+        delivery_date: normalizeDateInput(readRequiredString(formData, "deliveryDate", order.deliveryDate)),
         assigned_tailor_name: readString(formData, "assignedTailor", order.assignedTailor ?? "") || null,
         cloth_sample_image_url: removeClothSample ? null : clothSampleDataUrl || order.clothSampleImageUrl || null,
         internal_notes: readString(formData, "internalNotes", order.internalNotes ?? "") || null,
