@@ -40,6 +40,37 @@ function measurementIndexes(formData: FormData) {
   return [...indexes].sort((a, b) => a - b);
 }
 
+function newMeasurementFields(formData: FormData) {
+  const fields = new Set<string>();
+  for (const key of formData.keys()) {
+    const match = key.match(/^newMeasurement\.([^.]+)$/);
+    if (match) fields.add(match[1]);
+  }
+  return [...fields].sort((a, b) => {
+    const aSort = readNumber(formData, `newMeasurementMeta.${a}.sortOrder`, 0);
+    const bSort = readNumber(formData, `newMeasurementMeta.${b}.sortOrder`, 0);
+    return aSort - bSort || a.localeCompare(b);
+  });
+}
+
+function newMeasurementRows(order: OrderWithCustomer, formData: FormData) {
+  const notes = readString(formData, "newMeasurementNotes");
+  return newMeasurementFields(formData)
+    .map((fieldKey, index) => ({
+      order_id: order.id,
+      order_item_id: null,
+      template_id: null,
+      field_key: fieldKey,
+      display_code: readString(formData, `newMeasurementMeta.${fieldKey}.displayCode`, fieldKey.toUpperCase()),
+      display_label: readString(formData, `newMeasurementMeta.${fieldKey}.displayLabel`, fieldKey),
+      value: readString(formData, `newMeasurement.${fieldKey}`) || "NA",
+      unit: readString(formData, `newMeasurementMeta.${fieldKey}.unit`, "in"),
+      notes: index === 0 ? notes || null : null,
+      sort_order: readNumber(formData, `newMeasurementMeta.${fieldKey}.sortOrder`, index + 1)
+    }))
+    .filter((row) => row.value !== "NA");
+}
+
 function editedItemDraft(order: OrderWithCustomer, index: number) {
   return order.items[index];
 }
@@ -190,6 +221,14 @@ export async function updateOrderFromForm(order: OrderWithCustomer, formData: Fo
         })
         .eq("id", measurement.id)
     );
+  }
+
+  if (order.measurements.length === 0) {
+    const rows = newMeasurementRows(order, formData);
+    if (rows.length) {
+      const { error } = await admin.from("order_measurements").insert(rows);
+      if (error) throw new Error(error.message);
+    }
   }
 
   if (nextStatus === "Ready" || nextStatus === "Delivered") {

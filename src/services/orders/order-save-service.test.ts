@@ -3,7 +3,8 @@ import type { ParsedOrderForm } from "@/services/orders/order-form-parser";
 
 const mockRpc = vi.fn();
 const mockSingle = vi.fn();
-const mockSelectEq = vi.fn(() => ({ single: mockSingle }));
+const mockLimit = vi.fn();
+const mockSelectEq = vi.fn(() => ({ limit: mockLimit, single: mockSingle }));
 const mockSelect = vi.fn(() => ({ eq: mockSelectEq }));
 const mockDeleteEq = vi.fn();
 const mockDelete = vi.fn(() => ({ eq: mockDeleteEq }));
@@ -57,6 +58,7 @@ describe("saveParsedOrder", () => {
     vi.clearAllMocks();
     mockRpc.mockResolvedValue({ data: { order_id: "order-1", receipt_number: "SJD-2026-000001" }, error: null });
     mockSingle.mockResolvedValue({ data: { customer_id: "customer-1" }, error: null });
+    mockLimit.mockResolvedValue({ data: [{ id: "existing-measurement" }], error: null });
     mockDeleteEq.mockResolvedValue({ error: null });
     mockInsert.mockResolvedValue({ error: null });
   });
@@ -143,12 +145,12 @@ describe("saveParsedOrder", () => {
 
     await saveParsedOrder(parsed);
 
-    expect(mockFrom).toHaveBeenNthCalledWith(1, "orders");
+    expect(mockFrom).toHaveBeenCalledWith("orders");
     expect(mockSelect).toHaveBeenCalledWith("customer_id");
     expect(mockSelectEq).toHaveBeenCalledWith("id", "order-1");
-    expect(mockFrom).toHaveBeenNthCalledWith(2, "customer_measurement_profiles");
+    expect(mockFrom).toHaveBeenCalledWith("customer_measurement_profiles");
     expect(mockDeleteEq).toHaveBeenCalledWith("source_order_id", "order-1");
-    expect(mockFrom).toHaveBeenNthCalledWith(3, "customer_measurement_profiles");
+    expect(mockFrom).toHaveBeenCalledWith("customer_measurement_profiles");
     expect(mockInsert).toHaveBeenCalledWith([
       {
         customer_id: "customer-1",
@@ -163,6 +165,66 @@ describe("saveParsedOrder", () => {
         value: "36",
         unit: "in",
         source_order_id: "order-1"
+      }
+    ]);
+  });
+
+  it("inserts order measurement rows when the RPC did not create them", async () => {
+    mockLimit.mockResolvedValueOnce({ data: [], error: null });
+    const { saveParsedOrder } = await import("./order-save-service");
+    const parsed = makeParsedOrder(0);
+    parsed.measurements = [
+      {
+        id: "form-global-length",
+        fieldKey: "length",
+        displayCode: "L",
+        displayLabel: "Length",
+        value: "14",
+        unit: "in",
+        notes: "Check shoulder slope.",
+        sortOrder: 1
+      },
+      {
+        id: "form-global-chest",
+        fieldKey: "chest",
+        displayCode: "C",
+        displayLabel: "Chest",
+        value: "36",
+        unit: "in",
+        sortOrder: 2
+      }
+    ];
+
+    await saveParsedOrder(parsed);
+
+    expect(mockFrom).toHaveBeenCalledWith("order_measurements");
+    expect(mockSelect).toHaveBeenCalledWith("id");
+    expect(mockSelectEq).toHaveBeenCalledWith("order_id", "order-1");
+    expect(mockLimit).toHaveBeenCalledWith(1);
+    expect(mockInsert).toHaveBeenCalledWith([
+      {
+        order_id: "order-1",
+        order_item_id: null,
+        template_id: null,
+        field_key: "length",
+        display_code: "L",
+        display_label: "Length",
+        value: "14",
+        unit: "in",
+        notes: "Check shoulder slope.",
+        sort_order: 1
+      },
+      {
+        order_id: "order-1",
+        order_item_id: null,
+        template_id: null,
+        field_key: "chest",
+        display_code: "C",
+        display_label: "Chest",
+        value: "36",
+        unit: "in",
+        notes: null,
+        sort_order: 2
       }
     ]);
   });

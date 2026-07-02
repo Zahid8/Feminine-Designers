@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { updateAllOrderItemsDelivered, updateOrderItemDelivered } from "@/services/orders/order-item-delivery-service";
 import { deleteOrderById } from "@/services/orders/order-delete-service";
 import { updateOrderFromForm } from "@/services/orders/order-edit-service";
@@ -68,6 +69,7 @@ export async function updateOrderAction(orderId: string, formData: FormData) {
   }
 
   revalidateOrderSurfaces(orderId);
+  redirect(`/orders/${orderId}?saved=1`);
 }
 
 export async function setOrderStageAction(orderId: string, status: OrderStatus) {

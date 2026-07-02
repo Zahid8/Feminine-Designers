@@ -1,22 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { Field, Input, Textarea } from "@/components/ui/input";
 import { ClothSamplePhotoField } from "@/components/orders/cloth-sample-photo-field";
-import { ORDER_STATUSES } from "@/lib/constants/business";
+import { EditOrderChoiceFields } from "@/components/orders/edit-order-choice-fields";
+import { MeasurementGrid } from "@/components/measurements/measurement-grid";
 import { paiseToRupees } from "@/lib/utils/money";
 import { uniqueMeasurementNotes } from "@/lib/utils/receipt-notes";
-import type { OrderWithCustomer, PaymentStatus, Priority } from "@/types/domain";
-
-const priorities: Priority[] = ["Normal", "Urgent", "Express"];
-const paymentChoices: Array<{ label: string; value: Extract<PaymentStatus, "Paid" | "Unpaid"> }> = [
-  { label: "Not paid", value: "Unpaid" },
-  { label: "Paid", value: "Paid" }
-];
+import type { MeasurementTemplate, OrderWithCustomer } from "@/types/domain";
 
 export function EditOrderForm({
   order,
+  measurementTemplate,
   action
 }: {
   order: OrderWithCustomer;
+  measurementTemplate?: MeasurementTemplate;
   action: (formData: FormData) => void | Promise<void>;
 }) {
   const specialNotes = uniqueMeasurementNotes(order.measurements).join("\n");
@@ -41,52 +38,7 @@ export function EditOrderForm({
         </Field>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="rounded-md border border-[#eadfce] bg-white p-4">
-          <p className="mb-3 text-sm font-bold text-[#4c1525]">Order status</p>
-          <div className="flex flex-wrap gap-2">
-            {ORDER_STATUSES.map((status) => (
-              <label key={status} className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#d8c7b4] bg-[#fffdf8] px-2 text-xs font-semibold">
-                <input type="checkbox" name="status" value={status} defaultChecked={order.status === status} className="h-4 w-4" />
-                {status}
-              </label>
-            ))}
-          </div>
-        </div>
-        <div className="rounded-md border border-[#eadfce] bg-white p-4">
-          <p className="mb-3 text-sm font-bold text-[#4c1525]">Payment status</p>
-          <div className="flex flex-wrap gap-2">
-            {paymentChoices.map((choice) => (
-              <label key={choice.value} className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#d8c7b4] bg-[#fffdf8] px-2 text-xs font-semibold">
-                <input
-                  type="checkbox"
-                  name="paymentStatus"
-                  value={choice.value}
-                  defaultChecked={order.totals.paymentStatus === choice.value}
-                  className="h-4 w-4"
-                />
-                {choice.label}
-              </label>
-            ))}
-            {order.totals.paymentStatus === "Partial" || order.totals.paymentStatus === "Credit" ? (
-              <span className="inline-flex min-h-8 items-center rounded-md border border-amber-200 bg-amber-50 px-2 text-xs font-semibold text-amber-800">
-                Current: {order.totals.paymentStatus}
-              </span>
-            ) : null}
-          </div>
-        </div>
-        <div className="rounded-md border border-[#eadfce] bg-white p-4">
-          <p className="mb-3 text-sm font-bold text-[#4c1525]">Priority</p>
-          <div className="flex flex-wrap gap-2">
-            {priorities.map((priority) => (
-              <label key={priority} className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#d8c7b4] bg-[#fffdf8] px-2 text-xs font-semibold">
-                <input type="checkbox" name="priority" value={priority} defaultChecked={order.priority === priority} className="h-4 w-4" />
-                {priority}
-              </label>
-            ))}
-          </div>
-        </div>
-      </div>
+      <EditOrderChoiceFields status={order.status} paymentStatus={order.totals.paymentStatus} priority={order.priority} />
 
       <ClothSamplePhotoField currentImageUrl={order.clothSampleImageUrl} />
 
@@ -134,22 +86,32 @@ export function EditOrderForm({
 
       <div className="rounded-md border border-[#eadfce] bg-white p-4">
         <p className="mb-3 text-sm font-bold text-[#4c1525]">Measurements</p>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {order.measurements.map((measurement, index) => (
-            <label key={measurement.id} className="grid gap-1 rounded-md border border-[#eadfce] bg-white p-3 text-sm">
-              <input type="hidden" name={`measurements.${index}.id`} value={measurement.id} />
-              <span className="flex items-center justify-between gap-2">
-                <strong className="text-[#4c1525]">{measurement.displayCode}</strong>
-                <span className="text-xs text-[#7c6d66]">{measurement.displayLabel}</span>
-              </span>
-              <Input name={`measurements.${index}.value`} defaultValue={measurement.value} inputMode="decimal" />
+        {order.measurements.length ? (
+          <>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {order.measurements.map((measurement, index) => (
+                <label key={measurement.id} className="grid gap-1 rounded-md border border-[#eadfce] bg-white p-3 text-sm">
+                  <input type="hidden" name={`measurements.${index}.id`} value={measurement.id} />
+                  <span className="flex items-center justify-between gap-2">
+                    <strong className="text-[#4c1525]">{measurement.displayCode}</strong>
+                    <span className="text-xs text-[#7c6d66]">{measurement.displayLabel}</span>
+                  </span>
+                  <Input name={`measurements.${index}.value`} defaultValue={measurement.value} inputMode="decimal" />
+                </label>
+              ))}
+            </div>
+            <label className="mt-3 grid gap-1.5 text-sm font-medium text-[#3b312d]">
+              <span>Special Notes</span>
+              <Textarea name="measurementNotes" defaultValue={specialNotes} />
             </label>
-          ))}
-        </div>
-        <label className="mt-3 grid gap-1.5 text-sm font-medium text-[#3b312d]">
-          <span>Special Notes</span>
-          <Textarea name="measurementNotes" defaultValue={specialNotes} />
-        </label>
+          </>
+        ) : measurementTemplate ? (
+          <MeasurementGrid template={measurementTemplate} editable valuePrefix="newMeasurement" metaPrefix="newMeasurementMeta" />
+        ) : (
+          <div className="rounded-md border border-dashed border-[#d8c7b4] bg-[#fffdf8] p-6 text-center text-sm text-[#7c6d66]">
+            No measurements are saved and no measurement template is available.
+          </div>
+        )}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

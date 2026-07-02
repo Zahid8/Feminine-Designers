@@ -5,6 +5,8 @@ import { saveOrderAction } from "@/app/orders/new/actions";
 import { listGarmentTypes } from "@/services/settings/settings-service";
 import { listMeasurementTemplates } from "@/services/measurements/measurement-service";
 
+export const dynamic = "force-dynamic";
+
 export default async function NewOrderPage() {
   const [garmentTypes, measurementTemplates] = await Promise.all([listGarmentTypes(), listMeasurementTemplates()]);
   return (

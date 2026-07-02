@@ -12,6 +12,8 @@ import {
   addMeasurementTemplateAction
 } from "@/app/settings/actions";
 
+export const dynamic = "force-dynamic";
+
 export default async function SettingsPage() {
   const [settings, garmentTypes, measurementTemplates] = await Promise.all([
     getStoreSettings(),

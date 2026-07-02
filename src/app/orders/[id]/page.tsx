@@ -12,14 +12,23 @@ import { EditOrderForm } from "@/components/orders/edit-order-form";
 import { OrderStatusCheckboxEditor } from "@/components/orders/order-status-checkbox-editor";
 import { PaymentBadge, PriorityBadge, StatusBadge } from "@/components/ui/status-badge";
 import { getOrderById } from "@/services/orders/order-service";
+import { getMeasurementTemplateForGarment } from "@/services/measurements/measurement-service";
 import { formatDate } from "@/lib/utils/date";
 import { formatINR } from "@/lib/utils/money";
 import { updateOrderAction } from "@/app/orders/[id]/actions";
 
-export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export default async function OrderDetailPage({
+  params,
+  searchParams
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ edit?: string; saved?: string }>;
+}) {
+  const [{ id }, query] = await Promise.all([params, searchParams]);
   const order = await getOrderById(id);
   if (!order) notFound();
+  const editing = query.edit === "1";
+  const measurementTemplate = order.measurements.length === 0 ? await getMeasurementTemplateForGarment(order.items[0]?.garmentType ?? "Custom") : undefined;
 
   return (
     <AppShell>
@@ -41,6 +50,11 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           </div>
         }
       />
+      {query.saved ? (
+        <div className="mb-5 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+          Edits saved successfully.
+        </div>
+      ) : null}
       <div className="grid gap-5 xl:grid-cols-[1.2fr_.8fr]">
         <Card>
           <CardHeader>
@@ -83,7 +97,13 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                 />
               </div>
             ) : null}
-            <MeasurementGrid values={order.measurements} />
+            {order.measurements.length ? (
+              <MeasurementGrid values={order.measurements} />
+            ) : (
+              <div className="rounded-md border border-dashed border-[#d8c7b4] bg-white p-6 text-center text-sm text-[#7c6d66]">
+                No measurements saved yet. Add them in Edit Saved Bill below.
+              </div>
+            )}
           </CardContent>
         </Card>
         <div className="grid gap-5">
@@ -128,11 +148,28 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         </div>
       </div>
       <Card className="mt-5">
-        <CardHeader>
-          <CardTitle>Edit Saved Bill</CardTitle>
+        <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <CardTitle>{editing ? "Edit Saved Bill" : "Order Details Editing"}</CardTitle>
+          <div className="flex flex-wrap gap-2">
+            {editing ? (
+              <Link href={`/orders/${order.id}`}>
+                <Button type="button" variant="secondary">
+                  Cancel Edit
+                </Button>
+              </Link>
+            ) : (
+              <Link href={`/orders/${order.id}?edit=1`}>
+                <Button type="button">Edit Order Details</Button>
+              </Link>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
-          <EditOrderForm order={order} action={updateOrderAction.bind(null, order.id)} />
+          {editing ? (
+            <EditOrderForm order={order} measurementTemplate={measurementTemplate} action={updateOrderAction.bind(null, order.id)} />
+          ) : (
+            <p className="text-sm text-[#7c6d66]">Click Edit Order Details to change customer info, status, measurements, cloth photo, notes, costs, priority, or tailor.</p>
+          )}
         </CardContent>
       </Card>
     </AppShell>

@@ -2,6 +2,7 @@ import "server-only";
 
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { freshSupabaseFetch } from "@/lib/supabase/fresh-fetch";
 
 const adminEnvSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.url().optional(),
@@ -31,6 +32,9 @@ export function createSupabaseAdminClient() {
       persistSession: false,
       autoRefreshToken: false,
       detectSessionInUrl: false
+    },
+    global: {
+      fetch: freshSupabaseFetch
     }
   });
 }

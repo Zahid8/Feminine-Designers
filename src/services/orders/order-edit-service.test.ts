@@ -96,4 +96,101 @@ describe("order-edit-service", () => {
       })
     );
   });
+
+  it("adds measurement rows when a saved order has none yet", async () => {
+    const { updateOrderFromForm } = await import("./order-edit-service");
+    const orderWithoutMeasurements = {
+      ...orders[0],
+      measurements: []
+    };
+    const formData = new FormData();
+    formData.set("customerName", orderWithoutMeasurements.customer.fullName);
+    formData.set("phonePrimary", orderWithoutMeasurements.customer.phonePrimary);
+    formData.set("orderDate", orderWithoutMeasurements.orderDate);
+    formData.set("deliveryDate", orderWithoutMeasurements.deliveryDate);
+    formData.set("status", orderWithoutMeasurements.status);
+    formData.set("priority", orderWithoutMeasurements.priority);
+    formData.set("newMeasurement.length", "38");
+    formData.set("newMeasurementMeta.length.displayCode", "L");
+    formData.set("newMeasurementMeta.length.displayLabel", "Length");
+    formData.set("newMeasurementMeta.length.unit", "in");
+    formData.set("newMeasurementMeta.length.sortOrder", "1");
+    formData.set("newMeasurement.chest", "36");
+    formData.set("newMeasurementMeta.chest.displayCode", "C");
+    formData.set("newMeasurementMeta.chest.displayLabel", "Chest");
+    formData.set("newMeasurementMeta.chest.unit", "in");
+    formData.set("newMeasurementMeta.chest.sortOrder", "2");
+    formData.set("newMeasurementNotes", "Fresh measurement added after saving.");
+
+    await updateOrderFromForm(orderWithoutMeasurements, formData);
+
+    expect(mockFrom).toHaveBeenCalledWith("order_measurements");
+    expect(mockInsert).toHaveBeenCalledWith([
+      {
+        order_id: orderWithoutMeasurements.id,
+        order_item_id: null,
+        template_id: null,
+        field_key: "length",
+        display_code: "L",
+        display_label: "Length",
+        value: "38",
+        unit: "in",
+        notes: "Fresh measurement added after saving.",
+        sort_order: 1
+      },
+      {
+        order_id: orderWithoutMeasurements.id,
+        order_item_id: null,
+        template_id: null,
+        field_key: "chest",
+        display_code: "C",
+        display_label: "Chest",
+        value: "36",
+        unit: "in",
+        notes: null,
+        sort_order: 2
+      }
+    ]);
+  });
+
+  it("recalculates item rows and order totals when only unit or stitching cost changes", async () => {
+    const { updateOrderFromForm } = await import("./order-edit-service");
+    const formData = new FormData();
+    const order = orders[0];
+    formData.set("customerName", order.customer.fullName);
+    formData.set("phonePrimary", order.customer.phonePrimary);
+    formData.set("orderDate", order.orderDate);
+    formData.set("deliveryDate", order.deliveryDate);
+    formData.set("status", order.status);
+    formData.set("priority", order.priority);
+    formData.set("orderDiscountRupees", "0");
+    formData.set("accessoriesCostRupees", "0");
+    formData.set("items.0.id", order.items[0].id);
+    formData.set("items.0.garmentType", order.items[0].garmentType);
+    formData.set("items.0.quantity", "1");
+    formData.set("items.0.rateRupees", "1500");
+    formData.set("items.0.stitchingCostRupees", "250");
+
+    await updateOrderFromForm(order, formData);
+
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rate: "1500.00",
+        stitching_cost: "250.00",
+        line_total: "1650.00"
+      })
+    );
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        subtotal: "1900.00",
+        stitching_cost: "250.00",
+        taxable_amount: "1900.00",
+        cgst_amount: "47.50",
+        sgst_amount: "47.50",
+        grand_total: "1995.00",
+        balance_due: "495.00",
+        payment_status: "Partial"
+      })
+    );
+  });
 });

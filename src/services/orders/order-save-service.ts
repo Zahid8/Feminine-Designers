@@ -38,6 +38,30 @@ async function syncCustomerMeasurementSnapshot(admin: ReturnType<typeof createSu
   if (insertError) throw new Error(insertError.message);
 }
 
+async function syncOrderMeasurementsIfMissing(admin: ReturnType<typeof createSupabaseAdminClient>, orderId: string, parsed: ParsedOrderForm) {
+  if (parsed.measurements.length === 0) return;
+
+  const { data, error } = await admin.from("order_measurements").select("id").eq("order_id", orderId).limit(1);
+  if (error) throw new Error(error.message);
+  if (Array.isArray(data) && data.length > 0) return;
+
+  const rows = parsed.measurements.map((measurement) => ({
+    order_id: orderId,
+    order_item_id: null,
+    template_id: null,
+    field_key: measurement.fieldKey,
+    display_code: measurement.displayCode,
+    display_label: measurement.displayLabel,
+    value: measurement.value.trim() || "NA",
+    unit: measurement.unit || "in",
+    notes: measurement.notes || null,
+    sort_order: measurement.sortOrder
+  }));
+
+  const { error: insertError } = await admin.from("order_measurements").insert(rows);
+  if (insertError) throw new Error(insertError.message);
+}
+
 export async function saveParsedOrder(parsed: ParsedOrderForm): Promise<SavedOrderResult> {
   if (!hasSupabaseAdminEnv()) {
     throw new Error(
@@ -142,6 +166,7 @@ export async function saveParsedOrder(parsed: ParsedOrderForm): Promise<SavedOrd
     throw new Error("Supabase did not return a saved order id.");
   }
 
+  await syncOrderMeasurementsIfMissing(admin, result.order_id, parsed);
   await syncCustomerMeasurementSnapshot(admin, result.order_id, parsed);
 
   return {
