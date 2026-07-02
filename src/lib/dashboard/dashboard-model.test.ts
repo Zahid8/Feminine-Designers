@@ -37,8 +37,8 @@ describe("buildDashboardModel", () => {
     expect(model.views["order-value-today"].orders.map((order) => order.id)).toEqual(["order-1"]);
     expect(model.views["order-value-month"].orders.map((order) => order.id)).toEqual(["order-1"]);
     expect(model.views["deliveries-today"].orders.map((order) => order.id)).toEqual(["order-2"]);
-    expect(model.views.pending.orders.map((order) => order.id)).toEqual(["order-1", "order-2"]);
-    expect(model.views.outstanding.orders.map((order) => order.totals.balanceDuePaise)).toEqual([196500, 94500]);
+    expect(model.views.pending.orders.map((order) => order.id)).toEqual(["order-2", "order-1"]);
+    expect(model.views.outstanding.orders.map((order) => order.id)).toEqual(["order-2", "order-1"]);
   });
 
   it("derives collected-today payment rows with order and customer context", () => {
@@ -94,7 +94,7 @@ describe("buildDashboardModel", () => {
     );
   });
 
-  it("uses order date for today's value and queue sorting", () => {
+  it("uses order date for today's value and delivery date for queue sorting", () => {
     const backfilledOrder = {
       ...orders[0],
       id: "backfilled-order",
@@ -117,6 +117,6 @@ describe("buildDashboardModel", () => {
       expect.objectContaining({ value: currentOrder.totals.grandTotalPaise })
     );
     expect(model.views["order-value-today"].orders.map((order) => order.id)).toEqual(["current-order"]);
-    expect(model.views.pending.orders.map((order) => order.id)).toEqual(["current-order", "backfilled-order"]);
+    expect(model.views.pending.orders.map((order) => order.id)).toEqual(["backfilled-order", "current-order"]);
   });
 });

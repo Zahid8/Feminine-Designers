@@ -21,6 +21,8 @@ export interface OrderFilters {
   status?: OrderStatus | "All";
 }
 
+type OrderWithOverdueMeta = OrderWithCustomer & { overdue: boolean; daysOverdue: number };
+
 interface SupabaseCustomerRecord {
   id: string;
   customer_code: string | null;
@@ -263,16 +265,30 @@ async function fetchSupabaseOrders() {
   return (data as unknown as SupabaseOrderRecord[]).map(mapOrder);
 }
 
+function sortByDeliveryDate<T extends { deliveryDate: string; customer: { fullName: string }; receiptNumber?: string }>(orders: T[]) {
+  return [...orders].sort(
+    (a, b) =>
+      a.deliveryDate.localeCompare(b.deliveryDate) ||
+      a.customer.fullName.localeCompare(b.customer.fullName) ||
+      (a.receiptNumber ?? "").localeCompare(b.receiptNumber ?? "")
+  );
+}
+
+function withOverdueMeta(order: OrderWithCustomer): OrderWithOverdueMeta {
+  return {
+    ...order,
+    overdue: isOrderOverdue(order.deliveryDate, order.status),
+    daysOverdue: daysOverdue(order.deliveryDate, order.status)
+  };
+}
+
 export async function listOrders(filters: OrderFilters = {}) {
   const sourceOrders = (await fetchSupabaseOrders()) ?? getOrdersWithOverdueMeta();
   const normalized = filters.query?.trim().toLowerCase();
-  return sourceOrders
-    .map((order) => ({
-      ...order,
-      overdue: isOrderOverdue(order.deliveryDate, order.status),
-      daysOverdue: daysOverdue(order.deliveryDate, order.status)
-    }))
-    .filter((order) => {
+  return sortByDeliveryDate(
+    sourceOrders
+      .map(withOverdueMeta)
+      .filter((order) => {
       const statusMatch = !filters.status || filters.status === "All" || order.status === filters.status;
       const queryMatch =
         !normalized ||
@@ -280,7 +296,8 @@ export async function listOrders(filters: OrderFilters = {}) {
         order.customer.fullName.toLowerCase().includes(normalized) ||
         order.customer.phonePrimary.includes(normalized);
       return statusMatch && queryMatch;
-    });
+      })
+  );
 }
 
 export async function getOrderById(id: string) {

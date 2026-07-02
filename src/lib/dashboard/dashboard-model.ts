@@ -101,10 +101,6 @@ function sortByDeliveryDate(orders: (OrderWithCustomer & { overdue?: boolean; da
   return [...orders].sort((a, b) => a.deliveryDate.localeCompare(b.deliveryDate) || a.customer.fullName.localeCompare(b.customer.fullName));
 }
 
-function sortByOrderDateDesc(orders: (OrderWithCustomer & { overdue?: boolean; daysOverdue?: number })[]) {
-  return [...orders].sort((a, b) => b.orderDate.localeCompare(a.orderDate) || a.customer.fullName.localeCompare(b.customer.fullName));
-}
-
 function sortByBalanceDesc<T extends OrderWithCustomer>(orders: T[]) {
   return [...orders].sort((a, b) => b.totals.balanceDuePaise - a.totals.balanceDuePaise);
 }
@@ -138,14 +134,14 @@ export function buildDashboardModel(orders: OrderWithCustomer[], today: string):
   const enrichedOrders = orders.map((order) => withOverdueMeta(order, today));
   const currentOrders = enrichedOrders.filter((order) => !isPastOrderForList(order, today));
   const activeOrders = enrichedOrders.filter(isActiveOrder);
-  const ordersToday = sortByOrderDateDesc(enrichedOrders.filter((order) => order.orderDate === today));
+  const ordersToday = sortByDeliveryDate(enrichedOrders.filter((order) => order.orderDate === today));
   const orderValueToday = ordersToday.reduce((sum, order) => sum + order.totals.grandTotalPaise, 0);
-  const ordersThisMonth = sortByOrderDateDesc(enrichedOrders.filter((order) => monthKey(order.orderDate) === monthKey(today)));
+  const ordersThisMonth = sortByDeliveryDate(enrichedOrders.filter((order) => monthKey(order.orderDate) === monthKey(today)));
   const orderValueThisMonth = ordersThisMonth.reduce((sum, order) => sum + order.totals.grandTotalPaise, 0);
   const deliveriesToday = activeOrders.filter((order) => order.deliveryDate === today);
-  const pendingOrders = sortByOrderDateDesc(activeOrders);
-  const overdueOrders = sortByOrderDateDesc(activeOrders.filter((order) => order.overdue));
-  const outstandingOrders = sortByBalanceDesc(currentOrders.filter((order) => order.totals.balanceDuePaise > 0));
+  const pendingOrders = sortByDeliveryDate(activeOrders);
+  const overdueOrders = sortByDeliveryDate(activeOrders.filter((order) => order.overdue));
+  const outstandingOrders = sortByDeliveryDate(currentOrders.filter((order) => order.totals.balanceDuePaise > 0));
   const allPayments = paymentRowsForOrders(enrichedOrders).sort((a, b) => b.paidAt.localeCompare(a.paidAt));
   const collectedToday = allPayments.filter((payment) => paymentDateKey(payment.paidAt) === today);
   const collectedTodayTotal = collectedToday.reduce((sum, payment) => sum + payment.amountPaise, 0);
@@ -205,7 +201,7 @@ export function buildDashboardModel(orders: OrderWithCustomer[], today: string):
     outstanding: makeView(
       "outstanding",
       "Outstanding Balances",
-      "Orders with money still due, sorted highest first.",
+      "Orders with money still due, sorted by delivery date.",
       "No outstanding balances.",
       outstandingOrders
     )
@@ -281,7 +277,7 @@ export function buildDashboardModel(orders: OrderWithCustomer[], today: string):
     ],
     views,
     insights: {
-      highestOutstanding: outstandingOrders.slice(0, 5),
+      highestOutstanding: sortByBalanceDesc(currentOrders.filter((order) => order.totals.balanceDuePaise > 0)).slice(0, 5),
       urgentDeliveries: sortByDeliveryDate(deliveriesToday.filter((order) => !isPastOrderForList(order, today))).slice(0, 5),
       recentCollections: allPayments.slice(0, 5),
       collectionsByDate: collectionDays(allPayments),

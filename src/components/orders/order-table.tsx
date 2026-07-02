@@ -12,6 +12,12 @@ import { setOrderCompletedAction } from "@/app/orders/actions";
 export function OrderTable({ orders }: { orders: (OrderWithCustomer & { overdue?: boolean; daysOverdue?: number })[] }) {
   const router = useRouter();
   const [pendingOrderIds, setPendingOrderIds] = useState<string[]>([]);
+  const sortedOrders = [...orders].sort(
+    (a, b) =>
+      a.deliveryDate.localeCompare(b.deliveryDate) ||
+      a.customer.fullName.localeCompare(b.customer.fullName) ||
+      (a.receiptNumber ?? "").localeCompare(b.receiptNumber ?? "")
+  );
   const [visibleColumns, setVisibleColumns] = useState({
     complete: true,
     receipt: true,
@@ -50,7 +56,7 @@ export function OrderTable({ orders }: { orders: (OrderWithCustomer & { overdue?
     });
   }
 
-  if (orders.length === 0) {
+  if (sortedOrders.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-[#d8c7b4] bg-white p-8 text-center text-sm text-[#7c6d66]">
         No orders match this view.
@@ -82,7 +88,7 @@ export function OrderTable({ orders }: { orders: (OrderWithCustomer & { overdue?
             </tr>
           </thead>
           <tbody className="divide-y divide-[#eee2d3]">
-            {orders.map((order) => (
+            {sortedOrders.map((order) => (
               <tr key={order.id} className="align-top">
                 {visibleColumns.complete ? (
                   <td className="px-4 py-4">
@@ -131,7 +137,7 @@ export function OrderTable({ orders }: { orders: (OrderWithCustomer & { overdue?
         </table>
       </div>
       <div className="grid gap-3 p-3 lg:hidden">
-        {orders.map((order) => (
+        {sortedOrders.map((order) => (
           <div key={order.id} className="rounded-md border border-[#eadfce] p-4">
             <div className="flex items-start justify-between gap-3">
               <Link href={`/orders/${order.id}`}>
