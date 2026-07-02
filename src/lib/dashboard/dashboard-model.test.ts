@@ -42,5 +42,20 @@ describe("buildDashboardModel", () => {
     ]);
     expect(model.insights.highestOutstanding.map((order) => order.id)).toEqual(["order-1", "order-2"]);
     expect(model.insights.recentCollections[0]).toEqual(expect.objectContaining({ id: "pay-1" }));
+    expect(model.insights.collectionsByDate).toEqual([{ date: "2026-07-01", totalPaise: 150000, paymentCount: 1 }]);
+  });
+
+  it("excludes past orders from dashboard action lists and outstanding totals", () => {
+    const model = buildDashboardModel(orders, "2026-07-02");
+
+    expect(model.insights.highestOutstanding.map((order) => order.id)).toEqual(["order-1"]);
+    expect(model.insights.urgentDeliveries.map((order) => order.id)).toEqual([]);
+    expect(model.views.outstanding.orders.map((order) => order.id)).toEqual(["order-1"]);
+    expect(model.cards.find((card) => card.id === "outstanding")).toEqual(
+      expect.objectContaining({
+        value: orders.find((order) => order.id === "order-1")?.totals.balanceDuePaise,
+        description: "1 order"
+      })
+    );
   });
 });

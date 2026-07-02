@@ -2,14 +2,16 @@
 
 import Link from "next/link";
 import { AlertTriangle, ArrowRight, Banknote, CalendarDays, CheckCircle2, Clock, PackageCheck, ReceiptText } from "lucide-react";
-import { useMemo, useState } from "react";
+import { startTransition, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { ComponentType } from "react";
+import { setOrderCompletedAction, settleOrderBalanceAction } from "@/app/orders/actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PaymentBadge, PriorityBadge, StatusBadge } from "@/components/ui/status-badge";
 import { cn } from "@/lib/utils/cn";
 import { formatDate } from "@/lib/utils/date";
 import { formatINR } from "@/lib/utils/money";
-import type { DashboardCardModel, DashboardModel, DashboardPaymentRow, DashboardViewId } from "@/lib/dashboard/dashboard-model";
+import type { DashboardCardModel, DashboardCollectionDay, DashboardModel, DashboardPaymentRow, DashboardViewId } from "@/lib/dashboard/dashboard-model";
 import type { OrderWithCustomer } from "@/types/domain";
 
 const iconByCard: Record<DashboardViewId, ComponentType<{ className?: string }>> = {
@@ -79,7 +81,23 @@ function MetricCard({
   );
 }
 
-function OrderQueue({ orders, emptyText }: { orders: DashboardModel["views"][DashboardViewId]["orders"]; emptyText: string }) {
+function OrderQueue({
+  orders,
+  emptyText,
+  pendingOrderIds,
+  pendingPaidOrderIds,
+  showPaidControl,
+  onSetComplete,
+  onSetPaid
+}: {
+  orders: DashboardModel["views"][DashboardViewId]["orders"];
+  emptyText: string;
+  pendingOrderIds: string[];
+  pendingPaidOrderIds: string[];
+  showPaidControl: boolean;
+  onSetComplete: (orderId: string, completed: boolean) => void;
+  onSetPaid: (orderId: string) => void;
+}) {
   if (orders.length === 0) {
     return <div className="rounded-md border border-dashed border-[#d8c7b4] bg-white p-8 text-center text-sm text-[#7c6d66]">{emptyText}</div>;
   }
@@ -94,7 +112,33 @@ function OrderQueue({ orders, emptyText }: { orders: DashboardModel["views"][Das
               <h3 className="mt-1 text-lg font-semibold text-[#4c1525]">{order.customer.fullName}</h3>
               <p className="text-sm text-[#7c6d66]">{order.customer.phonePrimary}</p>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {showPaidControl ? (
+                <label className="inline-flex min-h-8 items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-2 text-xs font-semibold text-emerald-800">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4"
+                    checked={false}
+                    disabled={pendingPaidOrderIds.includes(order.id)}
+                    onChange={(event) => {
+                      if (event.target.checked) onSetPaid(order.id);
+                    }}
+                    aria-label={`Mark ${order.receiptNumber ?? order.customer.fullName} paid`}
+                  />
+                  Paid
+                </label>
+              ) : null}
+              <label className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#d8c7b4] bg-white px-2 text-xs font-semibold text-[#4c1525]">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4"
+                  checked={order.status === "Delivered"}
+                  disabled={pendingOrderIds.includes(order.id)}
+                  onChange={(event) => onSetComplete(order.id, event.target.checked)}
+                  aria-label={`Mark ${order.receiptNumber ?? order.customer.fullName} complete`}
+                />
+                Done
+              </label>
               <StatusBadge status={order.status} />
               <PriorityBadge priority={order.priority} />
               <PaymentBadge status={order.totals.paymentStatus} />
@@ -216,10 +260,84 @@ function MiniPaymentList({ payments }: { payments: DashboardPaymentRow[] }) {
   );
 }
 
+function CollectionChart({ days }: { days: DashboardCollectionDay[] }) {
+  const maxValue = Math.max(...days.map((day) => day.totalPaise), 1);
+
+  return (
+    <Card>
+      <CardHeader className="p-4">
+        <CardTitle className="text-xl">Collections by Date</CardTitle>
+      </CardHeader>
+      <CardContent className="grid gap-3 p-4">
+        {days.length ? (
+          days.map((day) => (
+            <div key={day.date} className="grid gap-1">
+              <div className="flex items-center justify-between gap-3 text-xs">
+                <span className="font-semibold text-[#4c1525]">{formatISODateLabel(day.date)}</span>
+                <span className="text-[#7c6d66]">
+                  {formatINR(day.totalPaise)} · {day.paymentCount}
+                </span>
+              </div>
+              <div className="h-2 overflow-hidden rounded-full bg-[#eadfce]">
+                <div className="h-full rounded-full bg-[#7d1f36]" style={{ width: `${Math.max(8, (day.totalPaise / maxValue) * 100)}%` }} />
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="text-sm text-[#7c6d66]">No collections recorded.</p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export function InteractiveDashboard({ model }: { model: DashboardModel }) {
-  const [selectedViewId, setSelectedViewId] = useState<DashboardViewId>("deliveries-today");
+  const router = useRouter();
+  const [selectedViewId, setSelectedViewId] = useState<DashboardViewId>("pending");
+  const [hiddenCompletedOrderIds, setHiddenCompletedOrderIds] = useState<string[]>([]);
+  const [hiddenPaidOrderIds, setHiddenPaidOrderIds] = useState<string[]>([]);
+  const [pendingOrderIds, setPendingOrderIds] = useState<string[]>([]);
+  const [pendingPaidOrderIds, setPendingPaidOrderIds] = useState<string[]>([]);
   const selectedView = model.views[selectedViewId];
   const selectedCard = useMemo(() => model.cards.find((card) => card.id === selectedViewId), [model.cards, selectedViewId]);
+  const visibleSelectedOrders = selectedView.orders.filter((order) => !hiddenCompletedOrderIds.includes(order.id) && !hiddenPaidOrderIds.includes(order.id));
+  const selectedCount = selectedViewId === "collected-today" ? selectedView.payments.length : visibleSelectedOrders.length;
+
+  function setOrderComplete(orderId: string, completed: boolean) {
+    setPendingOrderIds((current) => [...current, orderId]);
+    if (completed) {
+      setHiddenCompletedOrderIds((current) => (current.includes(orderId) ? current : [...current, orderId]));
+    }
+
+    startTransition(() => {
+      void setOrderCompletedAction(orderId, completed)
+        .then(() => router.refresh())
+        .catch((error) => {
+          setHiddenCompletedOrderIds((current) => current.filter((id) => id !== orderId));
+          window.alert(error instanceof Error ? error.message : "Could not update order completion.");
+        })
+        .finally(() => {
+          setPendingOrderIds((current) => current.filter((id) => id !== orderId));
+        });
+    });
+  }
+
+  function setOrderPaid(orderId: string) {
+    setPendingPaidOrderIds((current) => [...current, orderId]);
+    setHiddenPaidOrderIds((current) => (current.includes(orderId) ? current : [...current, orderId]));
+
+    startTransition(() => {
+      void settleOrderBalanceAction(orderId)
+        .then(() => router.refresh())
+        .catch((error) => {
+          setHiddenPaidOrderIds((current) => current.filter((id) => id !== orderId));
+          window.alert(error instanceof Error ? error.message : "Could not mark order paid.");
+        })
+        .finally(() => {
+          setPendingPaidOrderIds((current) => current.filter((id) => id !== orderId));
+        });
+    });
+  }
 
   return (
     <div className="grid gap-5">
@@ -240,7 +358,7 @@ export function InteractiveDashboard({ model }: { model: DashboardModel }) {
             </div>
             {selectedCard ? (
               <span className="inline-flex min-h-10 items-center rounded-md border border-[#d8c7b4] bg-white px-3 text-sm font-bold text-[#4c1525]">
-                {selectedCard.valueType === "money" ? formatINR(selectedCard.value) : `${selectedCard.value} item${selectedCard.value === 1 ? "" : "s"}`}
+                {selectedCard.valueType === "money" ? formatINR(selectedCard.value) : `${selectedCount} item${selectedCount === 1 ? "" : "s"}`}
               </span>
             ) : null}
           </CardHeader>
@@ -248,7 +366,15 @@ export function InteractiveDashboard({ model }: { model: DashboardModel }) {
             {selectedViewId === "collected-today" ? (
               <PaymentQueue payments={selectedView.payments} emptyText={selectedView.emptyText} />
             ) : (
-              <OrderQueue orders={selectedView.orders} emptyText={selectedView.emptyText} />
+              <OrderQueue
+                orders={visibleSelectedOrders}
+                emptyText={selectedView.emptyText}
+                pendingOrderIds={pendingOrderIds}
+                pendingPaidOrderIds={pendingPaidOrderIds}
+                showPaidControl={selectedViewId === "outstanding"}
+                onSetComplete={setOrderComplete}
+                onSetPaid={setOrderPaid}
+              />
             )}
           </CardContent>
         </Card>
@@ -269,6 +395,7 @@ export function InteractiveDashboard({ model }: { model: DashboardModel }) {
           <MiniOrderList title="Highest Outstanding" orders={model.insights.highestOutstanding} emptyText="No balances due." />
           <MiniOrderList title="Urgent Deliveries" orders={model.insights.urgentDeliveries} emptyText="No urgent deliveries." />
           <MiniPaymentList payments={model.insights.recentCollections} />
+          <CollectionChart days={model.insights.collectionsByDate} />
           <MiniOrderList title="Ready, Not Delivered" orders={model.insights.readyUndelivered} emptyText="No ready orders waiting." />
         </div>
       </div>
