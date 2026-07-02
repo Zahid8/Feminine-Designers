@@ -35,9 +35,14 @@ const measurementFieldSchema = z.object({
   isRequired: z.boolean()
 });
 
+const removeSettingSchema = z.object({
+  id: z.string().min(1, "Choose an item to remove.")
+});
+
 export type GarmentTypeSettingsInput = z.infer<typeof garmentTypeSchema>;
 export type MeasurementTemplateSettingsInput = z.infer<typeof measurementTemplateSchema>;
 export type MeasurementFieldSettingsInput = z.infer<typeof measurementFieldSchema>;
+export type RemoveSettingInput = z.infer<typeof removeSettingSchema>;
 
 export function parseGarmentTypeFormData(formData: FormData): GarmentTypeSettingsInput {
   return garmentTypeSchema.parse({
@@ -68,5 +73,11 @@ export function parseMeasurementFieldFormData(formData: FormData): MeasurementFi
     inputType,
     unit,
     isRequired: formData.get("isRequired") === "on"
+  });
+}
+
+export function parseRemoveSettingFormData(formData: FormData): RemoveSettingInput {
+  return removeSettingSchema.parse({
+    id: readString(formData, "id")
   });
 }

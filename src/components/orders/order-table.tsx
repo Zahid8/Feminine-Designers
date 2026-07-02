@@ -7,17 +7,14 @@ import type { OrderWithCustomer } from "@/types/domain";
 import { StatusBadge, PaymentBadge, PriorityBadge } from "@/components/ui/status-badge";
 import { formatDate } from "@/lib/utils/date";
 import { formatINR } from "@/lib/utils/money";
+import { orderSortOptions, sortOrders, type OrderSortKey } from "@/lib/orders/order-sort";
 import { setOrderCompletedAction } from "@/app/orders/actions";
 
 export function OrderTable({ orders }: { orders: (OrderWithCustomer & { overdue?: boolean; daysOverdue?: number })[] }) {
   const router = useRouter();
   const [pendingOrderIds, setPendingOrderIds] = useState<string[]>([]);
-  const sortedOrders = [...orders].sort(
-    (a, b) =>
-      a.deliveryDate.localeCompare(b.deliveryDate) ||
-      a.customer.fullName.localeCompare(b.customer.fullName) ||
-      (a.receiptNumber ?? "").localeCompare(b.receiptNumber ?? "")
-  );
+  const [sortKey, setSortKey] = useState<OrderSortKey>("deliveryDate");
+  const sortedOrders = sortOrders(orders, sortKey);
   const [visibleColumns, setVisibleColumns] = useState({
     complete: true,
     receipt: true,
@@ -66,7 +63,22 @@ export function OrderTable({ orders }: { orders: (OrderWithCustomer & { overdue?
 
   return (
     <div className="overflow-hidden rounded-lg border border-[#e8dcca] bg-white">
-      <div className="flex flex-wrap gap-2 border-b border-[#eadfce] bg-[#fffdf8] p-3">
+      <div className="flex flex-wrap items-center gap-2 border-b border-[#eadfce] bg-[#fffdf8] p-3">
+        <label className="flex items-center gap-2 rounded-md border border-[#d8c7b4] bg-white px-2 py-1 text-xs font-semibold">
+          Sort by
+          <select
+            aria-label="Sort orders by"
+            className="bg-transparent text-xs outline-none"
+            value={sortKey}
+            onChange={(event) => setSortKey(event.target.value as OrderSortKey)}
+          >
+            {orderSortOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
         {columns.map(([key, label]) => (
           <label key={key} className="flex items-center gap-2 rounded-md border border-[#d8c7b4] bg-white px-2 py-1 text-xs font-semibold">
             <input type="checkbox" checked={visibleColumns[key]} onChange={() => toggleColumn(key)} />

@@ -5,12 +5,16 @@ import type { SettingsActionState } from "@/services/settings/settings-action-st
 import {
   parseGarmentTypeFormData,
   parseMeasurementFieldFormData,
-  parseMeasurementTemplateFormData
+  parseMeasurementTemplateFormData,
+  parseRemoveSettingFormData
 } from "@/services/settings/settings-form-parser";
 import {
   createGarmentType,
   createMeasurementField,
-  createMeasurementTemplate
+  createMeasurementTemplate,
+  removeGarmentType,
+  removeMeasurementField,
+  removeMeasurementTemplate
 } from "@/services/settings/settings-service";
 
 function success(message: string): SettingsActionState {
@@ -54,6 +58,36 @@ export async function addMeasurementFieldAction(_: SettingsActionState, formData
     const input = parseMeasurementFieldFormData(formData);
     await createMeasurementField(input);
     return success(`Added measurement field "${input.displayCode}".`);
+  } catch (error) {
+    return failure(error);
+  }
+}
+
+export async function removeGarmentTypeAction(_: SettingsActionState, formData: FormData): Promise<SettingsActionState> {
+  try {
+    const input = parseRemoveSettingFormData(formData);
+    await removeGarmentType(input.id);
+    return success("Removed garment type from future orders.");
+  } catch (error) {
+    return failure(error);
+  }
+}
+
+export async function removeMeasurementTemplateAction(_: SettingsActionState, formData: FormData): Promise<SettingsActionState> {
+  try {
+    const input = parseRemoveSettingFormData(formData);
+    await removeMeasurementTemplate(input.id);
+    return success("Removed measurement template from future orders.");
+  } catch (error) {
+    return failure(error);
+  }
+}
+
+export async function removeMeasurementFieldAction(_: SettingsActionState, formData: FormData): Promise<SettingsActionState> {
+  try {
+    const input = parseRemoveSettingFormData(formData);
+    await removeMeasurementField(input.id);
+    return success("Removed measurement field from future orders.");
   } catch (error) {
     return failure(error);
   }

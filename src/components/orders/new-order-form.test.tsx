@@ -99,6 +99,19 @@ describe("NewOrderForm actions", () => {
     expect(container.querySelector('[name="items.0.dyePriceRupees"]')).toBeDefined();
   });
 
+  it("adds and removes dynamic per-dress extra cost fields", () => {
+    const { container } = render(<NewOrderForm />);
+
+    fireEvent.click(screen.getByRole("button", { name: /add extra cost to dress 1/i }));
+
+    expect(container.querySelector('[name="items.0.extraCosts.0.label"]')).toBeDefined();
+    expect(container.querySelector('[name="items.0.extraCosts.0.amountRupees"]')).toBeDefined();
+
+    fireEvent.click(screen.getByRole("button", { name: /remove extra cost 1 from dress 1/i }));
+
+    expect(container.querySelector('[name="items.0.extraCosts.0.label"]')).toBeNull();
+  });
+
   it("keeps typed measurement values across rerenders", () => {
     const { container, rerender } = render(<NewOrderForm nextReceiptNumber="SJD-2026-000011" />);
     const lengthInput = container.querySelector('[name="measurement.length"]') as HTMLInputElement;

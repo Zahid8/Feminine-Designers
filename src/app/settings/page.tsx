@@ -9,7 +9,10 @@ import { SettingsManagement } from "@/components/settings/settings-management";
 import {
   addGarmentTypeAction,
   addMeasurementFieldAction,
-  addMeasurementTemplateAction
+  addMeasurementTemplateAction,
+  removeGarmentTypeAction,
+  removeMeasurementFieldAction,
+  removeMeasurementTemplateAction
 } from "@/app/settings/actions";
 
 export const dynamic = "force-dynamic";
@@ -81,6 +84,9 @@ export default async function SettingsPage() {
           addGarmentTypeAction={addGarmentTypeAction}
           addMeasurementTemplateAction={addMeasurementTemplateAction}
           addMeasurementFieldAction={addMeasurementFieldAction}
+          removeGarmentTypeAction={removeGarmentTypeAction}
+          removeMeasurementTemplateAction={removeMeasurementTemplateAction}
+          removeMeasurementFieldAction={removeMeasurementFieldAction}
         />
       </div>
     </AppShell>

@@ -31,6 +31,24 @@ function readItemIndexes(formData: FormData) {
   return [...indexes].sort((a, b) => a - b);
 }
 
+function readExtraCostIndexes(formData: FormData, itemIndex: number) {
+  const indexes = new Set<number>();
+  for (const key of formData.keys()) {
+    const match = key.match(new RegExp(`^items\\.${itemIndex}\\.extraCosts\\.(\\d+)\\.`));
+    if (match) indexes.add(Number(match[1]));
+  }
+  return [...indexes].sort((a, b) => a - b);
+}
+
+function readExtraCosts(formData: FormData, itemIndex: number) {
+  return readExtraCostIndexes(formData, itemIndex)
+    .map((costIndex) => ({
+      label: readString(formData, `items.${itemIndex}.extraCosts.${costIndex}.label`),
+      amountRupees: Number(readString(formData, `items.${itemIndex}.extraCosts.${costIndex}.amountRupees`, "0"))
+    }))
+    .filter((cost) => cost.label !== "" && Number.isFinite(cost.amountRupees) && cost.amountRupees >= 0);
+}
+
 function measurementIdPrefix(groupKey: string) {
   return groupKey === "global" ? "global" : String(Number(groupKey) + 1);
 }
@@ -85,6 +103,7 @@ export function parseOrderFormData(formData: FormData): ParsedOrderForm {
     ),
     fabricPriceRupees: readString(formData, `items.${itemIndex}.fabricPriceRupees`, "0"),
     dyePriceRupees: readString(formData, `items.${itemIndex}.dyePriceRupees`, "0"),
+    extraCosts: readExtraCosts(formData, itemIndex),
     fabricLength: readString(formData, `items.${itemIndex}.fabricLength`, readString(formData, "fabricLength")),
     fabricColor: readString(formData, `items.${itemIndex}.fabricColor`, readString(formData, "fabricColor")),
     designReference: readString(formData, `items.${itemIndex}.designReference`, readString(formData, "designReference")),

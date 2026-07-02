@@ -74,8 +74,14 @@ export default async function OrderDetailPage({
                   {item.fabricColor ? <p className="text-sm text-[#7c6d66]">Fabric color: {item.fabricColor}</p> : null}
                   <p className="text-sm text-[#7c6d66]">
                     Qty {item.quantity} · Rate {formatINR(item.ratePaise)} · Stitching {formatINR(item.stitchingCostPaise)} · Fabric{" "}
-                    {formatINR(item.fabricPricePaise)} · Dye {formatINR(item.dyePricePaise)} · Total {formatINR(item.lineTotalPaise)}
+                    {formatINR(item.fabricPricePaise)} · Dye {formatINR(item.dyePricePaise)} · Extra {formatINR(item.extraCostPaise)} · Total{" "}
+                    {formatINR(item.lineTotalPaise)}
                   </p>
+                  {item.extraCosts.length ? (
+                    <p className="text-xs text-[#7c6d66]">
+                      Extra costs: {item.extraCosts.map((cost) => `${cost.label} ${formatINR(cost.amountPaise)}`).join(", ")}
+                    </p>
+                  ) : null}
                   {item.fabricLength ? <p className="text-sm text-[#7c6d66]">Fabric length: {item.fabricLength}</p> : null}
                   <p className="mt-1 text-xs font-semibold text-[#4c1525]">
                     {item.delivered ? "Delivered" : "Not delivered"}
@@ -119,6 +125,7 @@ export default async function OrderDetailPage({
                 ["Stitching", order.totals.stitchingCostPaise],
                 ["Fabric price", order.totals.fabricPricePaise],
                 ["Dye price", order.totals.dyePricePaise],
+                ["Extra costs", order.totals.extraCostPaise],
                 ["Discount", -order.totals.orderDiscountPaise],
                 ["CGST", order.totals.cgstAmountPaise],
                 ["SGST", order.totals.sgstAmountPaise],

@@ -59,6 +59,7 @@
 - 2026-07-02T12:32Z [CODE] Fixed saved-order edit date resets by normalizing existing order/delivery dates before filling native date inputs and preserving existing dates if unchanged date fields submit blank values.
 - 2026-07-02T13:06Z [CODE] Opened order detail pages now show each item fabric color directly beneath the garment name when a fabric color is saved.
 - 2026-07-02T13:14Z [CODE] Dashboard interactive order queues, `listOrders`, and reusable `OrderTable` rendering now sort order rows by delivery date with customer/receipt tie-breaks. Dashboard outstanding side insight remains amount-ranked, while the interactive outstanding queue is delivery-date sorted.
+- 2026-07-02T17:29Z [CODE] Added shared order sort controls for Orders and Dashboard order lists with delivery date, order date, receipt number, balance, and total options. Added per-dress dynamic extra cost rows for New Order and Edit Saved Bill, including totals, order detail display, HTML/PDF receipts, Supabase read/write mapping, and migration `202607020002_order_item_extra_costs.sql`. Enhanced Settings with remove controls for garment types, measurement templates, and measurement fields using soft deactivation.
 
 ## [DISCOVERIES]
 - 2026-07-01T06:24Z [TOOL] `IMG_1174.JPG` is a 5712x4284 JPEG, likely the bill reference image, but no `public/Logo.PNG` logo file exists.
@@ -99,6 +100,7 @@
 - 2026-07-02T12:21Z [TOOL] Calendar dropdown regression root cause: order/delivery form controls had been changed to text inputs with `inputMode="numeric"` and `dd/mm/yyyy` formatted defaults; native pickers require `type="date"` and ISO `YYYY-MM-DD` values.
 - 2026-07-02T12:26Z [TOOL] React-PDF output can be regression-tested by rendering `ReceiptPdfDocument` to a buffer and extracting text with local `pdftotext`; RED coverage confirmed store/combined PDFs originally printed the unadjusted delivery date.
 - 2026-07-02T12:32Z [TOOL] Root cause for edit-date reset: native date inputs render blank if fed timestamp-like saved date values, and the update service previously treated submitted blank date values as real updates instead of falling back to the existing order dates.
+- 2026-07-02T17:29Z [TOOL] Extra-cost persistence needs the new Supabase migration before production can store the new `orders.extra_cost`, `order_items.extra_cost`, and `order_item_extra_costs` data. The app also catches missing PostgREST relationship-cache errors (`PGRST200`) so code deployed before the SQL falls back instead of crashing order lists.
 
 ## [OUTCOMES]
 - 2026-07-01T06:39Z [TOOL] Verification passed: `npm run lint`, `npm run typecheck`, `npm run test` (4 files, 10 tests), `npm run build`, `npm audit --omit=dev`, and HTTP smoke checks for `/dashboard`, `/receipts/order-1/combined`, and `/api/receipts/order-1/combined`.
@@ -141,3 +143,4 @@
 - 2026-07-02T12:32Z [TOOL] Verification passed after saved-order edit date preservation fix: RED tests failed on blank calendar inputs and blank dates being written; focused tests passed (`4 files`, `21 tests`), then `npm run typecheck`, `npm run lint`, `npm run test` (32 files, 94 tests), and `npm run build` all passed.
 - 2026-07-02T13:06Z [TOOL] Verification passed after order-detail fabric-color display: RED page test failed on missing `Fabric color: Bottle green`; focused tests passed, then `npm run typecheck`, `npm run lint`, `npm run test` (33 files, 95 tests), and `npm run build` all passed.
 - 2026-07-02T13:14Z [TOOL] Verification passed after delivery-date sorting change: RED tests failed for dashboard pending/listOrders/OrderTable old ordering; focused sorting tests passed, then `npm run typecheck`, `npm run lint`, `npm run test` (35 files, 97 tests), and `npm run build` all passed.
+- 2026-07-02T17:29Z [TOOL] Verification passed after sort/settings/extra-cost work: focused RED tests initially failed for missing extra-cost calculations/parser/save/edit/UI, missing sort controls, and missing settings removal services; focused suite then passed (`8 files`, `43 tests`), followed by `npm run typecheck`, `npm run lint`, `npm run test` (`36 files`, `105 tests`), and `npm run build`.

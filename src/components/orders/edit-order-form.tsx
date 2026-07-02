@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Field, Input, Textarea } from "@/components/ui/input";
 import { ClothSamplePhotoField } from "@/components/orders/cloth-sample-photo-field";
 import { EditOrderChoiceFields } from "@/components/orders/edit-order-choice-fields";
+import { EditExtraCostsField } from "@/components/orders/edit-extra-costs-field";
 import { MeasurementGrid } from "@/components/measurements/measurement-grid";
 import { normalizeDateInput } from "@/lib/utils/date";
 import { paiseToRupees } from "@/lib/utils/money";
@@ -99,6 +100,7 @@ export function EditOrderForm({
                 <Textarea name={`items.${index}.stitchingInstructions`} defaultValue={item.stitchingInstructions ?? ""} />
               </label>
             </div>
+            <EditExtraCostsField itemIndex={index} dressNumber={index + 1} extraCosts={item.extraCosts} />
           </div>
         ))}
       </div>

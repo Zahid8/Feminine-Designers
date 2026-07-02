@@ -66,6 +66,8 @@ export interface OrderItem {
   stitchingCostPaise: number;
   fabricPricePaise: number;
   dyePricePaise: number;
+  extraCostPaise: number;
+  extraCosts: OrderItemExtraCost[];
   lineTotalPaise: number;
   fabricLength?: string;
   delivered?: boolean;
@@ -73,6 +75,13 @@ export interface OrderItem {
   fabricColor?: string;
   designReference?: string;
   stitchingInstructions?: string;
+  sortOrder: number;
+}
+
+export interface OrderItemExtraCost {
+  id: string;
+  label: string;
+  amountPaise: number;
   sortOrder: number;
 }
 
@@ -139,6 +148,7 @@ export interface OrderTotals {
   stitchingCostPaise: number;
   fabricPricePaise: number;
   dyePricePaise: number;
+  extraCostPaise: number;
   taxableAmountPaise: number;
   cgstRate: number;
   cgstAmountPaise: number;

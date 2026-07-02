@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   parseGarmentTypeFormData,
+  parseRemoveSettingFormData,
   parseMeasurementFieldFormData,
   parseMeasurementTemplateFormData
 } from "@/services/settings/settings-form-parser";
@@ -47,5 +48,12 @@ describe("settings form parsers", () => {
       unit: "in",
       isRequired: true
     });
+  });
+
+  it("parses a remove settings form target", () => {
+    const formData = new FormData();
+    formData.set("id", "garment-1");
+
+    expect(parseRemoveSettingFormData(formData)).toEqual({ id: "garment-1" });
   });
 });

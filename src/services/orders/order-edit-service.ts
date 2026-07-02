@@ -36,6 +36,29 @@ function orderItemIndexes(formData: FormData) {
   return [...indexes].sort((a, b) => a - b);
 }
 
+function extraCostIndexes(formData: FormData, itemIndex: number) {
+  const indexes = new Set<number>();
+  for (const key of formData.keys()) {
+    const match = key.match(new RegExp(`^items\\.${itemIndex}\\.extraCosts\\.(\\d+)\\.`));
+    if (match) indexes.add(Number(match[1]));
+  }
+  return [...indexes].sort((a, b) => a - b);
+}
+
+function extraCostsFromForm(formData: FormData, itemIndex: number) {
+  return extraCostIndexes(formData, itemIndex)
+    .map((costIndex) => ({
+      label: readString(formData, `items.${itemIndex}.extraCosts.${costIndex}.label`),
+      amountPaise: rupeesToPaise(readNumber(formData, `items.${itemIndex}.extraCosts.${costIndex}.amountRupees`, 0)),
+      sortOrder: costIndex + 1
+    }))
+    .filter((cost) => cost.label !== "" && cost.amountPaise >= 0);
+}
+
+function sumExtraCosts(costs: { amountPaise: number }[]) {
+  return costs.reduce((sum, cost) => sum + cost.amountPaise, 0);
+}
+
 function measurementIndexes(formData: FormData) {
   const indexes = new Set<number>();
   for (const key of formData.keys()) {
@@ -94,6 +117,7 @@ function lineItemFromForm(order: OrderWithCustomer, formData: FormData, index: n
   const dyePricePaise = rupeesToPaise(
     readNumber(formData, `items.${index}.dyePriceRupees`, paiseToRupees(fallback.dyePricePaise))
   );
+  const extraCosts = extraCostsFromForm(formData, index);
 
   return {
     quantity,
@@ -101,7 +125,8 @@ function lineItemFromForm(order: OrderWithCustomer, formData: FormData, index: n
     discountPaise,
     stitchingCostPaise,
     fabricPricePaise,
-    dyePricePaise
+    dyePricePaise,
+    extraCostPaise: sumExtraCosts(extraCosts)
   };
 }
 
@@ -132,7 +157,8 @@ export async function updateOrderFromForm(order: OrderWithCustomer, formData: Fo
         discountPaise: item.discountPaise,
         stitchingCostPaise: item.stitchingCostPaise,
         fabricPricePaise: item.fabricPricePaise,
-        dyePricePaise: item.dyePricePaise
+        dyePricePaise: item.dyePricePaise,
+        extraCostPaise: item.extraCostPaise
       }
   );
 
@@ -173,6 +199,7 @@ export async function updateOrderFromForm(order: OrderWithCustomer, formData: Fo
         order_discount_amount: toRupeesDecimal(totals.orderDiscountPaise),
         accessories_cost: toRupeesDecimal(totals.accessoriesCostPaise),
         stitching_cost: toRupeesDecimal(totals.stitchingCostPaise),
+        extra_cost: toRupeesDecimal(totals.extraCostPaise),
         taxable_amount: toRupeesDecimal(totals.taxableAmountPaise),
         cgst_rate: totals.cgstRate,
         cgst_amount: toRupeesDecimal(totals.cgstAmountPaise),
@@ -205,6 +232,9 @@ export async function updateOrderFromForm(order: OrderWithCustomer, formData: Fo
       ),
       dyePricePaise: rupeesToPaise(readNumber(formData, `items.${index}.dyePriceRupees`, paiseToRupees(item.dyePricePaise)))
     };
+    const extraCosts = extraCostsFromForm(formData, index);
+    const extraCostPaise = sumExtraCosts(extraCosts);
+    const draftWithExtraCost = { ...draft, extraCostPaise };
 
     await assertUpdate(
       await admin
@@ -217,7 +247,8 @@ export async function updateOrderFromForm(order: OrderWithCustomer, formData: Fo
           stitching_cost: toRupeesDecimal(draft.stitchingCostPaise),
           fabric_price: toRupeesDecimal(draft.fabricPricePaise),
           dye_price: toRupeesDecimal(draft.dyePricePaise),
-          line_total: toRupeesDecimal(calculateLineTotal(draft)),
+          extra_cost: toRupeesDecimal(extraCostPaise),
+          line_total: toRupeesDecimal(calculateLineTotal(draftWithExtraCost)),
           fabric_length: readString(formData, `items.${index}.fabricLength`, item.fabricLength ?? "") || null,
           fabric_color: readString(formData, `items.${index}.fabricColor`, item.fabricColor ?? "") || null,
           design_reference: readString(formData, `items.${index}.designReference`, item.designReference ?? "") || null,
@@ -226,6 +257,19 @@ export async function updateOrderFromForm(order: OrderWithCustomer, formData: Fo
         })
         .eq("id", item.id)
     );
+
+    await assertUpdate(await admin.from("order_item_extra_costs").delete().eq("order_item_id", item.id));
+    if (extraCosts.length > 0) {
+      const { error } = await admin.from("order_item_extra_costs").insert(
+        extraCosts.map((cost) => ({
+          order_item_id: item.id,
+          label: cost.label,
+          amount: toRupeesDecimal(cost.amountPaise),
+          sort_order: cost.sortOrder
+        }))
+      );
+      if (error) throw new Error(error.message);
+    }
   }
 
   for (const index of measurementIndexes(formData)) {

@@ -70,6 +70,31 @@ describe("order calculations", () => {
     expect(totals.grandTotalPaise).toBe(178500);
   });
 
+  it("adds custom extra cost rows per garment item before bill-level discount and tax", () => {
+    const totals = calculateOrderTotals({
+      items: [
+        {
+          quantity: 1,
+          ratePaise: 100000,
+          discountPaise: 0,
+          stitchingCostPaise: 25000,
+          fabricPricePaise: 40000,
+          dyePricePaise: 10000,
+          extraCostPaise: 35000
+        }
+      ],
+      orderDiscountPaise: 5000,
+      cgstRate: 2.5,
+      sgstRate: 2.5
+    });
+
+    expect(calculateLineTotal({ quantity: 1, ratePaise: 100000, extraCostPaise: 35000 })).toBe(135000);
+    expect(totals.extraCostPaise).toBe(35000);
+    expect(totals.subtotalPaise).toBe(210000);
+    expect(totals.taxableAmountPaise).toBe(205000);
+    expect(totals.grandTotalPaise).toBe(215250);
+  });
+
   it("detects overdue orders but excludes delivered and cancelled records", () => {
     const today = new Date("2026-07-05T12:00:00+05:30");
     expect(isOrderOverdue("2026-07-04", "Ready", today)).toBe(true);

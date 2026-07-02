@@ -22,6 +22,7 @@ interface FieldRow {
   unit: "in" | "text" | "boolean";
   is_required: boolean;
   sort_order: number;
+  active: boolean | null;
 }
 
 function mapTemplate(row: TemplateRow): MeasurementTemplate {
@@ -46,7 +47,7 @@ function mapTemplate(row: TemplateRow): MeasurementTemplate {
         unit: field.unit,
         isRequired: field.is_required,
         sortOrder: field.sort_order,
-        active: true
+        active: field.active !== false
       }))
   };
 }
@@ -64,6 +65,7 @@ function mergeCodeDefinedFields(template: MeasurementTemplate): MeasurementTempl
   const codeTemplate = codeTemplateFor(template);
   if (!codeTemplate) return template;
 
+  const databaseFieldsByKey = new Map(template.fields.map((field) => [field.fieldKey, field]));
   const codeFieldKeys = new Set(codeTemplate.fields.map((field) => field.fieldKey));
   const extraDatabaseFields = template.fields.filter((field) => !codeFieldKeys.has(field.fieldKey));
 
@@ -72,7 +74,8 @@ function mergeCodeDefinedFields(template: MeasurementTemplate): MeasurementTempl
     fields: [
       ...codeTemplate.fields.map((field) => ({
         ...field,
-        id: `${template.id}-${field.fieldKey}`
+        id: databaseFieldsByKey.get(field.fieldKey)?.id ?? `${template.id}-${field.fieldKey}`,
+        active: databaseFieldsByKey.get(field.fieldKey)?.active ?? field.active
       })),
       ...extraDatabaseFields.map((field, index) => ({
         ...field,

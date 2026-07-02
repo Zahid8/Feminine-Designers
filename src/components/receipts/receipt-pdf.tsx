@@ -131,9 +131,9 @@ const styles = StyleSheet.create({
   itemRowCompact: {
     paddingVertical: 4
   },
-  itemName: { width: "28%" },
-  itemFabric: { width: "15%" },
-  numeric: { width: "9.5%", textAlign: "right" },
+  itemName: { width: "26%" },
+  itemFabric: { width: "12%" },
+  numeric: { width: "8.85%", textAlign: "right" },
   itemInstruction: {
     marginTop: 2,
     color: "#6f625d",
@@ -322,12 +322,18 @@ function PdfPanel({
           <Text style={[styles.numeric, styles.label]}>Stitching</Text>
           <Text style={[styles.numeric, styles.label]}>Fabric</Text>
           <Text style={[styles.numeric, styles.label]}>Dye</Text>
+          <Text style={[styles.numeric, styles.label]}>Extra</Text>
           <Text style={[styles.numeric, styles.label]}>Amount</Text>
         </View>
         {order.items.map((item) => (
           <View key={item.id} style={compact ? [styles.itemRow, styles.itemRowCompact] : styles.itemRow}>
             <View style={styles.itemName}>
               <Text style={styles.value}>{item.garmentType}</Text>
+              {item.extraCosts.length ? (
+                <Text style={styles.itemInstruction}>
+                  Extra: {item.extraCosts.map((cost) => `${cost.label} ${formatPdfINR(cost.amountPaise)}`).join(", ")}
+                </Text>
+              ) : null}
               {mode === "store" && item.stitchingInstructions ? (
                 <Text style={styles.itemInstruction}>{item.stitchingInstructions}</Text>
               ) : null}
@@ -338,6 +344,7 @@ function PdfPanel({
             <Text style={styles.numeric}>{formatPdfINR(item.stitchingCostPaise)}</Text>
             <Text style={styles.numeric}>{formatPdfINR(item.fabricPricePaise)}</Text>
             <Text style={styles.numeric}>{formatPdfINR(item.dyePricePaise)}</Text>
+            <Text style={styles.numeric}>{formatPdfINR(item.extraCostPaise)}</Text>
             <Text style={styles.numeric}>{formatPdfINR(item.lineTotalPaise)}</Text>
           </View>
         ))}
@@ -381,6 +388,7 @@ function PdfPanel({
         <Total label="Stitching" value={order.totals.stitchingCostPaise} />
         <Total label="Fabric price" value={order.totals.fabricPricePaise} />
         <Total label="Dye price" value={order.totals.dyePricePaise} />
+        <Total label="Extra costs" value={order.totals.extraCostPaise} />
         <Total label="Discount" value={-order.totals.orderDiscountPaise} />
         <Total label="CGST" value={order.totals.cgstAmountPaise} />
         <Total label="SGST" value={order.totals.sgstAmountPaise} />

@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
-import { Camera, Calculator, Check, Printer, Save, Search, X } from "lucide-react";
+import { Camera, Calculator, Check, Minus, Plus, Printer, Save, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, Input, Textarea } from "@/components/ui/input";
@@ -103,6 +103,7 @@ export function NewOrderForm({
       stitchingCost: 0,
       fabricPrice: 0,
       dyePrice: 0,
+      extraCosts: [] as { label: string; amount: number }[],
       garmentType: garmentTypes.find((type) => type.active)?.name ?? "Blouse"
     }
   ]);
@@ -125,7 +126,8 @@ export function NewOrderForm({
           discountPaise: 0,
           stitchingCostPaise: rupeesToPaise(item.stitchingCost),
           fabricPricePaise: rupeesToPaise(item.fabricPrice),
-          dyePricePaise: rupeesToPaise(item.dyePrice)
+          dyePricePaise: rupeesToPaise(item.dyePrice),
+          extraCostPaise: item.extraCosts.reduce((sum, cost) => sum + rupeesToPaise(cost.amount), 0)
         })),
         accessoriesCostPaise: rupeesToPaise(accessoriesCost),
         orderDiscountPaise: rupeesToPaise(orderDiscount),
@@ -204,6 +206,7 @@ export function NewOrderForm({
         stitchingCost: 0,
         fabricPrice: 0,
         dyePrice: 0,
+        extraCosts: [],
         garmentType: activeGarmentTypes[0]?.name ?? "Blouse"
       })
     );
@@ -215,6 +218,37 @@ export function NewOrderForm({
   ) {
     setItems((current) =>
       current.map((item, itemIndex) => (itemIndex === index ? { ...item, ...patch } : item))
+    );
+  }
+
+  function addExtraCost(index: number) {
+    setItems((current) =>
+      current.map((item, itemIndex) =>
+        itemIndex === index ? { ...item, extraCosts: [...item.extraCosts, { label: "", amount: 0 }] } : item
+      )
+    );
+  }
+
+  function updateExtraCost(index: number, costIndex: number, patch: Partial<{ label: string; amount: number }>) {
+    setItems((current) =>
+      current.map((item, itemIndex) =>
+        itemIndex === index
+          ? {
+              ...item,
+              extraCosts: item.extraCosts.map((cost, currentCostIndex) =>
+                currentCostIndex === costIndex ? { ...cost, ...patch } : cost
+              )
+            }
+          : item
+      )
+    );
+  }
+
+  function removeExtraCost(index: number, costIndex: number) {
+    setItems((current) =>
+      current.map((item, itemIndex) =>
+        itemIndex === index ? { ...item, extraCosts: item.extraCosts.filter((_, currentCostIndex) => currentCostIndex !== costIndex) } : item
+      )
     );
   }
 
@@ -458,6 +492,54 @@ export function NewOrderForm({
                     />
                   </label>
                 </div>
+                <div className="mt-4 rounded-md border border-[#eadfce] bg-[#fffdf8] p-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-sm font-bold text-[#4c1525]">Extra costs</p>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => addExtraCost(index)}
+                      aria-label={`Add extra cost to dress ${index + 1}`}
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add cost
+                    </Button>
+                  </div>
+                  {item.extraCosts.length ? (
+                    <div className="mt-3 grid gap-2">
+                      {item.extraCosts.map((cost, costIndex) => (
+                        <div key={costIndex} className="grid gap-2 sm:grid-cols-[1fr_160px_auto]">
+                          <Input
+                            name={`items.${index}.extraCosts.${costIndex}.label`}
+                            placeholder="Example: Lace"
+                            value={cost.label}
+                            onChange={(event) => updateExtraCost(index, costIndex, { label: event.target.value })}
+                            aria-label={`Extra cost ${costIndex + 1} label for dress ${index + 1}`}
+                          />
+                          <Input
+                            name={`items.${index}.extraCosts.${costIndex}.amountRupees`}
+                            type="number"
+                            min={0}
+                            value={cost.amount}
+                            onChange={(event) => updateExtraCost(index, costIndex, { amount: Number(event.target.value) })}
+                            aria-label={`Extra cost ${costIndex + 1} amount for dress ${index + 1}`}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => removeExtraCost(index, costIndex)}
+                            aria-label={`Remove extra cost ${costIndex + 1} from dress ${index + 1}`}
+                          >
+                            <Minus className="h-4 w-4" />
+                            Remove
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-xs text-[#7c6d66]">Add lace, shantoon, buttons, or any other dress-specific cost.</p>
+                  )}
+                </div>
               </details>
             ))}
           </div>
@@ -596,6 +678,7 @@ export function NewOrderForm({
               ["Stitching", totals.stitchingCostPaise],
               ["Fabric price", totals.fabricPricePaise],
               ["Dye price", totals.dyePricePaise],
+              ["Extra costs", totals.extraCostPaise],
               ["Discount", -totals.orderDiscountPaise],
               ["CGST", totals.cgstAmountPaise],
               ["SGST", totals.sgstAmountPaise],

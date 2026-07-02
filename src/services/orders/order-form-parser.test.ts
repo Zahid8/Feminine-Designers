@@ -171,4 +171,32 @@ describe("parseOrderFormData", () => {
     );
     expect(parsed.measurements).toHaveLength(1);
   });
+
+  it("parses dynamic extra cost rows for each garment item", () => {
+    const formData = new FormData();
+    formData.set("intent", "order");
+    formData.set("customerName", "Ayesha Khan");
+    formData.set("phonePrimary", "9718926185");
+    formData.set("orderDate", "2026-07-01");
+    formData.set("deliveryDate", "2026-07-05");
+    formData.set("priority", "Normal");
+    formData.set("items.0.garmentType", "Suit");
+    formData.set("items.0.quantity", "1");
+    formData.set("items.0.rateRupees", "1500");
+    formData.set("items.0.extraCosts.0.label", "Lace");
+    formData.set("items.0.extraCosts.0.amountRupees", "250");
+    formData.set("items.0.extraCosts.1.label", "Shantoon");
+    formData.set("items.0.extraCosts.1.amountRupees", "600");
+    formData.set("items.0.extraCosts.2.label", "");
+    formData.set("items.0.extraCosts.2.amountRupees", "300");
+    formData.set("advancePaidRupees", "0");
+    formData.set("paymentMethod", "Cash");
+
+    const parsed = parseOrderFormData(formData);
+
+    expect(parsed.order.items[0].extraCosts).toEqual([
+      { label: "Lace", amountRupees: 250 },
+      { label: "Shantoon", amountRupees: 600 }
+    ]);
+  });
 });

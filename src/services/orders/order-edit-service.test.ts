@@ -3,8 +3,9 @@ import { orders } from "@/lib/data/mock";
 
 const mockEq = vi.fn();
 const mockUpdate = vi.fn(() => ({ eq: mockEq }));
+const mockDelete = vi.fn(() => ({ eq: mockEq }));
 const mockInsert = vi.fn();
-const mockFrom = vi.fn(() => ({ insert: mockInsert, update: mockUpdate }));
+const mockFrom = vi.fn(() => ({ delete: mockDelete, insert: mockInsert, update: mockUpdate }));
 
 vi.mock("@/lib/supabase/admin", () => ({
   hasSupabaseAdminEnv: vi.fn(() => true),
@@ -176,6 +177,10 @@ describe("order-edit-service", () => {
     formData.set("items.0.stitchingCostRupees", "250");
     formData.set("items.0.fabricPriceRupees", "400");
     formData.set("items.0.dyePriceRupees", "100");
+    formData.set("items.0.extraCosts.0.label", "Lace");
+    formData.set("items.0.extraCosts.0.amountRupees", "250");
+    formData.set("items.0.extraCosts.1.label", "Shantoon");
+    formData.set("items.0.extraCosts.1.amountRupees", "600");
 
     await updateOrderFromForm(order, formData);
 
@@ -185,21 +190,29 @@ describe("order-edit-service", () => {
         stitching_cost: "250.00",
         fabric_price: "400.00",
         dye_price: "100.00",
-        line_total: "2150.00"
+        extra_cost: "850.00",
+        line_total: "3000.00"
       })
     );
     expect(mockUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
-        subtotal: "2400.00",
+        subtotal: "3250.00",
         stitching_cost: "250.00",
-        taxable_amount: "2400.00",
-        cgst_amount: "60.00",
-        sgst_amount: "60.00",
-        grand_total: "2520.00",
-        balance_due: "1020.00",
+        extra_cost: "850.00",
+        taxable_amount: "3250.00",
+        cgst_amount: "81.25",
+        sgst_amount: "81.25",
+        grand_total: "3412.50",
+        balance_due: "1912.50",
         payment_status: "Partial"
       })
     );
+    expect(mockFrom).toHaveBeenCalledWith("order_item_extra_costs");
+    expect(mockDelete).toHaveBeenCalled();
+    expect(mockInsert).toHaveBeenCalledWith([
+      { order_item_id: order.items[0].id, label: "Lace", amount: "250.00", sort_order: 1 },
+      { order_item_id: order.items[0].id, label: "Shantoon", amount: "600.00", sort_order: 2 }
+    ]);
   });
 
   it("preserves existing order dates when unchanged date inputs submit blank values", async () => {

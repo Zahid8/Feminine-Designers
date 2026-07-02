@@ -14,6 +14,31 @@ function toRupeesDecimal(paise: number) {
   return paiseToRupees(paise).toFixed(2);
 }
 
+function itemExtraCostPaise(item: ParsedOrderForm["order"]["items"][number]) {
+  return (item.extraCosts ?? []).reduce((sum, cost) => sum + rupeesToPaise(cost.amountRupees), 0);
+}
+
+async function syncOrderItemExtraCosts(admin: ReturnType<typeof createSupabaseAdminClient>, orderId: string, parsed: ParsedOrderForm) {
+  const rows = parsed.order.items.flatMap((item, itemIndex) =>
+    (item.extraCosts ?? []).map((cost, costIndex) => ({
+      order_id: orderId,
+      order_item_id: null,
+      item_sort_order: itemIndex + 1,
+      label: cost.label,
+      amount: cost.amountRupees.toFixed(2),
+      sort_order: costIndex + 1
+    }))
+  );
+
+  const { error: deleteError } = await admin.from("order_item_extra_costs").delete().eq("order_id", orderId);
+  if (deleteError) throw new Error(deleteError.message);
+
+  if (rows.length === 0) return;
+
+  const { error: insertError } = await admin.from("order_item_extra_costs").insert(rows);
+  if (insertError) throw new Error(insertError.message);
+}
+
 async function syncCustomerMeasurementSnapshot(admin: ReturnType<typeof createSupabaseAdminClient>, orderId: string, parsed: ParsedOrderForm) {
   if (parsed.measurements.length === 0) return;
 
@@ -76,7 +101,8 @@ export async function saveParsedOrder(parsed: ParsedOrderForm): Promise<SavedOrd
     discountPaise: 0,
     stitchingCostPaise: rupeesToPaise(item.stitchingCostRupees),
     fabricPricePaise: rupeesToPaise(item.fabricPriceRupees),
-    dyePricePaise: rupeesToPaise(item.dyePriceRupees)
+    dyePricePaise: rupeesToPaise(item.dyePriceRupees),
+    extraCostPaise: itemExtraCostPaise(item)
   }));
   const payment = parsed.order.advancePaidRupees > 0 ? [{ amountPaise: rupeesToPaise(parsed.order.advancePaidRupees) }] : [];
   const totals = calculateOrderTotals({
@@ -116,6 +142,7 @@ export async function saveParsedOrder(parsed: ParsedOrderForm): Promise<SavedOrd
       order_discount_amount: toRupeesDecimal(totals.orderDiscountPaise),
       accessories_cost: toRupeesDecimal(totals.accessoriesCostPaise),
       stitching_cost: toRupeesDecimal(totals.stitchingCostPaise),
+      extra_cost: toRupeesDecimal(totals.extraCostPaise),
       taxable_amount: toRupeesDecimal(totals.taxableAmountPaise),
       cgst_rate: totals.cgstRate,
       cgst_amount: toRupeesDecimal(totals.cgstAmountPaise),
@@ -135,6 +162,12 @@ export async function saveParsedOrder(parsed: ParsedOrderForm): Promise<SavedOrd
       stitching_cost: item.stitchingCostRupees.toFixed(2),
       fabric_price: item.fabricPriceRupees.toFixed(2),
       dye_price: item.dyePriceRupees.toFixed(2),
+      extra_cost: toRupeesDecimal(itemDrafts[index].extraCostPaise ?? 0),
+      extra_costs: (item.extraCosts ?? []).map((cost, costIndex) => ({
+        label: cost.label,
+        amount: cost.amountRupees.toFixed(2),
+        sort_order: costIndex + 1
+      })),
       line_total: toRupeesDecimal(calculateLineTotal(itemDrafts[index])),
       fabric_length: item.fabricLength || null,
       fabric_color: item.fabricColor || null,
@@ -172,6 +205,7 @@ export async function saveParsedOrder(parsed: ParsedOrderForm): Promise<SavedOrd
 
   await syncOrderMeasurementsIfMissing(admin, result.order_id, parsed);
   await syncCustomerMeasurementSnapshot(admin, result.order_id, parsed);
+  await syncOrderItemExtraCosts(admin, result.order_id, parsed);
 
   return {
     orderId: result.order_id,

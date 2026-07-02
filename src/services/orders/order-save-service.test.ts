@@ -43,6 +43,7 @@ function makeParsedOrder(advancePaidRupees: number): ParsedOrderForm {
           stitchingCostRupees: 125,
           fabricPriceRupees: 0,
           dyePriceRupees: 0,
+          extraCosts: [],
           fabricLength: "",
           fabricColor: "",
           designReference: "",
@@ -257,5 +258,38 @@ describe("saveParsedOrder", () => {
         line_total: "1400.00"
       })
     );
+  });
+
+  it("sends dynamic extra costs on each garment item and syncs them after save", async () => {
+    const { saveParsedOrder } = await import("./order-save-service");
+    const parsed = makeParsedOrder(0);
+    parsed.order.items[0].extraCosts = [
+      { label: "Lace", amountRupees: 250 },
+      { label: "Shantoon", amountRupees: 600 }
+    ];
+
+    await saveParsedOrder(parsed);
+
+    const payload = mockRpc.mock.calls[0]?.[1]?.p_payload as {
+      order?: Record<string, unknown>;
+      items?: Array<Record<string, unknown>>;
+    };
+    expect(payload.order).toEqual(
+      expect.objectContaining({
+        subtotal: "1975.00",
+        extra_cost: "850.00"
+      })
+    );
+    expect(payload.items?.[0]).toEqual(
+      expect.objectContaining({
+        extra_cost: "850.00",
+        extra_costs: [
+          { label: "Lace", amount: "250.00", sort_order: 1 },
+          { label: "Shantoon", amount: "600.00", sort_order: 2 }
+        ],
+        line_total: "1975.00"
+      })
+    );
+    expect(mockFrom).toHaveBeenCalledWith("order_item_extra_costs");
   });
 });

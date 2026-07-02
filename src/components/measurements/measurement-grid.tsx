@@ -21,7 +21,7 @@ export function MeasurementGrid({
   valuePrefix?: string;
   metaPrefix?: string;
 }) {
-  const fields = template?.fields ?? values ?? [];
+  const fields = template ? template.fields.filter((field) => field.active) : values ?? [];
   const defaultValueByField = new Map(defaultValues?.map((value) => [value.fieldKey, value.value]));
   return (
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">

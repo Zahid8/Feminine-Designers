@@ -49,6 +49,7 @@ interface SupabaseOrderItemRecord {
   stitching_cost?: string | number | null;
   fabric_price?: string | number | null;
   dye_price?: string | number | null;
+  extra_cost?: string | number | null;
   line_total: string | number;
   fabric_length: string | null;
   delivered: boolean | null;
@@ -56,6 +57,15 @@ interface SupabaseOrderItemRecord {
   fabric_color: string | null;
   design_reference: string | null;
   stitching_instructions: string | null;
+  sort_order: number;
+}
+
+interface SupabaseOrderItemExtraCostRecord {
+  id: string;
+  order_item_id: string | null;
+  item_sort_order: number | null;
+  label: string;
+  amount: string | number;
   sort_order: number;
 }
 
@@ -105,6 +115,7 @@ interface SupabaseOrderRecord {
   order_discount_amount: string | number;
   accessories_cost?: string | number | null;
   stitching_cost?: string | number | null;
+  extra_cost?: string | number | null;
   taxable_amount: string | number;
   cgst_rate: string | number;
   cgst_amount: string | number;
@@ -120,6 +131,7 @@ interface SupabaseOrderRecord {
   updated_at: string;
   customer: SupabaseCustomerRecord;
   items: SupabaseOrderItemRecord[];
+  extra_costs?: SupabaseOrderItemExtraCostRecord[];
   measurements: SupabaseMeasurementRecord[];
   payments: SupabasePaymentRecord[];
   status_history: SupabaseStatusHistoryRecord[];
@@ -158,6 +170,16 @@ function mapOrder(record: SupabaseOrderRecord): OrderWithCustomer {
     notes: payment.notes ?? undefined
   }));
   const totalPaidPaise = payments.reduce((sum, payment) => sum + payment.amountPaise, 0);
+  const extraCostsByItem = new Map<string, SupabaseOrderItemExtraCostRecord[]>();
+  const extraCostsBySortOrder = new Map<number, SupabaseOrderItemExtraCostRecord[]>();
+
+  for (const extraCost of record.extra_costs ?? []) {
+    if (extraCost.order_item_id) {
+      extraCostsByItem.set(extraCost.order_item_id, [...(extraCostsByItem.get(extraCost.order_item_id) ?? []), extraCost]);
+    } else if (extraCost.item_sort_order != null) {
+      extraCostsBySortOrder.set(extraCost.item_sort_order, [...(extraCostsBySortOrder.get(extraCost.item_sort_order) ?? []), extraCost]);
+    }
+  }
 
   return {
     id: record.id,
@@ -174,7 +196,17 @@ function mapOrder(record: SupabaseOrderRecord): OrderWithCustomer {
     customerNotes: record.customer_notes ?? undefined,
     items: record.items
       .sort((a, b) => a.sort_order - b.sort_order)
-      .map<OrderItem>((item) => ({
+      .map<OrderItem>((item) => {
+        const extraCosts = (extraCostsByItem.get(item.id) ?? extraCostsBySortOrder.get(item.sort_order) ?? [])
+          .sort((a, b) => a.sort_order - b.sort_order)
+          .map((extraCost) => ({
+            id: extraCost.id,
+            label: extraCost.label,
+            amountPaise: moneyToPaise(extraCost.amount),
+            sortOrder: extraCost.sort_order
+          }));
+        const extraCostPaise = extraCosts.reduce((sum, extraCost) => sum + extraCost.amountPaise, 0);
+        return {
         id: item.id,
         garmentType: item.garment_type,
         customGarmentType: item.custom_garment_type ?? undefined,
@@ -184,6 +216,8 @@ function mapOrder(record: SupabaseOrderRecord): OrderWithCustomer {
         stitchingCostPaise: moneyToPaise(item.stitching_cost ?? 0),
         fabricPricePaise: moneyToPaise(item.fabric_price ?? 0),
         dyePricePaise: moneyToPaise(item.dye_price ?? 0),
+        extraCostPaise: moneyToPaise(item.extra_cost ?? 0) || extraCostPaise,
+        extraCosts,
         lineTotalPaise: moneyToPaise(item.line_total),
         fabricLength: item.fabric_length ?? undefined,
         delivered: Boolean(item.delivered),
@@ -192,7 +226,8 @@ function mapOrder(record: SupabaseOrderRecord): OrderWithCustomer {
         designReference: item.design_reference ?? undefined,
         stitchingInstructions: item.stitching_instructions ?? undefined,
         sortOrder: item.sort_order
-      })),
+        };
+      }),
     measurements: record.measurements
       .sort((a, b) => a.sort_order - b.sort_order)
       .map<MeasurementValue>((measurement) => ({
@@ -224,6 +259,9 @@ function mapOrder(record: SupabaseOrderRecord): OrderWithCustomer {
       stitchingCostPaise: moneyToPaise(record.stitching_cost ?? 0),
       fabricPricePaise: record.items.reduce((sum, item) => sum + moneyToPaise(item.fabric_price ?? 0), 0),
       dyePricePaise: record.items.reduce((sum, item) => sum + moneyToPaise(item.dye_price ?? 0), 0),
+      extraCostPaise:
+        moneyToPaise(record.extra_cost ?? 0) ||
+        (record.extra_costs ?? []).reduce((sum, extraCost) => sum + moneyToPaise(extraCost.amount), 0),
       taxableAmountPaise: moneyToPaise(record.taxable_amount),
       cgstRate: Number(record.cgst_rate),
       cgstAmountPaise: moneyToPaise(record.cgst_amount),
@@ -252,6 +290,7 @@ async function fetchSupabaseOrders() {
       items:order_items(*),
       measurements:order_measurements(*),
       payments(*),
+      extra_costs:order_item_extra_costs(*),
       status_history:order_status_history(*)
     `
     )

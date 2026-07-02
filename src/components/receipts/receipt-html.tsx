@@ -124,6 +124,7 @@ function ReceiptPanel({
             <th className="py-2 text-right">Stitching</th>
             <th className="py-2 text-right">Fabric Price</th>
             <th className="py-2 text-right">Dye</th>
+            <th className="py-2 text-right">Extra</th>
             <th className="py-2 text-right">Amount</th>
           </tr>
         </thead>
@@ -132,6 +133,11 @@ function ReceiptPanel({
             <tr key={item.id} className="border-b border-[#f0e5d7]">
               <td className="py-2">
                 <strong>{item.garmentType}</strong>
+                {item.extraCosts.length ? (
+                  <p className="text-xs text-[#6f625d]">
+                    Extra: {item.extraCosts.map((cost) => `${cost.label} ${formatINR(cost.amountPaise)}`).join(", ")}
+                  </p>
+                ) : null}
                 {mode === "store" ? <p className="text-xs text-[#6f625d]">{item.stitchingInstructions}</p> : null}
               </td>
               <td className="py-2">{item.fabricLength ?? "-"}</td>
@@ -140,6 +146,7 @@ function ReceiptPanel({
               <td className="py-2 text-right">{formatINR(item.stitchingCostPaise)}</td>
               <td className="py-2 text-right">{formatINR(item.fabricPricePaise)}</td>
               <td className="py-2 text-right">{formatINR(item.dyePricePaise)}</td>
+              <td className="py-2 text-right">{formatINR(item.extraCostPaise)}</td>
               <td className="py-2 text-right">{formatINR(item.lineTotalPaise)}</td>
             </tr>
           ))}
@@ -190,6 +197,7 @@ function ReceiptPanel({
         <Total label="Stitching" value={order.totals.stitchingCostPaise} />
         <Total label="Fabric price" value={order.totals.fabricPricePaise} />
         <Total label="Dye price" value={order.totals.dyePricePaise} />
+        <Total label="Extra costs" value={order.totals.extraCostPaise} />
         <Total label="Discount" value={-order.totals.orderDiscountPaise} />
         <Total label="CGST" value={order.totals.cgstAmountPaise} />
         <Total label="SGST" value={order.totals.sgstAmountPaise} />

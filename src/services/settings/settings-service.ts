@@ -42,6 +42,18 @@ export async function createGarmentType(name: string) {
   }
 }
 
+export async function removeGarmentType(id: string) {
+  if (!hasSupabaseAdminEnv()) {
+    throw new Error("Supabase is not configured. Add env variables and apply migrations before saving settings.");
+  }
+
+  const admin = createSupabaseAdminClient();
+  const { error } = await admin.from("garment_types").update({ active: false }).eq("id", id);
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
 export async function createMeasurementTemplate(input: {
   name: string;
   garmentCategories: string[];
@@ -58,6 +70,18 @@ export async function createMeasurementTemplate(input: {
     description: input.description ?? null,
     is_active: true
   });
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function removeMeasurementTemplate(id: string) {
+  if (!hasSupabaseAdminEnv()) {
+    throw new Error("Supabase is not configured. Add env variables and apply migrations before saving settings.");
+  }
+
+  const admin = createSupabaseAdminClient();
+  const { error } = await admin.from("measurement_templates").update({ is_active: false }).eq("id", id);
   if (error) {
     throw new Error(error.message);
   }
@@ -97,6 +121,18 @@ export async function createMeasurementField(input: {
     is_required: input.isRequired,
     sort_order: (count ?? 0) + 1
   });
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function removeMeasurementField(id: string) {
+  if (!hasSupabaseAdminEnv()) {
+    throw new Error("Supabase is not configured. Add env variables and apply migrations before saving settings.");
+  }
+
+  const admin = createSupabaseAdminClient();
+  const { error } = await admin.from("measurement_template_fields").update({ active: false }).eq("id", id);
   if (error) {
     throw new Error(error.message);
   }

@@ -74,6 +74,8 @@ const orderOneItems = [
     stitchingCostPaise: rupeesToPaise(500),
     fabricPricePaise: 0,
     dyePricePaise: 0,
+    extraCostPaise: 0,
+    extraCosts: [],
     lineTotalPaise: rupeesToPaise(3100),
     fabricLength: "2.5 m",
     delivered: false,
@@ -91,6 +93,8 @@ const orderOneItems = [
     stitchingCostPaise: 0,
     fabricPricePaise: 0,
     dyePricePaise: 0,
+    extraCostPaise: 0,
+    extraCosts: [],
     lineTotalPaise: rupeesToPaise(250),
     fabricLength: "Saree",
     delivered: true,
@@ -165,6 +169,8 @@ export const orders: OrderWithCustomer[] = [
         stitchingCostPaise: 0,
         fabricPricePaise: 0,
         dyePricePaise: 0,
+        extraCostPaise: 0,
+        extraCosts: [],
         lineTotalPaise: rupeesToPaise(900),
         fabricLength: "NA",
         delivered: false,
@@ -190,7 +196,7 @@ export const orders: OrderWithCustomer[] = [
       }
     ],
     totals: calculateOrderTotals({
-      items: [{ quantity: 3, ratePaise: rupeesToPaise(300), discountPaise: 0, stitchingCostPaise: 0 }],
+      items: [{ quantity: 3, ratePaise: rupeesToPaise(300), discountPaise: 0, stitchingCostPaise: 0, extraCostPaise: 0 }],
       cgstRate: 2.5,
       sgstRate: 2.5
     }),

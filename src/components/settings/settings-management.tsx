@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, Input, Textarea } from "@/components/ui/input";
@@ -29,17 +29,26 @@ export function SettingsManagement({
   measurementTemplates,
   addGarmentTypeAction,
   addMeasurementTemplateAction,
-  addMeasurementFieldAction
+  addMeasurementFieldAction,
+  removeGarmentTypeAction,
+  removeMeasurementTemplateAction,
+  removeMeasurementFieldAction
 }: {
   garmentTypes: GarmentType[];
   measurementTemplates: MeasurementTemplate[];
   addGarmentTypeAction: (state: SettingsActionState, formData: FormData) => Promise<SettingsActionState>;
   addMeasurementTemplateAction: (state: SettingsActionState, formData: FormData) => Promise<SettingsActionState>;
   addMeasurementFieldAction: (state: SettingsActionState, formData: FormData) => Promise<SettingsActionState>;
+  removeGarmentTypeAction: (state: SettingsActionState, formData: FormData) => Promise<SettingsActionState>;
+  removeMeasurementTemplateAction: (state: SettingsActionState, formData: FormData) => Promise<SettingsActionState>;
+  removeMeasurementFieldAction: (state: SettingsActionState, formData: FormData) => Promise<SettingsActionState>;
 }) {
   const [garmentState, garmentAction, garmentPending] = useActionState(addGarmentTypeAction, initialSettingsActionState);
   const [templateState, templateAction, templatePending] = useActionState(addMeasurementTemplateAction, initialSettingsActionState);
   const [fieldState, fieldAction, fieldPending] = useActionState(addMeasurementFieldAction, initialSettingsActionState);
+  const [removeGarmentState, removeGarmentAction, removeGarmentPending] = useActionState(removeGarmentTypeAction, initialSettingsActionState);
+  const [removeTemplateState, removeTemplateAction, removeTemplatePending] = useActionState(removeMeasurementTemplateAction, initialSettingsActionState);
+  const [removeFieldState, removeFieldAction, removeFieldPending] = useActionState(removeMeasurementFieldAction, initialSettingsActionState);
 
   return (
     <div className="grid gap-5">
@@ -48,11 +57,23 @@ export function SettingsManagement({
           <CardTitle>Garment Types</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4">
-          <div className="flex flex-wrap gap-2">
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {garmentTypes.map((type) => (
-              <span key={type.id} className="rounded-full border border-[#d8c7b4] bg-white px-3 py-1 text-sm font-semibold">
-                {type.name}
-              </span>
+              <div key={type.id} className="flex items-center justify-between gap-2 rounded-md border border-[#d8c7b4] bg-white px-3 py-2 text-sm">
+                <span>
+                  <strong>{type.name}</strong>
+                  <span className="ml-2 text-xs text-[#7c6d66]">{type.active ? "Active" : "Removed"}</span>
+                </span>
+                {type.active ? (
+                  <form action={removeGarmentAction}>
+                    <input type="hidden" name="id" value={type.id} />
+                    <Button type="submit" variant="ghost" disabled={removeGarmentPending}>
+                      <Trash2 className="h-4 w-4" />
+                      Remove
+                    </Button>
+                  </form>
+                ) : null}
+              </div>
             ))}
           </div>
           <form action={garmentAction} className="grid gap-3 md:grid-cols-[1fr_auto]">
@@ -67,6 +88,7 @@ export function SettingsManagement({
             </div>
           </form>
           <ActionMessage state={garmentState} />
+          <ActionMessage state={removeGarmentState} />
         </CardContent>
       </Card>
 
@@ -78,9 +100,41 @@ export function SettingsManagement({
           <div className="grid gap-3 md:grid-cols-2">
             {measurementTemplates.map((template) => (
               <div key={template.id} className="rounded-md border border-[#eadfce] p-3">
-                <p className="font-semibold text-[#4c1525]">{template.name}</p>
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="font-semibold text-[#4c1525]">{template.name}</p>
+                    <p className="text-xs text-[#7c6d66]">{template.isActive ? "Active" : "Removed"}</p>
+                  </div>
+                  {template.isActive ? (
+                    <form action={removeTemplateAction}>
+                      <input type="hidden" name="id" value={template.id} />
+                      <Button type="submit" variant="ghost" disabled={removeTemplatePending}>
+                        <Trash2 className="h-4 w-4" />
+                        Remove
+                      </Button>
+                    </form>
+                  ) : null}
+                </div>
                 <p className="text-xs text-[#7c6d66]">{template.garmentCategories.join(", ")}</p>
-                <p className="mt-2 text-sm text-[#7c6d66]">{template.fields.map((field) => field.displayCode).join(", ")}</p>
+                <div className="mt-3 grid gap-2">
+                  {template.fields.map((field) => (
+                    <div key={field.id} className="flex items-center justify-between gap-2 rounded-md border border-[#eadfce] bg-[#fffdf8] px-2 py-1 text-xs">
+                      <span>
+                        <strong>{field.displayCode}</strong> {field.longLabel ?? field.displayLabel}
+                        <span className="ml-2 text-[#7c6d66]">{field.active ? "Active" : "Removed"}</span>
+                      </span>
+                      {field.active ? (
+                        <form action={removeFieldAction}>
+                          <input type="hidden" name="id" value={field.id} />
+                          <Button type="submit" variant="ghost" disabled={removeFieldPending}>
+                            <Trash2 className="h-4 w-4" />
+                            Remove
+                          </Button>
+                        </form>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
@@ -103,6 +157,8 @@ export function SettingsManagement({
             </div>
           </form>
           <ActionMessage state={templateState} />
+          <ActionMessage state={removeTemplateState} />
+          <ActionMessage state={removeFieldState} />
         </CardContent>
       </Card>
 

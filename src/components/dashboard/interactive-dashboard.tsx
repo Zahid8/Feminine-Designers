@@ -11,6 +11,7 @@ import { PaymentBadge, PriorityBadge, StatusBadge } from "@/components/ui/status
 import { cn } from "@/lib/utils/cn";
 import { formatDate, formatDateTime } from "@/lib/utils/date";
 import { formatINR } from "@/lib/utils/money";
+import { orderSortOptions, sortOrders, type OrderSortKey } from "@/lib/orders/order-sort";
 import type { DashboardCardModel, DashboardCollectionDay, DashboardModel, DashboardPaymentRow, DashboardViewId } from "@/lib/dashboard/dashboard-model";
 import type { OrderWithCustomer } from "@/types/domain";
 
@@ -238,20 +239,23 @@ function PaymentQueue({
 function MiniOrderList({
   title,
   orders,
-  emptyText
+  emptyText,
+  sortKey
 }: {
   title: string;
   orders: OrderWithCustomer[];
   emptyText: string;
+  sortKey: OrderSortKey;
 }) {
+  const sortedOrders = sortOrders(orders, sortKey);
   return (
     <Card>
       <CardHeader className="p-4">
         <CardTitle className="text-xl">{title}</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-2 p-4">
-        {orders.length ? (
-          orders.map((order) => (
+        {sortedOrders.length ? (
+          sortedOrders.map((order) => (
             <Link key={order.id} href={`/orders/${order.id}`} className="rounded-md border border-[#eadfce] bg-white p-3 transition hover:border-[#7d1f36]">
               <p className="font-semibold text-[#4c1525]">{order.customer.fullName}</p>
               <p className="text-xs text-[#7c6d66]">
@@ -326,6 +330,7 @@ function CollectionChart({ days }: { days: DashboardCollectionDay[] }) {
 export function InteractiveDashboard({ model }: { model: DashboardModel }) {
   const router = useRouter();
   const [selectedViewId, setSelectedViewId] = useState<DashboardViewId>("pending");
+  const [sortKey, setSortKey] = useState<OrderSortKey>("deliveryDate");
   const [hiddenCompletedOrderIds, setHiddenCompletedOrderIds] = useState<string[]>([]);
   const [hiddenPaidOrderIds, setHiddenPaidOrderIds] = useState<string[]>([]);
   const [hiddenPaymentIds, setHiddenPaymentIds] = useState<string[]>([]);
@@ -334,7 +339,10 @@ export function InteractiveDashboard({ model }: { model: DashboardModel }) {
   const [pendingPaymentIds, setPendingPaymentIds] = useState<string[]>([]);
   const selectedView = model.views[selectedViewId];
   const selectedCard = useMemo(() => model.cards.find((card) => card.id === selectedViewId), [model.cards, selectedViewId]);
-  const visibleSelectedOrders = selectedView.orders.filter((order) => !hiddenCompletedOrderIds.includes(order.id) && !hiddenPaidOrderIds.includes(order.id));
+  const visibleSelectedOrders = sortOrders(
+    selectedView.orders.filter((order) => !hiddenCompletedOrderIds.includes(order.id) && !hiddenPaidOrderIds.includes(order.id)),
+    sortKey
+  );
   const visibleSelectedPayments = selectedView.payments.filter((payment) => !hiddenPaymentIds.includes(payment.id));
   const selectedCount = selectedViewId === "collected-today" ? visibleSelectedPayments.length : visibleSelectedOrders.length;
 
@@ -409,9 +417,26 @@ export function InteractiveDashboard({ model }: { model: DashboardModel }) {
               </p>
             </div>
             {selectedCard ? (
-              <span className="inline-flex min-h-10 items-center rounded-md border border-[#d8c7b4] bg-white px-3 text-sm font-bold text-[#4c1525]">
-                {selectedCard.valueType === "money" ? formatINR(selectedCard.value) : `${selectedCount} item${selectedCount === 1 ? "" : "s"}`}
-              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <label className="inline-flex min-h-10 items-center gap-2 rounded-md border border-[#d8c7b4] bg-white px-3 text-xs font-semibold text-[#4c1525]">
+                  Sort by
+                  <select
+                    aria-label="Sort dashboard orders by"
+                    className="bg-transparent text-xs outline-none"
+                    value={sortKey}
+                    onChange={(event) => setSortKey(event.target.value as OrderSortKey)}
+                  >
+                    {orderSortOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <span className="inline-flex min-h-10 items-center rounded-md border border-[#d8c7b4] bg-white px-3 text-sm font-bold text-[#4c1525]">
+                  {selectedCard.valueType === "money" ? formatINR(selectedCard.value) : `${selectedCount} item${selectedCount === 1 ? "" : "s"}`}
+                </span>
+              </div>
             ) : null}
           </CardHeader>
           <CardContent>
@@ -449,11 +474,11 @@ export function InteractiveDashboard({ model }: { model: DashboardModel }) {
               </div>
             </CardContent>
           </Card>
-          <MiniOrderList title="Highest Outstanding" orders={model.insights.highestOutstanding} emptyText="No balances due." />
-          <MiniOrderList title="Urgent Deliveries" orders={model.insights.urgentDeliveries} emptyText="No urgent deliveries." />
+          <MiniOrderList title="Highest Outstanding" orders={model.insights.highestOutstanding} emptyText="No balances due." sortKey={sortKey} />
+          <MiniOrderList title="Urgent Deliveries" orders={model.insights.urgentDeliveries} emptyText="No urgent deliveries." sortKey={sortKey} />
           <MiniPaymentList payments={model.insights.recentCollections} />
           <CollectionChart days={model.insights.collectionsByDate} />
-          <MiniOrderList title="Ready, Not Delivered" orders={model.insights.readyUndelivered} emptyText="No ready orders waiting." />
+          <MiniOrderList title="Ready, Not Delivered" orders={model.insights.readyUndelivered} emptyText="No ready orders waiting." sortKey={sortKey} />
         </div>
       </div>
     </div>
