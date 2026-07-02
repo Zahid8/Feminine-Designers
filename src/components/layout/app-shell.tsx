@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CalendarDays, Home, ReceiptText, Search, Settings, UserRoundPlus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LogoMark } from "@/components/shared/logo-mark";
+import { logoutAction } from "@/app/(auth)/login/actions";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
@@ -44,6 +45,11 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
               <Link href="/orders/new">
                 <Button>New Order</Button>
               </Link>
+              <form action={logoutAction}>
+                <Button type="submit" variant="secondary">
+                  Log out
+                </Button>
+              </form>
             </div>
           </div>
         </header>
