@@ -137,10 +137,14 @@ function OrderQueue({
               <PaymentBadge status={order.totals.paymentStatus} />
             </div>
           </div>
-          <div className="mt-4 grid gap-3 text-sm md:grid-cols-[1.4fr_1fr_1fr_1fr_auto] md:items-center">
+          <div className="mt-4 grid gap-3 text-sm md:grid-cols-[1.4fr_1fr_1fr_1fr_1fr_auto] md:items-center">
             <p>
               <span className="block text-xs uppercase text-[#7c6d66]">Garments</span>
               <strong>{garmentSummary(order) || "No garments"}</strong>
+            </p>
+            <p>
+              <span className="block text-xs uppercase text-[#7c6d66]">Order date</span>
+              <strong>{formatDate(order.orderDate)}</strong>
             </p>
             <p>
               <span className="block text-xs uppercase text-[#7c6d66]">Delivery</span>

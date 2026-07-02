@@ -37,7 +37,7 @@ describe("buildDashboardModel", () => {
     expect(model.views["order-value-today"].orders.map((order) => order.id)).toEqual(["order-1"]);
     expect(model.views["order-value-month"].orders.map((order) => order.id)).toEqual(["order-1"]);
     expect(model.views["deliveries-today"].orders.map((order) => order.id)).toEqual(["order-2"]);
-    expect(model.views.pending.orders.map((order) => order.id)).toEqual(["order-2", "order-1"]);
+    expect(model.views.pending.orders.map((order) => order.id)).toEqual(["order-1", "order-2"]);
     expect(model.views.outstanding.orders.map((order) => order.totals.balanceDuePaise)).toEqual([196500, 94500]);
   });
 
@@ -92,5 +92,31 @@ describe("buildDashboardModel", () => {
         description: "1 order"
       })
     );
+  });
+
+  it("uses order date for today's value and queue sorting", () => {
+    const backfilledOrder = {
+      ...orders[0],
+      id: "backfilled-order",
+      receiptNumber: "SJD-2026-009999",
+      orderDate: "2026-06-20",
+      deliveryDate: "2026-07-01",
+      createdAt: "2026-07-01T08:00:00.000Z"
+    };
+    const currentOrder = {
+      ...orders[1],
+      id: "current-order",
+      receiptNumber: "SJD-2026-010000",
+      orderDate: "2026-07-01",
+      deliveryDate: "2026-07-08"
+    };
+
+    const model = buildDashboardModel([backfilledOrder, currentOrder], "2026-07-01");
+
+    expect(model.cards.find((card) => card.id === "order-value-today")).toEqual(
+      expect.objectContaining({ value: currentOrder.totals.grandTotalPaise })
+    );
+    expect(model.views["order-value-today"].orders.map((order) => order.id)).toEqual(["current-order"]);
+    expect(model.views.pending.orders.map((order) => order.id)).toEqual(["current-order", "backfilled-order"]);
   });
 });

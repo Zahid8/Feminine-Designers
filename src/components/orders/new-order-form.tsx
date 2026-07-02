@@ -8,7 +8,7 @@ import { Field, Input, Textarea } from "@/components/ui/input";
 import { MeasurementGrid } from "@/components/measurements/measurement-grid";
 import { GARMENT_TYPES, MEASUREMENT_TEMPLATES, STORE_SETTINGS } from "@/lib/constants/business";
 import { calculateOrderTotals } from "@/lib/calculations/order";
-import { formatDate, todayISO } from "@/lib/utils/date";
+import { todayISO } from "@/lib/utils/date";
 import { rupeesToPaise, formatINR } from "@/lib/utils/money";
 import { initialOrderActionState, type OrderActionState } from "@/services/orders/order-action-state";
 import type { ReturningCustomerMatch } from "@/types/customer-search";
@@ -108,7 +108,7 @@ export function NewOrderForm({
   ]);
   const [orderDiscount, setOrderDiscount] = useState(0);
   const [accessoriesCost, setAccessoriesCost] = useState(0);
-  const [advance, setAdvance] = useState(500);
+  const [advance, setAdvance] = useState(0);
   const [clothSampleDataUrl, setClothSampleDataUrl] = useState("");
   const [clothSampleError, setClothSampleError] = useState("");
   const clothInputRef = useRef<HTMLInputElement>(null);
@@ -340,10 +340,10 @@ export function NewOrderForm({
             <Input value={receipt} readOnly />
           </Field>
           <Field label="Order date">
-            <Input name="orderDate" inputMode="numeric" placeholder="dd/mm/yyyy" defaultValue={formatDate(orderDate)} />
+            <Input name="orderDate" type="date" defaultValue={orderDate} />
           </Field>
           <Field label="Delivery date">
-            <Input name="deliveryDate" inputMode="numeric" placeholder="dd/mm/yyyy" defaultValue={formatDate(deliveryDate)} />
+            <Input name="deliveryDate" type="date" defaultValue={deliveryDate} />
           </Field>
           <Field label="Priority">
             <select name="priority" className="h-10 rounded-md border border-[#d8c7b4] bg-white px-3 text-sm" defaultValue="Normal">

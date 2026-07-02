@@ -3,7 +3,6 @@ import { Field, Input, Textarea } from "@/components/ui/input";
 import { ClothSamplePhotoField } from "@/components/orders/cloth-sample-photo-field";
 import { EditOrderChoiceFields } from "@/components/orders/edit-order-choice-fields";
 import { MeasurementGrid } from "@/components/measurements/measurement-grid";
-import { formatDate } from "@/lib/utils/date";
 import { paiseToRupees } from "@/lib/utils/money";
 import { uniqueMeasurementNotes } from "@/lib/utils/receipt-notes";
 import type { MeasurementTemplate, OrderWithCustomer } from "@/types/domain";
@@ -29,10 +28,10 @@ export function EditOrderForm({
           <Input name="phonePrimary" defaultValue={order.customer.phonePrimary} />
         </Field>
         <Field label="Order date">
-          <Input name="orderDate" inputMode="numeric" placeholder="dd/mm/yyyy" defaultValue={formatDate(order.orderDate)} />
+          <Input name="orderDate" type="date" defaultValue={order.orderDate} />
         </Field>
         <Field label="Delivery date">
-          <Input name="deliveryDate" inputMode="numeric" placeholder="dd/mm/yyyy" defaultValue={formatDate(order.deliveryDate)} />
+          <Input name="deliveryDate" type="date" defaultValue={order.deliveryDate} />
         </Field>
         <Field label="Assigned tailor">
           <Input name="assignedTailor" defaultValue={order.assignedTailor ?? ""} />

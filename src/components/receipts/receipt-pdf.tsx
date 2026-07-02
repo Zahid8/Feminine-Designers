@@ -1,7 +1,7 @@
 import { Document, Image, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import { Fragment } from "react";
 import type { OrderWithCustomer, ReceiptType, StoreSettings } from "@/types/domain";
-import { formatDate } from "@/lib/utils/date";
+import { addDaysISO, formatDate } from "@/lib/utils/date";
 import { paiseToRupees } from "@/lib/utils/money";
 import { formatMeasurementValue, isPrintableMeasurementValue } from "@/lib/utils/measurement-display";
 import { shouldBreakAfterMeasurement } from "@/lib/utils/measurement-sections";
@@ -290,6 +290,7 @@ function PdfPanel({
 }) {
   const printableMeasurements = order.measurements.filter((measurement) => isPrintableMeasurementValue(measurement.value));
   const specialNotes = uniqueMeasurementNotes(order.measurements);
+  const deliveryDateForPdf = mode === "store" ? addDaysISO(order.deliveryDate, -3) : order.deliveryDate;
 
   return (
     <View style={compact ? styles.panelCompact : styles.panel}>
@@ -310,7 +311,7 @@ function PdfPanel({
         <Info label="Customer" value={order.customer.fullName} compact={compact} />
         <Info label="Phone" value={order.customer.phonePrimary} compact={compact} />
         <Info label="Order date" value={formatDate(order.orderDate)} compact={compact} />
-        <Info label="Delivery" value={formatDate(order.deliveryDate)} compact={compact} />
+        <Info label="Delivery" value={formatDate(deliveryDateForPdf)} compact={compact} />
       </View>
       <View style={styles.table}>
         <View style={styles.itemHeader}>

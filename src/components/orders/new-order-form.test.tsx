@@ -15,6 +15,12 @@ describe("NewOrderForm actions", () => {
     expect((screen.getByLabelText(/phone number/i) as HTMLInputElement).value).toBe("");
   });
 
+  it("starts advance payment at zero", () => {
+    render(<NewOrderForm />);
+
+    expect((screen.getByLabelText(/advance paid/i) as HTMLInputElement).value).toBe("0");
+  });
+
   it("submits draft, final order, and print intents instead of inert buttons", () => {
     render(<NewOrderForm />);
 
@@ -122,7 +128,7 @@ describe("NewOrderForm actions", () => {
     expect(screen.getAllByTestId("measurement-section-break").length).toBeGreaterThan(0);
   });
 
-  it("shows the server-provided next receipt number and India-formatted dates", () => {
+  it("shows the server-provided next receipt number with calendar date inputs", () => {
     render(
       <NewOrderForm
         nextReceiptNumber="SJD-2026-000011"
@@ -132,8 +138,13 @@ describe("NewOrderForm actions", () => {
     );
 
     expect((screen.getByLabelText(/receipt number/i) as HTMLInputElement).value).toBe("SJD-2026-000011");
-    expect((screen.getByLabelText(/^order date$/i) as HTMLInputElement).value).toBe("02/07/2026");
-    expect((screen.getByLabelText(/^delivery date$/i) as HTMLInputElement).value).toBe("02/07/2026");
+    const orderDateInput = screen.getByLabelText(/^order date$/i) as HTMLInputElement;
+    const deliveryDateInput = screen.getByLabelText(/^delivery date$/i) as HTMLInputElement;
+
+    expect(orderDateInput.type).toBe("date");
+    expect(deliveryDateInput.type).toBe("date");
+    expect(orderDateInput.value).toBe("2026-07-02");
+    expect(deliveryDateInput.value).toBe("2026-07-02");
   });
 
   it("searches returning customers by phone or name and applies their contact and measurements", async () => {
