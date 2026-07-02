@@ -14,6 +14,30 @@ function toRupeesDecimal(paise: number) {
   return paiseToRupees(paise).toFixed(2);
 }
 
+async function syncCustomerMeasurementSnapshot(admin: ReturnType<typeof createSupabaseAdminClient>, orderId: string, parsed: ParsedOrderForm) {
+  if (parsed.measurements.length === 0) return;
+
+  const { data: orderRow, error: orderError } = await admin.from("orders").select("customer_id").eq("id", orderId).single();
+  if (orderError) throw new Error(orderError.message);
+
+  const customerId = (orderRow as { customer_id?: string } | null)?.customer_id;
+  if (!customerId) return;
+
+  const { error: deleteError } = await admin.from("customer_measurement_profiles").delete().eq("source_order_id", orderId);
+  if (deleteError) throw new Error(deleteError.message);
+
+  const rows = parsed.measurements.map((measurement) => ({
+    customer_id: customerId,
+    field_key: measurement.fieldKey,
+    value: measurement.value.trim() || "NA",
+    unit: measurement.unit || "in",
+    source_order_id: orderId
+  }));
+
+  const { error: insertError } = await admin.from("customer_measurement_profiles").insert(rows);
+  if (insertError) throw new Error(insertError.message);
+}
+
 export async function saveParsedOrder(parsed: ParsedOrderForm): Promise<SavedOrderResult> {
   if (!hasSupabaseAdminEnv()) {
     throw new Error(
@@ -117,6 +141,8 @@ export async function saveParsedOrder(parsed: ParsedOrderForm): Promise<SavedOrd
   if (!result?.order_id) {
     throw new Error("Supabase did not return a saved order id.");
   }
+
+  await syncCustomerMeasurementSnapshot(admin, result.order_id, parsed);
 
   return {
     orderId: result.order_id,

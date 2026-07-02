@@ -9,6 +9,7 @@ import { MeasurementGrid } from "@/components/measurements/measurement-grid";
 import { OrderItemDeliveryTracker } from "@/components/orders/order-item-delivery-tracker";
 import { DeleteOrderButton } from "@/components/orders/delete-order-button";
 import { EditOrderForm } from "@/components/orders/edit-order-form";
+import { OrderStatusCheckboxEditor } from "@/components/orders/order-status-checkbox-editor";
 import { PaymentBadge, PriorityBadge, StatusBadge } from "@/components/ui/status-badge";
 import { getOrderById } from "@/services/orders/order-service";
 import { formatDate } from "@/lib/utils/date";
@@ -51,6 +52,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               <PriorityBadge priority={order.priority} />
               <PaymentBadge status={order.totals.paymentStatus} />
             </div>
+            <OrderStatusCheckboxEditor orderId={order.id} status={order.status} paymentStatus={order.totals.paymentStatus} />
             <div className="grid gap-3 md:grid-cols-2">
               {order.items.map((item) => (
                 <div key={item.id} className="rounded-md border border-[#eadfce] p-3">

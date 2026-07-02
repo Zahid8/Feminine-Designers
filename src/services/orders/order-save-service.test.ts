@@ -2,10 +2,17 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ParsedOrderForm } from "@/services/orders/order-form-parser";
 
 const mockRpc = vi.fn();
+const mockSingle = vi.fn();
+const mockSelectEq = vi.fn(() => ({ single: mockSingle }));
+const mockSelect = vi.fn(() => ({ eq: mockSelectEq }));
+const mockDeleteEq = vi.fn();
+const mockDelete = vi.fn(() => ({ eq: mockDeleteEq }));
+const mockInsert = vi.fn();
+const mockFrom = vi.fn(() => ({ delete: mockDelete, insert: mockInsert, select: mockSelect }));
 
 vi.mock("@/lib/supabase/admin", () => ({
   hasSupabaseAdminEnv: vi.fn(() => true),
-  createSupabaseAdminClient: vi.fn(() => ({ rpc: mockRpc }))
+  createSupabaseAdminClient: vi.fn(() => ({ from: mockFrom, rpc: mockRpc }))
 }));
 
 function makeParsedOrder(advancePaidRupees: number): ParsedOrderForm {
@@ -49,6 +56,9 @@ describe("saveParsedOrder", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockRpc.mockResolvedValue({ data: { order_id: "order-1", receipt_number: "SJD-2026-000001" }, error: null });
+    mockSingle.mockResolvedValue({ data: { customer_id: "customer-1" }, error: null });
+    mockDeleteEq.mockResolvedValue({ error: null });
+    mockInsert.mockResolvedValue({ error: null });
   });
 
   it("omits the payment payload when advance paid is zero", async () => {
@@ -104,6 +114,56 @@ describe("saveParsedOrder", () => {
         item_sort_order: null,
         notes: "Check shoulder slope before cutting."
       })
+    ]);
+  });
+
+  it("stores a customer measurement profile snapshot for the saved order", async () => {
+    const { saveParsedOrder } = await import("./order-save-service");
+    const parsed = makeParsedOrder(0);
+    parsed.measurements = [
+      {
+        id: "form-global-length",
+        fieldKey: "length",
+        displayCode: "L",
+        displayLabel: "Length",
+        value: "14",
+        unit: "in",
+        sortOrder: 1
+      },
+      {
+        id: "form-global-chest",
+        fieldKey: "chest",
+        displayCode: "C",
+        displayLabel: "Chest",
+        value: "36",
+        unit: "in",
+        sortOrder: 2
+      }
+    ];
+
+    await saveParsedOrder(parsed);
+
+    expect(mockFrom).toHaveBeenNthCalledWith(1, "orders");
+    expect(mockSelect).toHaveBeenCalledWith("customer_id");
+    expect(mockSelectEq).toHaveBeenCalledWith("id", "order-1");
+    expect(mockFrom).toHaveBeenNthCalledWith(2, "customer_measurement_profiles");
+    expect(mockDeleteEq).toHaveBeenCalledWith("source_order_id", "order-1");
+    expect(mockFrom).toHaveBeenNthCalledWith(3, "customer_measurement_profiles");
+    expect(mockInsert).toHaveBeenCalledWith([
+      {
+        customer_id: "customer-1",
+        field_key: "length",
+        value: "14",
+        unit: "in",
+        source_order_id: "order-1"
+      },
+      {
+        customer_id: "customer-1",
+        field_key: "chest",
+        value: "36",
+        unit: "in",
+        source_order_id: "order-1"
+      }
     ]);
   });
 

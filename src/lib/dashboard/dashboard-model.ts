@@ -4,6 +4,8 @@ import type { OrderWithCustomer, PaymentMethod } from "@/types/domain";
 
 export type DashboardViewId =
   | "orders-today"
+  | "order-value-today"
+  | "order-value-month"
   | "deliveries-today"
   | "pending"
   | "overdue"
@@ -64,6 +66,10 @@ function isActiveOrder(order: OrderWithCustomer) {
 
 function paymentDateKey(paidAt: string) {
   return paidAt.slice(0, 10);
+}
+
+function monthKey(value: string) {
+  return value.slice(0, 7);
 }
 
 function withOverdueMeta(order: OrderWithCustomer, today: string) {
@@ -128,6 +134,9 @@ export function buildDashboardModel(orders: OrderWithCustomer[], today: string):
   const currentOrders = enrichedOrders.filter((order) => !isPastOrderForList(order, today));
   const activeOrders = enrichedOrders.filter(isActiveOrder);
   const ordersToday = enrichedOrders.filter((order) => order.orderDate === today);
+  const orderValueToday = ordersToday.reduce((sum, order) => sum + order.totals.grandTotalPaise, 0);
+  const ordersThisMonth = enrichedOrders.filter((order) => monthKey(order.orderDate) === monthKey(today));
+  const orderValueThisMonth = ordersThisMonth.reduce((sum, order) => sum + order.totals.grandTotalPaise, 0);
   const deliveriesToday = activeOrders.filter((order) => order.deliveryDate === today);
   const pendingOrders = sortByDeliveryDate(activeOrders);
   const overdueOrders = sortByDeliveryDate(activeOrders.filter((order) => order.overdue));
@@ -144,6 +153,20 @@ export function buildDashboardModel(orders: OrderWithCustomer[], today: string):
       "New work entered today, including draft and active orders.",
       "No orders have been created today.",
       ordersToday
+    ),
+    "order-value-today": makeView(
+      "order-value-today",
+      "Order Value Today",
+      "Total bill value for orders created today.",
+      "No order value recorded today.",
+      ordersToday
+    ),
+    "order-value-month": makeView(
+      "order-value-month",
+      "Order Value This Month",
+      "Total bill value for orders created in this month.",
+      "No order value recorded this month.",
+      ordersThisMonth
     ),
     "deliveries-today": makeView(
       "deliveries-today",
@@ -193,6 +216,22 @@ export function buildDashboardModel(orders: OrderWithCustomer[], today: string):
         valueType: "count",
         description: "Created today",
         tone: "neutral"
+      },
+      {
+        id: "order-value-today",
+        label: "Order Value Today",
+        value: orderValueToday,
+        valueType: "money",
+        description: `${ordersToday.length} order${ordersToday.length === 1 ? "" : "s"}`,
+        tone: orderValueToday ? "good" : "neutral"
+      },
+      {
+        id: "order-value-month",
+        label: "Order Value This Month",
+        value: orderValueThisMonth,
+        valueType: "money",
+        description: `${ordersThisMonth.length} order${ordersThisMonth.length === 1 ? "" : "s"}`,
+        tone: orderValueThisMonth ? "good" : "neutral"
       },
       {
         id: "deliveries-today",

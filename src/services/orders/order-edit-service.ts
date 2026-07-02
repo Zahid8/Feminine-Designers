@@ -13,6 +13,11 @@ function readNumber(formData: FormData, key: string, fallback: number) {
   return Number.isFinite(value) ? value : fallback;
 }
 
+function readLastString<T extends string>(formData: FormData, key: string, fallback: T) {
+  const values = formData.getAll(key).filter((value): value is string => typeof value === "string" && value.trim() !== "");
+  return (values.at(-1)?.trim() as T | undefined) ?? fallback;
+}
+
 function toRupeesDecimal(paise: number) {
   return paiseToRupees(paise).toFixed(2);
 }
@@ -69,6 +74,10 @@ export async function updateOrderFromForm(order: OrderWithCustomer, formData: Fo
   const itemIndexes = orderItemIndexes(formData);
   const measurementNote = readString(formData, "measurementNotes");
   const now = new Date().toISOString();
+  const nextStatus = readLastString<OrderStatus>(formData, "status", order.status);
+  const nextPriority = readLastString<Priority>(formData, "priority", order.priority);
+  const clothSampleDataUrl = readString(formData, "clothSampleDataUrl");
+  const removeClothSample = readString(formData, "removeClothSample") === "1";
 
   const editedLineItems = order.items.map((item, index) =>
     itemIndexes.includes(index)
@@ -105,11 +114,12 @@ export async function updateOrderFromForm(order: OrderWithCustomer, formData: Fo
     await admin
       .from("orders")
       .update({
-        status: readString(formData, "status", order.status) as OrderStatus,
-        priority: readString(formData, "priority", order.priority) as Priority,
+        status: nextStatus,
+        priority: nextPriority,
         order_date: readString(formData, "orderDate", order.orderDate),
         delivery_date: readString(formData, "deliveryDate", order.deliveryDate),
         assigned_tailor_name: readString(formData, "assignedTailor", order.assignedTailor ?? "") || null,
+        cloth_sample_image_url: removeClothSample ? null : clothSampleDataUrl || order.clothSampleImageUrl || null,
         internal_notes: readString(formData, "internalNotes", order.internalNotes ?? "") || null,
         customer_notes: readString(formData, "customerNotes", order.customerNotes ?? "") || null,
         subtotal: toRupeesDecimal(totals.subtotalPaise),
@@ -180,5 +190,28 @@ export async function updateOrderFromForm(order: OrderWithCustomer, formData: Fo
         })
         .eq("id", measurement.id)
     );
+  }
+
+  if (nextStatus === "Ready" || nextStatus === "Delivered") {
+    await assertUpdate(
+      await admin
+        .from("order_items")
+        .update({
+          delivered: nextStatus === "Delivered",
+          delivered_at: nextStatus === "Delivered" ? now : null
+        })
+        .eq("order_id", order.id)
+    );
+  }
+
+  if (nextStatus !== order.status) {
+    const { error } = await admin.from("order_status_history").insert({
+      order_id: order.id,
+      from_status: order.status,
+      to_status: nextStatus,
+      notes: "Status changed from saved bill edit"
+    });
+
+    if (error) throw new Error(error.message);
   }
 }

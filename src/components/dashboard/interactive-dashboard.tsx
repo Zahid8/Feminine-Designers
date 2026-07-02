@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, ArrowRight, Banknote, CalendarDays, CheckCircle2, Clock, PackageCheck, ReceiptText } from "lucide-react";
+import { AlertTriangle, ArrowRight, Banknote, CalendarDays, CheckCircle2, Clock, IndianRupee, PackageCheck, ReceiptText } from "lucide-react";
 import { startTransition, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ComponentType } from "react";
@@ -16,6 +16,8 @@ import type { OrderWithCustomer } from "@/types/domain";
 
 const iconByCard: Record<DashboardViewId, ComponentType<{ className?: string }>> = {
   "orders-today": ReceiptText,
+  "order-value-today": IndianRupee,
+  "order-value-month": IndianRupee,
   "deliveries-today": CalendarDays,
   pending: Clock,
   overdue: AlertTriangle,
@@ -392,7 +394,7 @@ export function InteractiveDashboard({ model }: { model: DashboardModel }) {
 
   return (
     <div className="grid gap-5">
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {model.cards.map((card) => (
           <MetricCard key={card.id} card={card} selected={card.id === selectedViewId} onSelect={() => setSelectedViewId(card.id)} />
         ))}

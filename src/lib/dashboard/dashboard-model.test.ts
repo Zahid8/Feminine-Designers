@@ -8,6 +8,8 @@ describe("buildDashboardModel", () => {
 
     expect(model.cards.map((card) => card.id)).toEqual([
       "orders-today",
+      "order-value-today",
+      "order-value-month",
       "deliveries-today",
       "pending",
       "overdue",
@@ -20,8 +22,20 @@ describe("buildDashboardModel", () => {
     expect(model.cards.find((card) => card.id === "collected-today")).toEqual(
       expect.objectContaining({ label: "Collected Today", value: 150000, valueType: "money" })
     );
+    expect(model.cards.find((card) => card.id === "order-value-today")).toEqual(
+      expect.objectContaining({ label: "Order Value Today", value: orders[0].totals.grandTotalPaise, valueType: "money" })
+    );
+    expect(model.cards.find((card) => card.id === "order-value-month")).toEqual(
+      expect.objectContaining({
+        label: "Order Value This Month",
+        value: orders[0].totals.grandTotalPaise,
+        valueType: "money"
+      })
+    );
 
     expect(model.views["orders-today"].orders.map((order) => order.id)).toEqual(["order-1"]);
+    expect(model.views["order-value-today"].orders.map((order) => order.id)).toEqual(["order-1"]);
+    expect(model.views["order-value-month"].orders.map((order) => order.id)).toEqual(["order-1"]);
     expect(model.views["deliveries-today"].orders.map((order) => order.id)).toEqual(["order-2"]);
     expect(model.views.pending.orders.map((order) => order.id)).toEqual(["order-2", "order-1"]);
     expect(model.views.outstanding.orders.map((order) => order.totals.balanceDuePaise)).toEqual([196500, 94500]);

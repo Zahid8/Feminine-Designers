@@ -1,7 +1,7 @@
 import { orders } from "@/lib/data/mock";
 import { createSupabaseAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
 import { paiseToRupees, rupeesToPaise } from "@/lib/utils/money";
-import type { PaymentMethod } from "@/types/domain";
+import type { PaymentMethod, PaymentStatus } from "@/types/domain";
 
 interface SupabaseOrderPaymentTotals {
   advance_paid: string | number;
@@ -125,4 +125,49 @@ export async function reversePayment(paymentId: string) {
   if (updateError) throw new Error(updateError.message);
 
   return { orderId: paymentRecord.order_id };
+}
+
+export async function setOrderPaymentStatus(orderId: string, nextStatus: Extract<PaymentStatus, "Paid" | "Unpaid">) {
+  ensureSupabasePayments();
+
+  const admin = createSupabaseAdminClient();
+  const { data: order, error: orderError } = await admin
+    .from("orders")
+    .select("advance_paid,balance_due,grand_total")
+    .eq("id", orderId)
+    .single();
+
+  if (orderError) throw new Error(orderError.message);
+  if (!order) throw new Error("Order was not found.");
+
+  const totals = order as SupabaseOrderPaymentTotals;
+  const grandTotalPaise = rupeesToPaise(Number(totals.grand_total));
+  const updatedAt = new Date().toISOString();
+
+  const { error: deleteError } = await admin.from("payments").delete().eq("order_id", orderId);
+  if (deleteError) throw new Error(deleteError.message);
+
+  if (nextStatus === "Paid" && grandTotalPaise > 0) {
+    const { error: insertError } = await admin.from("payments").insert({
+      order_id: orderId,
+      amount: toRupeesDecimal(grandTotalPaise),
+      payment_method: "Cash",
+      paid_at: updatedAt,
+      notes: "Marked paid from order edit"
+    });
+    if (insertError) throw new Error(insertError.message);
+  }
+
+  const nextPaidPaise = nextStatus === "Paid" ? grandTotalPaise : 0;
+  const { error: updateError } = await admin
+    .from("orders")
+    .update({
+      advance_paid: toRupeesDecimal(nextPaidPaise),
+      balance_due: toRupeesDecimal(Math.max(0, grandTotalPaise - nextPaidPaise)),
+      payment_status: nextStatus,
+      updated_at: updatedAt
+    })
+    .eq("id", orderId);
+
+  if (updateError) throw new Error(updateError.message);
 }

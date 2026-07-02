@@ -1,11 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { Field, Input, Textarea } from "@/components/ui/input";
+import { ClothSamplePhotoField } from "@/components/orders/cloth-sample-photo-field";
 import { ORDER_STATUSES } from "@/lib/constants/business";
 import { paiseToRupees } from "@/lib/utils/money";
 import { uniqueMeasurementNotes } from "@/lib/utils/receipt-notes";
-import type { OrderWithCustomer, Priority } from "@/types/domain";
+import type { OrderWithCustomer, PaymentStatus, Priority } from "@/types/domain";
 
 const priorities: Priority[] = ["Normal", "Urgent", "Express"];
+const paymentChoices: Array<{ label: string; value: Extract<PaymentStatus, "Paid" | "Unpaid"> }> = [
+  { label: "Not paid", value: "Unpaid" },
+  { label: "Paid", value: "Paid" }
+];
 
 export function EditOrderForm({
   order,
@@ -31,24 +36,59 @@ export function EditOrderForm({
         <Field label="Delivery date">
           <Input name="deliveryDate" type="date" defaultValue={order.deliveryDate} />
         </Field>
-        <Field label="Status">
-          <select name="status" className="h-10 rounded-md border border-[#d8c7b4] bg-white px-3 text-sm" defaultValue={order.status}>
-            {ORDER_STATUSES.map((status) => (
-              <option key={status}>{status}</option>
-            ))}
-          </select>
-        </Field>
-        <Field label="Priority">
-          <select name="priority" className="h-10 rounded-md border border-[#d8c7b4] bg-white px-3 text-sm" defaultValue={order.priority}>
-            {priorities.map((priority) => (
-              <option key={priority}>{priority}</option>
-            ))}
-          </select>
-        </Field>
         <Field label="Assigned tailor">
           <Input name="assignedTailor" defaultValue={order.assignedTailor ?? ""} />
         </Field>
       </div>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="rounded-md border border-[#eadfce] bg-white p-4">
+          <p className="mb-3 text-sm font-bold text-[#4c1525]">Order status</p>
+          <div className="flex flex-wrap gap-2">
+            {ORDER_STATUSES.map((status) => (
+              <label key={status} className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#d8c7b4] bg-[#fffdf8] px-2 text-xs font-semibold">
+                <input type="checkbox" name="status" value={status} defaultChecked={order.status === status} className="h-4 w-4" />
+                {status}
+              </label>
+            ))}
+          </div>
+        </div>
+        <div className="rounded-md border border-[#eadfce] bg-white p-4">
+          <p className="mb-3 text-sm font-bold text-[#4c1525]">Payment status</p>
+          <div className="flex flex-wrap gap-2">
+            {paymentChoices.map((choice) => (
+              <label key={choice.value} className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#d8c7b4] bg-[#fffdf8] px-2 text-xs font-semibold">
+                <input
+                  type="checkbox"
+                  name="paymentStatus"
+                  value={choice.value}
+                  defaultChecked={order.totals.paymentStatus === choice.value}
+                  className="h-4 w-4"
+                />
+                {choice.label}
+              </label>
+            ))}
+            {order.totals.paymentStatus === "Partial" || order.totals.paymentStatus === "Credit" ? (
+              <span className="inline-flex min-h-8 items-center rounded-md border border-amber-200 bg-amber-50 px-2 text-xs font-semibold text-amber-800">
+                Current: {order.totals.paymentStatus}
+              </span>
+            ) : null}
+          </div>
+        </div>
+        <div className="rounded-md border border-[#eadfce] bg-white p-4">
+          <p className="mb-3 text-sm font-bold text-[#4c1525]">Priority</p>
+          <div className="flex flex-wrap gap-2">
+            {priorities.map((priority) => (
+              <label key={priority} className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#d8c7b4] bg-[#fffdf8] px-2 text-xs font-semibold">
+                <input type="checkbox" name="priority" value={priority} defaultChecked={order.priority === priority} className="h-4 w-4" />
+                {priority}
+              </label>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <ClothSamplePhotoField currentImageUrl={order.clothSampleImageUrl} />
 
       <div className="grid gap-3">
         {order.items.map((item, index) => (

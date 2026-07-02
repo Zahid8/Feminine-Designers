@@ -115,4 +115,65 @@ describe("payment service", () => {
     );
     expect(mockUpdateEq).toHaveBeenCalledWith("id", "order-1");
   });
+
+  it("marks an order unpaid by clearing payments and restoring the full balance", async () => {
+    mockSingle.mockResolvedValueOnce({
+      data: {
+        advance_paid: "1700.00",
+        balance_due: "0.00",
+        grand_total: "1700.00"
+      },
+      error: null
+    });
+    const { setOrderPaymentStatus } = await import("./payment-service");
+
+    await setOrderPaymentStatus("order-1", "Unpaid");
+
+    expect(mockFrom).toHaveBeenNthCalledWith(1, "orders");
+    expect(mockFrom).toHaveBeenNthCalledWith(2, "payments");
+    expect(mockDelete).toHaveBeenCalled();
+    expect(mockDeleteEq).toHaveBeenCalledWith("order_id", "order-1");
+    expect(mockFrom).toHaveBeenNthCalledWith(3, "orders");
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        advance_paid: "0.00",
+        balance_due: "1700.00",
+        payment_status: "Unpaid"
+      })
+    );
+  });
+
+  it("marks an order paid by replacing payments with a full settlement payment", async () => {
+    mockSingle.mockResolvedValueOnce({
+      data: {
+        advance_paid: "500.00",
+        balance_due: "1200.00",
+        grand_total: "1700.00"
+      },
+      error: null
+    });
+    const { setOrderPaymentStatus } = await import("./payment-service");
+
+    await setOrderPaymentStatus("order-1", "Paid");
+
+    expect(mockFrom).toHaveBeenNthCalledWith(2, "payments");
+    expect(mockDeleteEq).toHaveBeenCalledWith("order_id", "order-1");
+    expect(mockFrom).toHaveBeenNthCalledWith(3, "payments");
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        order_id: "order-1",
+        amount: "1700.00",
+        payment_method: "Cash",
+        notes: "Marked paid from order edit"
+      })
+    );
+    expect(mockFrom).toHaveBeenNthCalledWith(4, "orders");
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        advance_paid: "1700.00",
+        balance_due: "0.00",
+        payment_status: "Paid"
+      })
+    );
+  });
 });

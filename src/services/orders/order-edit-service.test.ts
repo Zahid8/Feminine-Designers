@@ -3,7 +3,8 @@ import { orders } from "@/lib/data/mock";
 
 const mockEq = vi.fn();
 const mockUpdate = vi.fn(() => ({ eq: mockEq }));
-const mockFrom = vi.fn(() => ({ update: mockUpdate }));
+const mockInsert = vi.fn();
+const mockFrom = vi.fn(() => ({ insert: mockInsert, update: mockUpdate }));
 
 vi.mock("@/lib/supabase/admin", () => ({
   hasSupabaseAdminEnv: vi.fn(() => true),
@@ -14,6 +15,7 @@ describe("order-edit-service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockEq.mockResolvedValue({ error: null });
+    mockInsert.mockResolvedValue({ error: null });
   });
 
   it("updates customer, order, items, measurements, and editable notes", async () => {
@@ -26,6 +28,7 @@ describe("order-edit-service", () => {
     formData.set("status", "Ready");
     formData.set("priority", "Express");
     formData.set("assignedTailor", "Shakir");
+    formData.set("clothSampleDataUrl", "data:image/jpeg;base64,new-photo");
     formData.set("orderDiscountRupees", "100");
     formData.set("accessoriesCostRupees", "50");
     formData.set("customerNotes", "Call before pickup.");
@@ -57,6 +60,8 @@ describe("order-edit-service", () => {
       expect.objectContaining({
         status: "Ready",
         priority: "Express",
+        assigned_tailor_name: "Shakir",
+        cloth_sample_image_url: "data:image/jpeg;base64,new-photo",
         customer_notes: "Call before pickup.",
         internal_notes: "Steam press before packing.",
         accessories_cost: "50.00",
@@ -79,6 +84,15 @@ describe("order-edit-service", () => {
       expect.objectContaining({
         value: "15",
         notes: "Check shoulder slope."
+      })
+    );
+    expect(mockFrom).toHaveBeenCalledWith("order_status_history");
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        order_id: orders[0].id,
+        from_status: orders[0].status,
+        to_status: "Ready",
+        notes: "Status changed from saved bill edit"
       })
     );
   });
