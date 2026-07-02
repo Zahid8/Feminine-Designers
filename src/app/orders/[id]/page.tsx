@@ -71,6 +71,7 @@ export default async function OrderDetailPage({
               {order.items.map((item) => (
                 <div key={item.id} className="rounded-md border border-[#eadfce] p-3">
                   <p className="font-semibold text-[#4c1525]">{item.garmentType}</p>
+                  {item.fabricColor ? <p className="text-sm text-[#7c6d66]">Fabric color: {item.fabricColor}</p> : null}
                   <p className="text-sm text-[#7c6d66]">
                     Qty {item.quantity} · Rate {formatINR(item.ratePaise)} · Stitching {formatINR(item.stitchingCostPaise)} · Fabric{" "}
                     {formatINR(item.fabricPricePaise)} · Dye {formatINR(item.dyePricePaise)} · Total {formatINR(item.lineTotalPaise)}
