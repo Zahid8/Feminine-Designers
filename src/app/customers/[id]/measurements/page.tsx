@@ -6,6 +6,7 @@ import { MeasurementGrid } from "@/components/measurements/measurement-grid";
 import { PageHeading } from "@/components/shared/page-heading";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Field, Input } from "@/components/ui/input";
 import { getCustomerMeasurementProfile } from "@/services/customers/customer-measurement-service";
 
 export default async function CustomerMeasurementsPage({
@@ -53,6 +54,11 @@ export default async function CustomerMeasurementsPage({
           {profile.values.length ? (
             editing ? (
               <form action={updateAction} className="grid gap-5">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field label="Customer phone number">
+                    <Input name="phonePrimary" required inputMode="tel" defaultValue={profile.customer.phonePrimary} />
+                  </Field>
+                </div>
                 <MeasurementGrid values={profile.values} editable />
                 <div className="flex flex-wrap justify-end gap-2">
                   <Link href={`/customers/${id}/measurements`}>

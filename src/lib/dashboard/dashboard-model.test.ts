@@ -59,6 +59,27 @@ describe("buildDashboardModel", () => {
     expect(model.insights.collectionsByDate).toEqual([{ date: "2026-07-01", totalPaise: 150000, paymentCount: 1 }]);
   });
 
+  it("groups payment collection dates by India time", () => {
+    const order = {
+      ...orders[0],
+      payments: [
+        {
+          ...orders[0].payments[0],
+          paidAt: "2026-07-01T20:00:00.000Z"
+        }
+      ]
+    };
+
+    const previousUtcDayModel = buildDashboardModel([order], "2026-07-01");
+    const indiaDayModel = buildDashboardModel([order], "2026-07-02");
+
+    expect(previousUtcDayModel.views["collected-today"].payments).toEqual([]);
+    expect(indiaDayModel.views["collected-today"].payments.map((payment) => payment.id)).toEqual(["pay-1"]);
+    expect(indiaDayModel.insights.collectionsByDate).toEqual([
+      { date: "2026-07-02", totalPaise: orders[0].payments[0].amountPaise, paymentCount: 1 }
+    ]);
+  });
+
   it("excludes past orders from dashboard action lists and outstanding totals", () => {
     const model = buildDashboardModel(orders, "2026-07-02");
 

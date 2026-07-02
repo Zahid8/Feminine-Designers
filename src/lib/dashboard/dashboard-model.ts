@@ -1,5 +1,6 @@
 import { daysOverdue, isOrderOverdue } from "@/lib/calculations/order";
 import { isPastOrderForList } from "@/lib/calculations/status";
+import { indiaNoonDate, todayISO } from "@/lib/utils/date";
 import type { OrderWithCustomer, PaymentMethod } from "@/types/domain";
 
 export type DashboardViewId =
@@ -65,7 +66,7 @@ function isActiveOrder(order: OrderWithCustomer) {
 }
 
 function paymentDateKey(paidAt: string) {
-  return paidAt.slice(0, 10);
+  return todayISO(new Date(paidAt));
 }
 
 function monthKey(value: string) {
@@ -73,7 +74,7 @@ function monthKey(value: string) {
 }
 
 function withOverdueMeta(order: OrderWithCustomer, today: string) {
-  const todayDate = new Date(`${today}T12:00:00`);
+  const todayDate = indiaNoonDate(today);
   return {
     ...order,
     overdue: isOrderOverdue(order.deliveryDate, order.status, todayDate),

@@ -2,6 +2,7 @@ import { getOrdersWithOverdueMeta, orders } from "@/lib/data/mock";
 import { daysOverdue, isOrderOverdue } from "@/lib/calculations/order";
 import { hasSupabaseAdminEnv, createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { isMissingSupabaseSchemaError } from "@/lib/supabase/errors";
+import { todayISO } from "@/lib/utils/date";
 import { rupeesToPaise } from "@/lib/utils/money";
 import type {
   Customer,
@@ -294,12 +295,12 @@ export async function getRecentOrders(limit = 5) {
     .slice(0, limit);
 }
 
-export async function getOrdersDueToday(today = "2026-07-01") {
+export async function getOrdersDueToday(today = todayISO()) {
   const sourceOrders = (await fetchSupabaseOrders()) ?? orders;
   return sourceOrders.filter((order) => order.deliveryDate === today && !["Delivered", "Cancelled"].includes(order.status));
 }
 
-export async function getUpcomingDeliveries(today = "2026-07-01") {
+export async function getUpcomingDeliveries(today = todayISO()) {
   const sourceOrders = (await fetchSupabaseOrders()) ?? orders;
   return sourceOrders.filter((order) => order.deliveryDate >= today && !["Delivered", "Cancelled"].includes(order.status));
 }

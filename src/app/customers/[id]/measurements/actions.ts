@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { updateCustomerContact } from "@/services/customers/customer-record-service";
 import { saveCustomerMeasurementProfile } from "@/services/customers/customer-measurement-service";
 import type { MeasurementValue } from "@/types/domain";
 
@@ -30,6 +31,7 @@ function parseMeasurements(formData: FormData): MeasurementValue[] {
 }
 
 export async function updateCustomerMeasurementsAction(customerId: string, formData: FormData) {
+  await updateCustomerContact(customerId, { phonePrimary: formValue(formData, "phonePrimary") });
   await saveCustomerMeasurementProfile(customerId, parseMeasurements(formData));
   revalidatePath("/customers");
   revalidatePath(`/customers/${customerId}`);

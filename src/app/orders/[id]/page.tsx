@@ -13,7 +13,7 @@ import { OrderStatusCheckboxEditor } from "@/components/orders/order-status-chec
 import { PaymentBadge, PriorityBadge, StatusBadge } from "@/components/ui/status-badge";
 import { getOrderById } from "@/services/orders/order-service";
 import { getMeasurementTemplateForGarment } from "@/services/measurements/measurement-service";
-import { formatDate } from "@/lib/utils/date";
+import { formatDate, formatDateTime } from "@/lib/utils/date";
 import { formatINR } from "@/lib/utils/money";
 import { updateOrderAction } from "@/app/orders/[id]/actions";
 
@@ -139,7 +139,7 @@ export default async function OrderDetailPage({
                 <div key={entry.id} className="border-l-2 border-[#7d1f36] pl-3">
                   <p className="font-semibold">{entry.toStatus}</p>
                   <p className="text-xs text-[#7c6d66]">
-                    {new Date(entry.changedAt).toLocaleString("en-IN")} · {entry.changedBy}
+                    {formatDateTime(entry.changedAt)} · {entry.changedBy}
                   </p>
                 </div>
               ))}

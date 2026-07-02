@@ -1,4 +1,5 @@
 import { newOrderSchema, type NewOrderInput } from "@/lib/validations/order";
+import { normalizeDateInput } from "@/lib/utils/date";
 import type { MeasurementValue } from "@/types/domain";
 
 export type OrderSubmitIntent = "draft" | "order" | "print";
@@ -95,8 +96,8 @@ export function parseOrderFormData(formData: FormData): ParsedOrderForm {
   const order = newOrderSchema.parse({
     customerName: readString(formData, "customerName"),
     phonePrimary: readString(formData, "phonePrimary"),
-    orderDate: readString(formData, "orderDate"),
-    deliveryDate: readString(formData, "deliveryDate"),
+    orderDate: normalizeDateInput(readString(formData, "orderDate")),
+    deliveryDate: normalizeDateInput(readString(formData, "deliveryDate")),
     priority: readString(formData, "priority", "Normal"),
     status: intent === "draft" ? "Draft" : "New",
     assignedTailor: readString(formData, "assignedTailor"),

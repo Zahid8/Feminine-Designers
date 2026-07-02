@@ -9,6 +9,10 @@ export interface NewCustomerRecord {
   notes?: string;
 }
 
+export interface CustomerContactUpdate {
+  phonePrimary: string;
+}
+
 function ensureSupabaseCustomers() {
   if (!hasSupabaseAdminEnv()) {
     throw new Error("Supabase is not configured. Customer record changes require the database.");
@@ -51,6 +55,26 @@ export async function archiveCustomerRecord(customerId: string) {
     .from("customers")
     .update({
       archived_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", customerId);
+
+  if (error) throw new Error(error.message);
+}
+
+export async function updateCustomerContact(customerId: string, update: CustomerContactUpdate) {
+  ensureSupabaseCustomers();
+
+  const phonePrimary = update.phonePrimary.trim();
+  if (!phonePrimary) {
+    throw new Error("Phone number is required.");
+  }
+
+  const admin = createSupabaseAdminClient();
+  const { error } = await admin
+    .from("customers")
+    .update({
+      phone_primary: phonePrimary,
       updated_at: new Date().toISOString()
     })
     .eq("id", customerId);

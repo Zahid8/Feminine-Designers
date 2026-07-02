@@ -52,4 +52,19 @@ describe("customer record service", () => {
     expect(mockUpdate).toHaveBeenCalledWith(expect.objectContaining({ archived_at: expect.any(String) }));
     expect(mockUpdateEq).toHaveBeenCalledWith("id", "customer-1");
   });
+
+  it("updates a customer's primary phone number", async () => {
+    const { updateCustomerContact } = await import("./customer-record-service");
+
+    await updateCustomerContact("customer-1", { phonePrimary: " 9876543210 " });
+
+    expect(mockFrom).toHaveBeenCalledWith("customers");
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        phone_primary: "9876543210",
+        updated_at: expect.any(String)
+      })
+    );
+    expect(mockUpdateEq).toHaveBeenCalledWith("id", "customer-1");
+  });
 });

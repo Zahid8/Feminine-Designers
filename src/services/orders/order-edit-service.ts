@@ -1,4 +1,5 @@
 import { calculateLineTotal, calculateOrderTotals } from "@/lib/calculations/order";
+import { normalizeDateInput } from "@/lib/utils/date";
 import { paiseToRupees, rupeesToPaise } from "@/lib/utils/money";
 import { createSupabaseAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
 import type { OrderStatus, OrderWithCustomer, PaymentStatus, Priority } from "@/types/domain";
@@ -147,8 +148,8 @@ export async function updateOrderFromForm(order: OrderWithCustomer, formData: Fo
       .update({
         status: nextStatus,
         priority: nextPriority,
-        order_date: readString(formData, "orderDate", order.orderDate),
-        delivery_date: readString(formData, "deliveryDate", order.deliveryDate),
+        order_date: normalizeDateInput(readString(formData, "orderDate", order.orderDate)),
+        delivery_date: normalizeDateInput(readString(formData, "deliveryDate", order.deliveryDate)),
         assigned_tailor_name: readString(formData, "assignedTailor", order.assignedTailor ?? "") || null,
         cloth_sample_image_url: removeClothSample ? null : clothSampleDataUrl || order.clothSampleImageUrl || null,
         internal_notes: readString(formData, "internalNotes", order.internalNotes ?? "") || null,

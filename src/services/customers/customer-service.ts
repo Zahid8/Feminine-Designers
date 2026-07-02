@@ -3,6 +3,7 @@ import { createSupabaseAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/a
 import { isMissingSupabaseSchemaError } from "@/lib/supabase/errors";
 import { listOrders } from "@/services/orders/order-service";
 import type { Customer } from "@/types/domain";
+import type { ReturningCustomerMatch } from "@/types/customer-search";
 
 interface SupabaseCustomerRecord {
   id: string;
@@ -83,4 +84,25 @@ export async function getCustomerProfile(id: string) {
 export async function findDuplicateCustomers(phone: string) {
   const sourceCustomers = (await fetchSupabaseCustomers()) ?? customers;
   return sourceCustomers.filter((customer) => customer.phonePrimary === phone || customer.phoneSecondary === phone);
+}
+
+export async function searchReturningCustomerMatches(query: string, limit = 8): Promise<ReturningCustomerMatch[]> {
+  const normalized = query.trim();
+  if (normalized.length < 2) return [];
+
+  const matchedCustomers = (await listCustomers(normalized)).slice(0, limit);
+  const profiles = await Promise.all(
+    matchedCustomers.map(async (customer) => {
+      const profile = await getCustomerProfile(customer.id);
+      return {
+        id: customer.id,
+        customerCode: customer.customerCode,
+        fullName: customer.fullName,
+        phonePrimary: customer.phonePrimary,
+        measurements: profile?.latestMeasurements ?? []
+      };
+    })
+  );
+
+  return profiles;
 }

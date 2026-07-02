@@ -1,16 +1,17 @@
 "use client";
 
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
-import { Camera, Calculator, Copy, Printer, Save, X } from "lucide-react";
+import { Camera, Calculator, Check, Printer, Save, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, Input, Textarea } from "@/components/ui/input";
 import { MeasurementGrid } from "@/components/measurements/measurement-grid";
 import { GARMENT_TYPES, MEASUREMENT_TEMPLATES, STORE_SETTINGS } from "@/lib/constants/business";
 import { calculateOrderTotals } from "@/lib/calculations/order";
-import { formatReceiptNumber } from "@/lib/calculations/receipt-number";
+import { formatDate, todayISO } from "@/lib/utils/date";
 import { rupeesToPaise, formatINR } from "@/lib/utils/money";
 import { initialOrderActionState, type OrderActionState } from "@/services/orders/order-action-state";
+import type { ReturningCustomerMatch } from "@/types/customer-search";
 import type { GarmentType, MeasurementTemplate } from "@/types/domain";
 
 const CLOTH_SAMPLE_MAX_DIMENSION = 900;
@@ -72,13 +73,27 @@ async function compressClothSample(file: File) {
 export function NewOrderForm({
   action = async () => initialOrderActionState,
   garmentTypes = GARMENT_TYPES,
-  measurementTemplates = MEASUREMENT_TEMPLATES
+  measurementTemplates = MEASUREMENT_TEMPLATES,
+  nextReceiptNumber,
+  orderDate = todayISO(),
+  deliveryDate = orderDate
 }: {
   action?: (state: OrderActionState, formData: FormData) => Promise<OrderActionState>;
   garmentTypes?: GarmentType[];
   measurementTemplates?: MeasurementTemplate[];
+  nextReceiptNumber?: string;
+  orderDate?: string;
+  deliveryDate?: string;
 }) {
   const [state, formAction, isPending] = useActionState(action, initialOrderActionState);
+  const [customerName, setCustomerName] = useState("");
+  const [phonePrimary, setPhonePrimary] = useState("");
+  const [returningCustomerQuery, setReturningCustomerQuery] = useState("");
+  const [returningCustomerMatches, setReturningCustomerMatches] = useState<ReturningCustomerMatch[]>([]);
+  const [selectedReturningCustomerId, setSelectedReturningCustomerId] = useState("");
+  const [returningCustomerStatus, setReturningCustomerStatus] = useState<"idle" | "searching" | "error">("idle");
+  const [appliedMeasurements, setAppliedMeasurements] = useState<ReturningCustomerMatch["measurements"]>([]);
+  const [measurementGridKey, setMeasurementGridKey] = useState("new");
   const [clothCount, setClothCount] = useState(1);
   const [items, setItems] = useState([
     { quantity: 1, rate: 1500, stitchingCost: 0, garmentType: garmentTypes.find((type) => type.active)?.name ?? "Blouse" }
@@ -89,7 +104,7 @@ export function NewOrderForm({
   const [clothSampleDataUrl, setClothSampleDataUrl] = useState("");
   const [clothSampleError, setClothSampleError] = useState("");
   const clothInputRef = useRef<HTMLInputElement>(null);
-  const receipt = formatReceiptNumber({ prefix: STORE_SETTINGS.receiptPrefix, year: 2026, sequence: 3 });
+  const receipt = nextReceiptNumber ?? "Assigned on save";
   const activeGarmentTypes = garmentTypes.filter((type) => type.active);
   const visibleItems = useMemo(() => Array.from({ length: clothCount }, (_, index) => items[index] ?? items[0]), [clothCount, items]);
   const globalMeasurementTemplate = templateForGarment(visibleItems[0]?.garmentType ?? activeGarmentTypes[0]?.name ?? "");
@@ -116,6 +131,39 @@ export function NewOrderForm({
       window.location.assign(state.redirectTo);
     }
   }, [state]);
+
+  useEffect(() => {
+    const query = returningCustomerQuery.trim();
+    if (query.length < 2) {
+      return;
+    }
+
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      setReturningCustomerStatus("searching");
+      try {
+        const response = await fetch(`/api/customers/search?q=${encodeURIComponent(query)}`, {
+          signal: controller.signal
+        });
+        if (!response.ok) throw new Error("Customer search failed.");
+        const payload = (await response.json()) as { matches?: ReturningCustomerMatch[] };
+        const matches = payload.matches ?? [];
+        setReturningCustomerMatches(matches);
+        setSelectedReturningCustomerId(matches[0]?.id ?? "");
+        setReturningCustomerStatus("idle");
+      } catch (error) {
+        if ((error as Error).name === "AbortError") return;
+        setReturningCustomerMatches([]);
+        setSelectedReturningCustomerId("");
+        setReturningCustomerStatus("error");
+      }
+    }, 250);
+
+    return () => {
+      controller.abort();
+      window.clearTimeout(timer);
+    };
+  }, [returningCustomerQuery]);
 
   async function handleClothSampleChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -155,6 +203,26 @@ export function NewOrderForm({
     );
   }
 
+  function handleReturningCustomerQueryChange(value: string) {
+    setReturningCustomerQuery(value);
+    if (value.trim().length < 2) {
+      setReturningCustomerMatches([]);
+      setSelectedReturningCustomerId("");
+      setReturningCustomerStatus("idle");
+    }
+  }
+
+  function applyReturningCustomer() {
+    const match = returningCustomerMatches.find((customer) => customer.id === selectedReturningCustomerId);
+    if (!match) return;
+
+    setCustomerName(match.fullName);
+    setPhonePrimary(match.phonePrimary);
+    setAppliedMeasurements(match.measurements);
+    setReturningCustomerQuery(match.fullName);
+        setMeasurementGridKey(`${match.id}-${Date.now()}`);
+  }
+
   function templateForGarment(garmentType: string) {
     return (
       measurementTemplates.find((template) => template.garmentCategories.includes(garmentType)) ??
@@ -184,18 +252,61 @@ export function NewOrderForm({
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-3">
           <Field label="Search or customer name">
-            <Input name="customerName" placeholder="Name or phone number" />
+            <Input
+              name="customerName"
+              placeholder="Name or phone number"
+              value={customerName}
+              onChange={(event) => setCustomerName(event.target.value)}
+            />
           </Field>
           <Field label="Phone number">
-            <Input name="phonePrimary" placeholder="Indian mobile number" />
+            <Input
+              name="phonePrimary"
+              placeholder="Indian mobile number"
+              value={phonePrimary}
+              onChange={(event) => setPhonePrimary(event.target.value)}
+            />
           </Field>
           <div className="rounded-md border border-[#eadfce] bg-[#fdf8ef] p-3 text-sm">
             <p className="font-semibold text-[#4c1525]">Returning customer match</p>
-            <p className="mt-1 text-[#7c6d66]">2 previous orders. Latest measurements available.</p>
-            <Button type="button" variant="secondary" className="mt-3">
-              <Copy className="h-4 w-4" />
-              Reuse Latest
-            </Button>
+            <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
+              <label className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7c6d66]" />
+                <Input
+                  value={returningCustomerQuery}
+                  onChange={(event) => handleReturningCustomerQueryChange(event.target.value)}
+                  placeholder="Search by name or phone"
+                  className="pl-9"
+                  aria-label="Search saved customer by name or phone"
+                />
+              </label>
+              <Button type="button" variant="secondary" onClick={applyReturningCustomer} disabled={!selectedReturningCustomerId}>
+                <Check className="h-4 w-4" />
+                Apply
+              </Button>
+            </div>
+            {returningCustomerMatches.length ? (
+              <select
+                className="mt-2 h-10 w-full rounded-md border border-[#d8c7b4] bg-white px-3 text-sm"
+                value={selectedReturningCustomerId}
+                onChange={(event) => setSelectedReturningCustomerId(event.target.value)}
+                aria-label="Returning customer suggestions"
+              >
+                {returningCustomerMatches.map((customer) => (
+                  <option key={customer.id} value={customer.id}>
+                    {customer.fullName} - {customer.phonePrimary}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <p className="mt-2 text-xs text-[#7c6d66]">
+                {returningCustomerStatus === "searching"
+                  ? "Searching saved customers..."
+                  : returningCustomerStatus === "error"
+                    ? "Could not search customers."
+                  : "Type at least 2 letters or digits from the customer name or phone number."}
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -209,10 +320,10 @@ export function NewOrderForm({
             <Input value={receipt} readOnly />
           </Field>
           <Field label="Order date">
-            <Input name="orderDate" type="date" defaultValue="2026-07-01" />
+            <Input name="orderDate" inputMode="numeric" placeholder="dd/mm/yyyy" defaultValue={formatDate(orderDate)} />
           </Field>
           <Field label="Delivery date">
-            <Input name="deliveryDate" type="date" defaultValue="2026-07-05" />
+            <Input name="deliveryDate" inputMode="numeric" placeholder="dd/mm/yyyy" defaultValue={formatDate(deliveryDate)} />
           </Field>
           <Field label="Priority">
             <select name="priority" className="h-10 rounded-md border border-[#d8c7b4] bg-white px-3 text-sm" defaultValue="Normal">
@@ -316,7 +427,9 @@ export function NewOrderForm({
             <h3 className="text-sm font-bold text-[#4c1525]">Measurements</h3>
             <div className="mt-4">
               <MeasurementGrid
+                key={measurementGridKey}
                 template={globalMeasurementTemplate}
+                defaultValues={appliedMeasurements}
                 editable
                 valuePrefix="measurement"
                 metaPrefix="measurementMeta"

@@ -9,7 +9,7 @@ import { reversePaymentAction, setOrderCompletedAction, settleOrderBalanceAction
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PaymentBadge, PriorityBadge, StatusBadge } from "@/components/ui/status-badge";
 import { cn } from "@/lib/utils/cn";
-import { formatDate } from "@/lib/utils/date";
+import { formatDate, formatDateTime } from "@/lib/utils/date";
 import { formatINR } from "@/lib/utils/money";
 import type { DashboardCardModel, DashboardCollectionDay, DashboardModel, DashboardPaymentRow, DashboardViewId } from "@/lib/dashboard/dashboard-model";
 import type { OrderWithCustomer } from "@/types/domain";
@@ -42,11 +42,6 @@ function garmentSummary(order: OrderWithCustomer) {
 
 function paidAmount(order: OrderWithCustomer) {
   return order.payments.reduce((sum, payment) => sum + payment.amountPaise, 0);
-}
-
-function formatISODateLabel(value: string) {
-  const [year, month, day] = value.slice(0, 10).split("-");
-  return year && month && day ? `${day}/${month}/${year}` : value;
 }
 
 function MetricCard({
@@ -225,7 +220,7 @@ function PaymentQueue({
               <div>
               <p className="text-2xl font-bold text-[#4c1525]">{formatINR(payment.amountPaise)}</p>
               <p className="text-sm text-[#7c6d66]">
-                {payment.method} · {formatISODateLabel(payment.paidAt)}
+                {payment.method} · {formatDateTime(payment.paidAt)}
               </p>
               </div>
             </div>
@@ -306,7 +301,7 @@ function CollectionChart({ days }: { days: DashboardCollectionDay[] }) {
           days.map((day) => (
             <div key={day.date} className="grid gap-1">
               <div className="flex items-center justify-between gap-3 text-xs">
-                <span className="font-semibold text-[#4c1525]">{formatISODateLabel(day.date)}</span>
+                <span className="font-semibold text-[#4c1525]">{formatDate(day.date)}</span>
                 <span className="text-[#7c6d66]">
                   {formatINR(day.totalPaise)} · {day.paymentCount}
                 </span>

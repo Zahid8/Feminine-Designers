@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { CalendarDays, Home, ReceiptText, Search, Settings, UserRoundPlus, Users } from "lucide-react";
+import { Home, ReceiptText, Search, Settings, UserRoundPlus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LogoMark } from "@/components/shared/logo-mark";
+import { IndiaClock } from "@/components/shared/india-clock";
 import { logoutAction } from "@/app/(auth)/login/actions";
 
 const navItems = [
@@ -38,10 +39,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
               <span className="truncate">Search by receipt, phone, customer, or order number</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="hidden items-center gap-2 text-sm text-[#7c6d66] md:inline-flex">
-                <CalendarDays className="h-4 w-4" />
-                Counter workflow
-              </span>
+              <IndiaClock initialIso={new Date().toISOString()} />
               <Link href="/orders/new">
                 <Button>New Order</Button>
               </Link>

@@ -5,21 +5,24 @@ import { shouldBreakAfterMeasurement } from "@/lib/utils/measurement-sections";
 export function MeasurementGrid({
   template,
   values,
+  defaultValues,
   editable = false,
   valuePrefix = "measurement",
   metaPrefix = "measurementMeta"
 }: {
   template?: MeasurementTemplate;
   values?: MeasurementValue[];
+  defaultValues?: MeasurementValue[];
   editable?: boolean;
   valuePrefix?: string;
   metaPrefix?: string;
 }) {
   const fields = template?.fields ?? values ?? [];
+  const defaultValueByField = new Map(defaultValues?.map((value) => [value.fieldKey, value.value]));
   return (
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
       {fields.map((field) => {
-        const value = "value" in field ? field.value : "";
+        const value = "value" in field ? field.value : defaultValueByField.get(field.fieldKey) ?? "";
         return (
           <div key={field.id} className="contents">
             <label className="grid gap-1 rounded-md border border-[#eadfce] bg-white p-3 text-sm">

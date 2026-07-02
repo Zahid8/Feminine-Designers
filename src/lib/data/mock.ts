@@ -8,6 +8,7 @@ import type {
 import { calculateOrderTotals, daysOverdue, isOrderOverdue } from "@/lib/calculations/order";
 import { formatReceiptNumber } from "@/lib/calculations/receipt-number";
 import { MEASUREMENT_TEMPLATES, STORE_SETTINGS } from "@/lib/constants/business";
+import { todayISO } from "@/lib/utils/date";
 import { rupeesToPaise } from "@/lib/utils/money";
 
 export const customers: Customer[] = [
@@ -193,7 +194,7 @@ export const orders: OrderWithCustomer[] = [
 ];
 
 export function getDashboardSummary(today = new Date("2026-07-01T12:00:00+05:30")): DashboardSummary {
-  const todayKey = today.toISOString().slice(0, 10);
+  const todayKey = todayISO(today);
   return {
     ordersToday: orders.filter((order) => order.orderDate === todayKey).length,
     deliveriesToday: orders.filter((order) => order.deliveryDate === todayKey).length,

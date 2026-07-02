@@ -1,7 +1,11 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { NewOrderForm } from "@/components/orders/new-order-form";
 import { GARMENT_TYPES, MEASUREMENT_TEMPLATES } from "@/lib/constants/business";
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe("NewOrderForm actions", () => {
   it("starts customer name and phone fields blank", () => {
@@ -86,5 +90,61 @@ describe("NewOrderForm actions", () => {
     render(<NewOrderForm />);
 
     expect(screen.getAllByTestId("measurement-section-break").length).toBeGreaterThan(0);
+  });
+
+  it("shows the server-provided next receipt number and India-formatted dates", () => {
+    render(
+      <NewOrderForm
+        nextReceiptNumber="SJD-2026-000011"
+        orderDate="2026-07-02"
+        deliveryDate="2026-07-02"
+      />
+    );
+
+    expect((screen.getByLabelText(/receipt number/i) as HTMLInputElement).value).toBe("SJD-2026-000011");
+    expect((screen.getByLabelText(/^order date$/i) as HTMLInputElement).value).toBe("02/07/2026");
+    expect((screen.getByLabelText(/^delivery date$/i) as HTMLInputElement).value).toBe("02/07/2026");
+  });
+
+  it("searches returning customers by phone or name and applies their contact and measurements", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          matches: [
+            {
+              id: "customer-1",
+              customerCode: "CUST-1",
+              fullName: "Rachna",
+              phonePrimary: "9876543210",
+              measurements: [
+                {
+                  id: "measurement-length",
+                  fieldKey: "length",
+                  displayCode: "L",
+                  displayLabel: "Length",
+                  value: "44",
+                  unit: "in",
+                  sortOrder: 1
+                }
+              ]
+            }
+          ]
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      )
+    );
+    const { container } = render(<NewOrderForm />);
+
+    fireEvent.change(screen.getByLabelText(/search saved customer by name or phone/i), {
+      target: { value: "9876543210" }
+    });
+
+    await waitFor(() => expect(screen.getByLabelText(/returning customer suggestions/i)).toBeDefined());
+    fireEvent.click(screen.getByRole("button", { name: /apply/i }));
+
+    expect(fetchMock.mock.calls[0]?.[0]).toBe("/api/customers/search?q=9876543210");
+    expect((screen.getByLabelText(/search or customer name/i) as HTMLInputElement).value).toBe("Rachna");
+    expect((screen.getByLabelText(/phone number/i) as HTMLInputElement).value).toBe("9876543210");
+    expect((container.querySelector('[name="measurement.length"]') as HTMLInputElement).value).toBe("44");
   });
 });
