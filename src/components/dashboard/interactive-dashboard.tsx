@@ -27,10 +27,10 @@ const iconByCard: Record<DashboardViewId, ComponentType<{ className?: string }>>
 };
 
 const toneClasses: Record<DashboardCardModel["tone"], string> = {
-  neutral: "border-[#e8dcca] bg-white hover:border-[#7d1f36]",
-  good: "border-emerald-200 bg-emerald-50 hover:border-emerald-500",
-  warning: "border-amber-200 bg-amber-50 hover:border-amber-500",
-  danger: "border-red-200 bg-red-50 hover:border-red-500"
+  neutral: "border-[#ead8c3] bg-gradient-to-br from-white to-[#fff4e8] hover:border-[#d99a62]",
+  good: "border-emerald-200 bg-gradient-to-br from-white to-emerald-50 hover:border-emerald-500",
+  warning: "border-amber-200 bg-gradient-to-br from-white to-amber-50 hover:border-amber-500",
+  danger: "border-red-200 bg-gradient-to-br from-white to-red-50 hover:border-red-500"
 };
 
 function cardValue(card: DashboardCardModel) {
@@ -60,7 +60,7 @@ function MetricCard({
       type="button"
       onClick={onSelect}
       className={cn(
-        "min-h-32 rounded-lg border p-4 text-left shadow-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7d1f36]",
+        "min-h-32 rounded-lg border p-4 text-left shadow-[0_18px_38px_rgba(76,21,37,0.08)] ring-1 ring-white/70 transition hover:-translate-y-0.5 hover:shadow-[0_24px_48px_rgba(76,21,37,0.12)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d99a62]",
         toneClasses[card.tone],
         selected && "border-[#7d1f36] ring-2 ring-[#7d1f36]/20"
       )}
@@ -70,7 +70,7 @@ function MetricCard({
           <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#7c6d66]">{card.label}</p>
           <p className="mt-2 text-3xl font-bold text-[#4c1525]">{cardValue(card)}</p>
         </div>
-        <span className="rounded-md border border-white/70 bg-white/70 p-2 text-[#7d1f36]">
+        <span className="rounded-md border border-white/80 bg-white/80 p-2 text-[#7d1f36] shadow-sm">
           <Icon className="h-5 w-5" />
         </span>
       </div>
@@ -95,13 +95,13 @@ function OrderQueue({
   onSetPaid: (orderId: string) => void;
 }) {
   if (orders.length === 0) {
-    return <div className="rounded-md border border-dashed border-[#d8c7b4] bg-white p-8 text-center text-sm text-[#7c6d66]">{emptyText}</div>;
+    return <div className="rounded-md border border-dashed border-[#dfc5a8] bg-white/90 p-8 text-center text-sm text-[#7c6d66] shadow-sm">{emptyText}</div>;
   }
 
   return (
     <div className="grid gap-3">
       {orders.map((order) => (
-        <div key={order.id} className="rounded-md border border-[#eadfce] bg-white p-4">
+        <div key={order.id} className="rounded-md border border-[#ead8c3] bg-white/95 p-4 shadow-sm transition hover:border-[#d99a62] hover:shadow-[0_14px_32px_rgba(76,21,37,0.08)]">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#7c6d66]">{order.receiptNumber ?? "Draft"}</p>
@@ -122,7 +122,7 @@ function OrderQueue({
                 />
                 Paid
               </label>
-              <label className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#d8c7b4] bg-white px-2 text-xs font-semibold text-[#4c1525]">
+              <label className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#dfc5a8] bg-white/95 px-2 text-xs font-semibold text-[#4c1525] shadow-sm">
                 <input
                   type="checkbox"
                   className="h-4 w-4"
@@ -161,7 +161,7 @@ function OrderQueue({
             </p>
             <Link
               href={`/orders/${order.id}`}
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-[#d8c7b4] bg-white px-3 py-2 text-sm font-semibold text-[#4c1525] transition hover:border-[#7d1f36] hover:bg-[#f7efe2]"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-[#dfc5a8] bg-white/95 px-3 py-2 text-sm font-semibold text-[#4c1525] shadow-sm transition hover:border-[#d99a62] hover:bg-[#fff5ea]"
             >
               Open
               <ArrowRight className="h-4 w-4" />
@@ -189,13 +189,13 @@ function PaymentQueue({
   const visiblePayments = payments.filter((payment) => !hiddenPaymentIds.includes(payment.id));
 
   if (visiblePayments.length === 0) {
-    return <div className="rounded-md border border-dashed border-[#d8c7b4] bg-white p-8 text-center text-sm text-[#7c6d66]">{emptyText}</div>;
+    return <div className="rounded-md border border-dashed border-[#dfc5a8] bg-white/90 p-8 text-center text-sm text-[#7c6d66] shadow-sm">{emptyText}</div>;
   }
 
   return (
     <div className="grid gap-3">
       {visiblePayments.map((payment) => (
-        <div key={payment.id} className="rounded-md border border-[#eadfce] bg-white p-4 transition hover:border-[#7d1f36]">
+        <div key={payment.id} className="rounded-md border border-[#ead8c3] bg-white/95 p-4 shadow-sm transition hover:border-[#d99a62] hover:shadow-[0_14px_32px_rgba(76,21,37,0.08)]">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#7c6d66]">{payment.receiptNumber}</p>
@@ -203,7 +203,7 @@ function PaymentQueue({
               <p className="text-sm text-[#7c6d66]">{payment.customerPhone}</p>
             </div>
             <div className="flex flex-wrap items-center justify-end gap-3 text-right">
-              <label className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#d8c7b4] bg-white px-2 text-xs font-semibold text-[#4c1525]">
+              <label className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#dfc5a8] bg-white/95 px-2 text-xs font-semibold text-[#4c1525] shadow-sm">
                 <input
                   type="checkbox"
                   className="h-4 w-4"
@@ -218,7 +218,7 @@ function PaymentQueue({
               </label>
               <Link
                 href={`/orders/${payment.orderId}`}
-                className="inline-flex min-h-9 items-center justify-center rounded-md border border-[#d8c7b4] bg-white px-3 py-1.5 text-sm font-semibold text-[#4c1525] transition hover:border-[#7d1f36] hover:bg-[#f7efe2]"
+                className="inline-flex min-h-9 items-center justify-center rounded-md border border-[#dfc5a8] bg-white/95 px-3 py-1.5 text-sm font-semibold text-[#4c1525] shadow-sm transition hover:border-[#d99a62] hover:bg-[#fff5ea]"
               >
                 Open
               </Link>
@@ -256,7 +256,7 @@ function MiniOrderList({
       <CardContent className="grid gap-2 p-4">
         {sortedOrders.length ? (
           sortedOrders.map((order) => (
-            <Link key={order.id} href={`/orders/${order.id}`} className="rounded-md border border-[#eadfce] bg-white p-3 transition hover:border-[#7d1f36]">
+            <Link key={order.id} href={`/orders/${order.id}`} className="rounded-md border border-[#ead8c3] bg-white/95 p-3 shadow-sm transition hover:border-[#d99a62] hover:bg-[#fffaf4]">
               <p className="font-semibold text-[#4c1525]">{order.customer.fullName}</p>
               <p className="text-xs text-[#7c6d66]">
                 {order.receiptNumber ?? "Draft"} · {formatDate(order.deliveryDate)} · {formatINR(order.totals.balanceDuePaise)}
@@ -280,7 +280,7 @@ function MiniPaymentList({ payments }: { payments: DashboardPaymentRow[] }) {
       <CardContent className="grid gap-2 p-4">
         {payments.length ? (
           payments.map((payment) => (
-            <Link key={payment.id} href={`/orders/${payment.orderId}`} className="flex justify-between gap-3 rounded-md border border-[#eadfce] bg-white p-3 transition hover:border-[#7d1f36]">
+            <Link key={payment.id} href={`/orders/${payment.orderId}`} className="flex justify-between gap-3 rounded-md border border-[#ead8c3] bg-white/95 p-3 shadow-sm transition hover:border-[#d99a62] hover:bg-[#fffaf4]">
               <span>
                 <strong className="block text-[#4c1525]">{payment.customerName}</strong>
                 <span className="text-xs text-[#7c6d66]">{payment.method}</span>
@@ -314,8 +314,8 @@ function CollectionChart({ days }: { days: DashboardCollectionDay[] }) {
                   {formatINR(day.totalPaise)} · {day.paymentCount}
                 </span>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-[#eadfce]">
-                <div className="h-full rounded-full bg-[#7d1f36]" style={{ width: `${Math.max(8, (day.totalPaise / maxValue) * 100)}%` }} />
+              <div className="h-2 overflow-hidden rounded-full bg-[#f1ddc5]">
+                <div className="h-full rounded-full bg-gradient-to-r from-[#7d1f36] to-[#d99a62]" style={{ width: `${Math.max(8, (day.totalPaise / maxValue) * 100)}%` }} />
               </div>
             </div>
           ))
@@ -418,7 +418,7 @@ export function InteractiveDashboard({ model }: { model: DashboardModel }) {
             </div>
             {selectedCard ? (
               <div className="flex flex-wrap items-center gap-2">
-                <label className="inline-flex min-h-10 items-center gap-2 rounded-md border border-[#d8c7b4] bg-white px-3 text-xs font-semibold text-[#4c1525]">
+                <label className="inline-flex min-h-10 items-center gap-2 rounded-md border border-[#dfc5a8] bg-white/95 px-3 text-xs font-semibold text-[#4c1525] shadow-sm">
                   Sort by
                   <select
                     aria-label="Sort dashboard orders by"
@@ -433,7 +433,7 @@ export function InteractiveDashboard({ model }: { model: DashboardModel }) {
                     ))}
                   </select>
                 </label>
-                <span className="inline-flex min-h-10 items-center rounded-md border border-[#d8c7b4] bg-white px-3 text-sm font-bold text-[#4c1525]">
+                <span className="inline-flex min-h-10 items-center rounded-md border border-[#dfc5a8] bg-white/95 px-3 text-sm font-bold text-[#4c1525] shadow-sm">
                   {selectedCard.valueType === "money" ? formatINR(selectedCard.value) : `${selectedCount} item${selectedCount === 1 ? "" : "s"}`}
                 </span>
               </div>
@@ -462,7 +462,7 @@ export function InteractiveDashboard({ model }: { model: DashboardModel }) {
         </Card>
 
         <div className="grid gap-5">
-          <Card className="border-emerald-200 bg-emerald-50">
+          <Card className="border-emerald-200 bg-gradient-to-br from-white to-emerald-50">
             <CardContent className="flex items-start gap-3 p-4">
               <CheckCircle2 className="mt-1 h-5 w-5 text-emerald-700" />
               <div>

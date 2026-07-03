@@ -5,7 +5,7 @@ export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElem
   return (
     <input
       className={cn(
-        "h-10 w-full rounded-md border border-[#d8c7b4] bg-white px-3 text-sm outline-none transition placeholder:text-[#9b8f87] focus:border-[#7d1f36] focus:ring-2 focus:ring-[#7d1f36]/15",
+        "h-10 w-full rounded-md border border-[#dfc5a8] bg-white/95 px-3 text-sm outline-none shadow-inner shadow-[#f5e3cf]/50 transition placeholder:text-[#9b8f87] focus:border-[#d99a62] focus:ring-2 focus:ring-[#d99a62]/30",
         className
       )}
       {...props}
@@ -17,7 +17,7 @@ export function Textarea({ className, ...props }: TextareaHTMLAttributes<HTMLTex
   return (
     <textarea
       className={cn(
-        "min-h-24 w-full rounded-md border border-[#d8c7b4] bg-white px-3 py-2 text-sm outline-none transition placeholder:text-[#9b8f87] focus:border-[#7d1f36] focus:ring-2 focus:ring-[#7d1f36]/15",
+        "min-h-24 w-full rounded-md border border-[#dfc5a8] bg-white/95 px-3 py-2 text-sm outline-none shadow-inner shadow-[#f5e3cf]/50 transition placeholder:text-[#9b8f87] focus:border-[#d99a62] focus:ring-2 focus:ring-[#d99a62]/30",
         className
       )}
       {...props}
@@ -36,7 +36,7 @@ export function Field({
 }) {
   return (
     <label className="grid gap-1.5 text-sm font-medium text-[#3b312d]">
-      <span>{label}</span>
+      <span className="text-xs font-bold uppercase tracking-[0.08em] text-[#6f352b]">{label}</span>
       {children}
       {hint ? <span className="text-xs font-normal text-[#7c6d66]">{hint}</span> : null}
     </label>

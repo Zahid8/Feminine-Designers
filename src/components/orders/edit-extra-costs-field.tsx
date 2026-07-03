@@ -38,7 +38,7 @@ export function EditExtraCostsField({
   }
 
   return (
-    <div className="mt-4 rounded-md border border-[#eadfce] bg-[#fffdf8] p-3">
+    <div className="mt-4 rounded-md border border-[#ead8c3] bg-[#fff7ec] p-3 shadow-inner shadow-[#f5e3cf]/50">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm font-bold text-[#4c1525]">Extra costs</p>
         <Button type="button" variant="secondary" onClick={addCost} aria-label={`Add extra cost to dress ${dressNumber}`}>

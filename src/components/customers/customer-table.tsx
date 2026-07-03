@@ -56,7 +56,7 @@ export function CustomerTable({
 
   return (
     <div className="grid gap-3">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#e8dcca] bg-[#fffdf8] p-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#ead8c3] bg-gradient-to-r from-[#fff7ec] to-[#fffdfa] p-3 shadow-[0_14px_32px_rgba(76,21,37,0.07)]">
         <div className="flex flex-wrap gap-2">
           <Link
             href="/customers/new"
@@ -74,7 +74,7 @@ export function CustomerTable({
         </div>
         <div className="flex flex-wrap gap-2">
           {columns.map(([key, label]) => (
-            <label key={key} className="flex items-center gap-2 rounded-md border border-[#d8c7b4] bg-white px-2 py-1 text-xs font-semibold">
+            <label key={key} className="flex items-center gap-2 rounded-md border border-[#dfc5a8] bg-white/95 px-2 py-1 text-xs font-semibold shadow-sm">
               <input type="checkbox" checked={visibleColumns[key]} onChange={() => toggleColumn(key)} />
               {label}
             </label>
@@ -86,7 +86,7 @@ export function CustomerTable({
         return (
           <div
             key={customer.id}
-            className="grid gap-3 rounded-lg border border-[#e8dcca] bg-white p-4 transition hover:border-[#7d1f36] md:grid-cols-[1.4fr_1fr_1fr_1fr_auto]"
+            className="grid gap-3 rounded-lg border border-[#ead8c3] bg-white/95 p-4 shadow-sm transition hover:border-[#d99a62] hover:bg-[#fffaf4] hover:shadow-[0_14px_32px_rgba(76,21,37,0.08)] md:grid-cols-[1.4fr_1fr_1fr_1fr_auto]"
           >
             {visibleColumns.customer ? <div>
               <p className="font-semibold text-[#4c1525]">{customer.fullName}</p>
@@ -99,13 +99,13 @@ export function CustomerTable({
               <div className="flex flex-wrap gap-2">
                 <Link
                   href={`/customers/${customer.id}`}
-                  className="inline-flex min-h-9 items-center justify-center rounded-md border border-[#d8c7b4] bg-white px-3 py-1.5 text-sm font-semibold text-[#4c1525] transition hover:border-[#7d1f36] hover:bg-[#f7efe2]"
+                  className="inline-flex min-h-9 items-center justify-center rounded-md border border-[#dfc5a8] bg-white/95 px-3 py-1.5 text-sm font-semibold text-[#4c1525] shadow-sm transition hover:border-[#d99a62] hover:bg-[#fff5ea]"
                 >
                   Open
                 </Link>
                 <Link
                   href={`/customers/${customer.id}/measurements`}
-                  className="inline-flex min-h-9 items-center justify-center rounded-md border border-[#d8c7b4] bg-white px-3 py-1.5 text-sm font-semibold text-[#4c1525] transition hover:border-[#7d1f36] hover:bg-[#f7efe2]"
+                  className="inline-flex min-h-9 items-center justify-center rounded-md border border-[#dfc5a8] bg-white/95 px-3 py-1.5 text-sm font-semibold text-[#4c1525] shadow-sm transition hover:border-[#d99a62] hover:bg-[#fff5ea]"
                 >
                   Measurements
                 </Link>

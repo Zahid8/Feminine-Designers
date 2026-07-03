@@ -42,7 +42,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
             <p>{profile.customer.notes}</p>
             <div className="flex flex-wrap gap-2 pt-2">
               {profile.customer.tags.map((tag) => (
-                <span key={tag} className="rounded-full border border-[#d8c7b4] px-2.5 py-1 text-xs font-semibold">
+                <span key={tag} className="rounded-full border border-[#dfc5a8] bg-[#fff7ec] px-2.5 py-1 text-xs font-semibold shadow-sm">
                   {tag}
                 </span>
               ))}

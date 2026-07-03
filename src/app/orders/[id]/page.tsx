@@ -69,7 +69,7 @@ export default async function OrderDetailPage({
             <OrderStatusCheckboxEditor orderId={order.id} status={order.status} paymentStatus={order.totals.paymentStatus} />
             <div className="grid gap-3 md:grid-cols-2">
               {order.items.map((item) => (
-                <div key={item.id} className="rounded-md border border-[#eadfce] p-3">
+                <div key={item.id} className="rounded-md border border-[#ead8c3] bg-white/95 p-3 shadow-sm">
                   <p className="font-semibold text-[#4c1525]">{item.garmentType}</p>
                   {item.fabricColor ? <p className="text-sm text-[#7c6d66]">Fabric color: {item.fabricColor}</p> : null}
                   <p className="text-sm text-[#7c6d66]">
@@ -92,7 +92,7 @@ export default async function OrderDetailPage({
             </div>
             <OrderItemDeliveryTracker orderId={order.id} items={order.items} />
             {order.clothSampleImageUrl ? (
-              <div className="rounded-md border border-[#eadfce] bg-[#fdf8ef] p-3">
+              <div className="rounded-md border border-[#ead8c3] bg-gradient-to-br from-[#fffdfa] to-[#fff1df] p-3 shadow-sm">
                 <p className="mb-2 font-semibold text-[#4c1525]">Customer cloth sample</p>
                 <Image
                   src={order.clothSampleImageUrl}
@@ -107,7 +107,7 @@ export default async function OrderDetailPage({
             {order.measurements.length ? (
               <MeasurementGrid values={order.measurements} />
             ) : (
-              <div className="rounded-md border border-dashed border-[#d8c7b4] bg-white p-6 text-center text-sm text-[#7c6d66]">
+              <div className="rounded-md border border-dashed border-[#dfc5a8] bg-white/90 p-6 text-center text-sm text-[#7c6d66] shadow-sm">
                 No measurements saved yet. Add them in Edit Saved Bill below.
               </div>
             )}
@@ -133,7 +133,7 @@ export default async function OrderDetailPage({
                 ["Paid", order.totals.totalPaidPaise],
                 ["Balance", order.totals.balanceDuePaise]
               ].map(([label, value]) => (
-                <div key={label} className="flex justify-between border-b border-[#eadfce] py-2 last:border-0">
+                <div key={label} className="flex justify-between border-b border-[#ead8c3] py-2 last:border-0">
                   <span>{label}</span>
                   <strong>{formatINR(Number(value))}</strong>
                 </div>

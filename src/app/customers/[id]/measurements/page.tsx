@@ -73,7 +73,7 @@ export default async function CustomerMeasurementsPage({
               <MeasurementGrid values={profile.values} />
             )
           ) : (
-            <div className="rounded-md border border-dashed border-[#d8c7b4] bg-white p-8 text-center text-sm text-[#7c6d66]">
+            <div className="rounded-md border border-dashed border-[#dfc5a8] bg-white/90 p-8 text-center text-sm text-[#7c6d66] shadow-sm">
               No saved measurements found for this customer yet.
             </div>
           )}

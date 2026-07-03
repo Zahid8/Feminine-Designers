@@ -68,7 +68,7 @@ export function ClothSamplePhotoField({ currentImageUrl }: { currentImageUrl?: s
   }
 
   return (
-    <div className="grid gap-3 rounded-md border border-[#eadfce] bg-white p-4">
+    <div className="grid gap-3 rounded-md border border-[#ead8c3] bg-gradient-to-br from-white to-[#fffaf4] p-4 shadow-sm">
       <input type="hidden" name="clothSampleDataUrl" value={remove ? "" : dataUrl} />
       {remove ? <input type="hidden" name="removeClothSample" value="1" /> : null}
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -76,7 +76,7 @@ export function ClothSamplePhotoField({ currentImageUrl }: { currentImageUrl?: s
           <p className="text-sm font-bold text-[#4c1525]">Cloth sample photo</p>
           <p className="text-xs text-[#7c6d66]">Replace or remove the store-copy cloth reference.</p>
         </div>
-        <label className="inline-flex min-h-10 cursor-pointer items-center justify-center rounded-md border border-[#d8c7b4] bg-white px-4 py-2 text-sm font-semibold text-[#2c2522] transition hover:bg-[#f7efe2]">
+        <label className="inline-flex min-h-10 cursor-pointer items-center justify-center rounded-md border border-[#dfc5a8] bg-white px-4 py-2 text-sm font-semibold text-[#2c2522] shadow-sm transition hover:border-[#d99a62] hover:bg-[#fff5ea]">
           Choose photo
           <input
             type="file"
@@ -88,7 +88,7 @@ export function ClothSamplePhotoField({ currentImageUrl }: { currentImageUrl?: s
         </label>
       </div>
       <div className="grid gap-3 md:grid-cols-[220px_1fr] md:items-start">
-        <div className="flex min-h-36 items-center justify-center overflow-hidden rounded-md border border-dashed border-[#d8c7b4] bg-[#fffdf8]">
+        <div className="flex min-h-36 items-center justify-center overflow-hidden rounded-md border border-dashed border-[#dfc5a8] bg-[#fff1df]">
           {preview && !remove ? (
             <Image src={preview} alt="Cloth sample preview" width={220} height={150} unoptimized className="max-h-44 w-full object-cover" />
           ) : (

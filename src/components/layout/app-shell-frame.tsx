@@ -30,7 +30,7 @@ export function AppShellFrame({
       <aside
         aria-label="Primary navigation"
         className={cn(
-          "no-print overflow-hidden border-b border-[#eadfce] bg-[#fffdf8]/95 transition-all duration-200 lg:min-h-screen lg:border-b-0 lg:border-r",
+          "no-print overflow-hidden border-b border-[#ead8c3] bg-gradient-to-b from-[#fffdfa] via-[#fff7ec] to-[#ffe8d0]/90 shadow-[12px_0_35px_rgba(76,21,37,0.08)] transition-all duration-200 lg:min-h-screen lg:border-b-0 lg:border-r",
           sidebarExpanded ? "max-h-[500px] p-4 opacity-100 lg:max-h-none lg:w-[280px]" : "max-h-0 w-0 border-0 p-0 opacity-0"
         )}
       >
@@ -41,9 +41,11 @@ export function AppShellFrame({
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold text-[#4a3f3a] transition hover:bg-[#f4e7da] hover:text-[#5d1428]"
+                className="group flex items-center gap-3 rounded-md border border-transparent px-3 py-2.5 text-sm font-semibold text-[#4a3f3a] transition hover:border-[#efcfad] hover:bg-white/80 hover:text-[#5d1428] hover:shadow-sm"
               >
-                <item.icon className="h-4 w-4" />
+                <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[#fff1df] text-[#7d1f36] transition group-hover:bg-[#7d1f36] group-hover:text-white">
+                  <item.icon className="h-4 w-4" />
+                </span>
                 {item.label}
               </Link>
             ))}
@@ -51,7 +53,7 @@ export function AppShellFrame({
         </div>
       </aside>
       <div>
-        <header className="no-print sticky top-0 z-10 border-b border-[#eadfce] bg-[#fbf7ef]/90 px-4 py-3 backdrop-blur md:px-8">
+        <header className="no-print sticky top-0 z-10 border-b border-[#ead8c3] bg-[#fff7ec]/88 px-4 py-3 shadow-[0_12px_35px_rgba(76,21,37,0.07)] backdrop-blur md:px-8">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-2">
               <Button
@@ -64,7 +66,7 @@ export function AppShellFrame({
               >
                 <Menu className="h-4 w-4" />
               </Button>
-              <div className="flex min-w-0 items-center gap-3 rounded-md border border-[#e8dcca] bg-white px-3 py-2 text-sm text-[#7c6d66]">
+              <div className="flex min-w-0 items-center gap-3 rounded-md border border-[#ead8c3] bg-white/90 px-3 py-2 text-sm text-[#7c6d66] shadow-sm">
                 <Search className="h-4 w-4 shrink-0" />
                 <span className="truncate">Search by receipt, phone, customer, or order number</span>
               </div>

@@ -37,11 +37,11 @@ export function EditOrderChoiceFields({
       <input type="hidden" name="priority" value={selectedPriority} />
       {paymentOverride ? <input type="hidden" name="paymentStatus" value={paymentOverride} /> : null}
 
-      <div className="rounded-md border border-[#eadfce] bg-white p-4">
+      <div className="rounded-md border border-[#ead8c3] bg-gradient-to-br from-white to-[#fffaf4] p-4 shadow-sm">
         <p className="mb-3 text-sm font-bold text-[#4c1525]">Order status</p>
         <div className="flex flex-wrap gap-2">
           {ORDER_STATUSES.map((choice) => (
-            <label key={choice} className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#d8c7b4] bg-[#fffdf8] px-2 text-xs font-semibold">
+            <label key={choice} className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#dfc5a8] bg-[#fff7ec] px-2 text-xs font-semibold">
               <input
                 type="checkbox"
                 checked={selectedStatus === choice}
@@ -54,11 +54,11 @@ export function EditOrderChoiceFields({
         </div>
       </div>
 
-      <div className="rounded-md border border-[#eadfce] bg-white p-4">
+      <div className="rounded-md border border-[#ead8c3] bg-gradient-to-br from-white to-[#fffaf4] p-4 shadow-sm">
         <p className="mb-3 text-sm font-bold text-[#4c1525]">Payment status</p>
         <div className="flex flex-wrap gap-2">
           {paymentChoices.map((choice) => (
-            <label key={choice.value} className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#d8c7b4] bg-[#fffdf8] px-2 text-xs font-semibold">
+            <label key={choice.value} className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#dfc5a8] bg-[#fff7ec] px-2 text-xs font-semibold">
               <input
                 type="checkbox"
                 checked={visiblePaymentStatus === choice.value}
@@ -78,11 +78,11 @@ export function EditOrderChoiceFields({
         </div>
       </div>
 
-      <div className="rounded-md border border-[#eadfce] bg-white p-4">
+      <div className="rounded-md border border-[#ead8c3] bg-gradient-to-br from-white to-[#fffaf4] p-4 shadow-sm">
         <p className="mb-3 text-sm font-bold text-[#4c1525]">Priority</p>
         <div className="flex flex-wrap gap-2">
           {priorities.map((choice) => (
-            <label key={choice} className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#d8c7b4] bg-[#fffdf8] px-2 text-xs font-semibold">
+            <label key={choice} className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#dfc5a8] bg-[#fff7ec] px-2 text-xs font-semibold">
               <input
                 type="checkbox"
                 checked={selectedPriority === choice}

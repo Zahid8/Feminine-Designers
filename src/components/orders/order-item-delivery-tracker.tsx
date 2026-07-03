@@ -24,7 +24,7 @@ export function OrderItemDeliveryTracker({ orderId, items }: { orderId: string; 
 
   return (
     <div className="grid gap-3">
-      <label className="flex items-center justify-between rounded-md border border-[#d8c7b4] bg-[#fdf8ef] px-3 py-2 text-sm font-semibold">
+      <label className="flex items-center justify-between rounded-md border border-[#dfc5a8] bg-[#fff7ec] px-3 py-2 text-sm font-semibold shadow-inner shadow-[#f5e3cf]/50">
         <span>All dresses delivered</span>
         <input
           type="checkbox"
@@ -35,7 +35,7 @@ export function OrderItemDeliveryTracker({ orderId, items }: { orderId: string; 
       </label>
       <div className="grid gap-2">
         {localItems.map((item) => (
-          <label key={item.id} className="flex items-start justify-between gap-3 rounded-md border border-[#eadfce] bg-white p-3 text-sm">
+          <label key={item.id} className="flex items-start justify-between gap-3 rounded-md border border-[#ead8c3] bg-white/95 p-3 text-sm shadow-sm">
             <span>
               <strong className="text-[#4c1525]">{item.garmentType}</strong>
               <span className="block text-xs text-[#7c6d66]">

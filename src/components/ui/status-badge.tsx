@@ -3,11 +3,11 @@ import { cn } from "@/lib/utils/cn";
 
 const statusClasses: Record<OrderStatus, string> = {
   Draft: "bg-stone-100 text-stone-700 border-stone-300",
-  New: "bg-blue-50 text-blue-700 border-blue-200",
-  "In Stitching": "bg-amber-50 text-amber-800 border-amber-200",
-  Ready: "bg-emerald-50 text-emerald-800 border-emerald-200",
-  Delivered: "bg-green-50 text-green-800 border-green-200",
-  Cancelled: "bg-red-50 text-red-800 border-red-200"
+  New: "bg-[#eef5ff] text-[#24548f] border-[#bfd5f5]",
+  "In Stitching": "bg-[#fff2d8] text-[#8a4f00] border-[#efc77e]",
+  Ready: "bg-[#e8f7ef] text-[#12633d] border-[#a9dec2]",
+  Delivered: "bg-[#e5f6df] text-[#2f6d1f] border-[#b9dfa9]",
+  Cancelled: "bg-[#fff0ef] text-[#a83232] border-[#efb7b2]"
 };
 
 const priorityClasses: Record<Priority, string> = {
@@ -37,7 +37,7 @@ export function PaymentBadge({ status }: { status: PaymentStatus }) {
 
 function Badge({ className, children }: { className: string; children: React.ReactNode }) {
   return (
-    <span className={cn("inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold", className)}>
+    <span className={cn("inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-bold shadow-sm ring-1 ring-white/70", className)}>
       {children}
     </span>
   );

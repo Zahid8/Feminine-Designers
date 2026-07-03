@@ -52,7 +52,7 @@ export default async function OrdersPage({
             <select
               name="status"
               form="orders-filter"
-              className="h-10 rounded-md border border-[#d8c7b4] bg-white px-3 text-sm"
+              className="h-10 rounded-md border border-[#dfc5a8] bg-white/95 px-3 text-sm outline-none focus:border-[#d99a62] focus:ring-2 focus:ring-[#d99a62]/30"
               defaultValue={params.status ?? "All"}
             >
               {["All", "Draft", "New", "In Stitching", "Ready", "Delivered", "Cancelled"].map((status) => (
@@ -78,7 +78,7 @@ export default async function OrdersPage({
               "inline-flex min-h-10 items-center gap-2 rounded-md border px-4 py-2 text-sm font-semibold",
               selectedView === view
                 ? "border-[#7d1f36] bg-[#7d1f36] text-white"
-                : "border-[#d8c7b4] bg-white text-[#2c2522] hover:bg-[#f7efe2]"
+                : "border-[#dfc5a8] bg-white/95 text-[#2c2522] hover:border-[#d99a62] hover:bg-[#fff5ea]"
             )}
           >
             {label}

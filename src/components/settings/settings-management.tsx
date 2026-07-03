@@ -59,7 +59,7 @@ export function SettingsManagement({
         <CardContent className="grid gap-4">
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {garmentTypes.map((type) => (
-              <div key={type.id} className="flex items-center justify-between gap-2 rounded-md border border-[#d8c7b4] bg-white px-3 py-2 text-sm">
+              <div key={type.id} className="flex items-center justify-between gap-2 rounded-md border border-[#dfc5a8] bg-white/95 px-3 py-2 text-sm shadow-sm">
                 <span>
                   <strong>{type.name}</strong>
                   <span className="ml-2 text-xs text-[#7c6d66]">{type.active ? "Active" : "Removed"}</span>
@@ -99,7 +99,7 @@ export function SettingsManagement({
         <CardContent className="grid gap-4">
           <div className="grid gap-3 md:grid-cols-2">
             {measurementTemplates.map((template) => (
-              <div key={template.id} className="rounded-md border border-[#eadfce] p-3">
+              <div key={template.id} className="rounded-md border border-[#ead8c3] bg-white/95 p-3 shadow-sm">
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <p className="font-semibold text-[#4c1525]">{template.name}</p>
@@ -118,7 +118,7 @@ export function SettingsManagement({
                 <p className="text-xs text-[#7c6d66]">{template.garmentCategories.join(", ")}</p>
                 <div className="mt-3 grid gap-2">
                   {template.fields.map((field) => (
-                    <div key={field.id} className="flex items-center justify-between gap-2 rounded-md border border-[#eadfce] bg-[#fffdf8] px-2 py-1 text-xs">
+                    <div key={field.id} className="flex items-center justify-between gap-2 rounded-md border border-[#ead8c3] bg-[#fff7ec] px-2 py-1 text-xs">
                       <span>
                         <strong>{field.displayCode}</strong> {field.longLabel ?? field.displayLabel}
                         <span className="ml-2 text-[#7c6d66]">{field.active ? "Active" : "Removed"}</span>
@@ -169,7 +169,7 @@ export function SettingsManagement({
         <CardContent className="grid gap-4">
           <form action={fieldAction} className="grid gap-3 md:grid-cols-3">
             <Field label="Template">
-              <select name="templateId" className="h-10 rounded-md border border-[#d8c7b4] bg-white px-3 text-sm">
+              <select name="templateId" className="h-10 rounded-md border border-[#dfc5a8] bg-white/95 px-3 text-sm outline-none focus:border-[#d99a62] focus:ring-2 focus:ring-[#d99a62]/30">
                 {measurementTemplates.map((template) => (
                   <option key={template.id} value={template.id}>
                     {template.name}
@@ -190,7 +190,7 @@ export function SettingsManagement({
               <Input name="longLabel" placeholder="Ankle Round" />
             </Field>
             <Field label="Input type">
-              <select name="inputType" className="h-10 rounded-md border border-[#d8c7b4] bg-white px-3 text-sm">
+              <select name="inputType" className="h-10 rounded-md border border-[#dfc5a8] bg-white/95 px-3 text-sm outline-none focus:border-[#d99a62] focus:ring-2 focus:ring-[#d99a62]/30">
                 <option value="number">Number</option>
                 <option value="text">Text</option>
                 <option value="textarea">Multi-line note</option>
@@ -198,7 +198,7 @@ export function SettingsManagement({
               </select>
             </Field>
             <Field label="Unit">
-              <select name="unit" className="h-10 rounded-md border border-[#d8c7b4] bg-white px-3 text-sm">
+              <select name="unit" className="h-10 rounded-md border border-[#dfc5a8] bg-white/95 px-3 text-sm outline-none focus:border-[#d99a62] focus:ring-2 focus:ring-[#d99a62]/30">
                 <option value="in">Inches</option>
                 <option value="text">Text</option>
                 <option value="boolean">Boolean</option>

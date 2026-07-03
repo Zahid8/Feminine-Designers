@@ -49,12 +49,12 @@ export function OrderStatusCheckboxEditor({
   }
 
   return (
-    <div className="grid gap-3 rounded-md border border-[#eadfce] bg-[#fffdf8] p-3">
+    <div className="grid gap-3 rounded-md border border-[#ead8c3] bg-[#fff7ec] p-3 shadow-inner shadow-[#f5e3cf]/50">
       <div>
         <p className="mb-2 text-xs font-bold uppercase tracking-[0.08em] text-[#7c6d66]">Order status</p>
         <div className="flex flex-wrap gap-2">
           {ORDER_STATUSES.map((choice) => (
-            <label key={choice} className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#d8c7b4] bg-white px-2 text-xs font-semibold">
+            <label key={choice} className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#dfc5a8] bg-white/95 px-2 text-xs font-semibold shadow-sm">
               <input
                 type="checkbox"
                 className="h-4 w-4"
@@ -71,7 +71,7 @@ export function OrderStatusCheckboxEditor({
         <p className="mb-2 text-xs font-bold uppercase tracking-[0.08em] text-[#7c6d66]">Payment status</p>
         <div className="flex flex-wrap gap-2">
           {paymentChoices.map((choice) => (
-            <label key={choice.value} className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#d8c7b4] bg-white px-2 text-xs font-semibold">
+            <label key={choice.value} className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#dfc5a8] bg-white/95 px-2 text-xs font-semibold shadow-sm">
               <input
                 type="checkbox"
                 className="h-4 w-4"

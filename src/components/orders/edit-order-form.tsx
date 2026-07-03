@@ -46,7 +46,7 @@ export function EditOrderForm({
 
       <div className="grid gap-3">
         {order.items.map((item, index) => (
-          <div key={item.id} className="rounded-md border border-[#eadfce] bg-white p-4">
+          <div key={item.id} className="rounded-md border border-[#ead8c3] bg-gradient-to-br from-white to-[#fffaf4] p-4 shadow-sm">
             <input type="hidden" name={`items.${index}.id`} value={item.id} />
             <p className="mb-3 text-sm font-bold text-[#4c1525]">Dress {index + 1}</p>
             <div className="grid gap-4 lg:grid-cols-[1.2fr_.5fr_.7fr_.7fr_.7fr_.7fr_.7fr]">
@@ -96,7 +96,7 @@ export function EditOrderForm({
                 <Input name={`items.${index}.designReference`} defaultValue={item.designReference ?? ""} />
               </Field>
               <label className="grid gap-1.5 text-sm font-medium text-[#3b312d] lg:col-span-4">
-                <span>Stitching instructions</span>
+                <span className="text-xs font-bold uppercase tracking-[0.08em] text-[#6f352b]">Stitching instructions</span>
                 <Textarea name={`items.${index}.stitchingInstructions`} defaultValue={item.stitchingInstructions ?? ""} />
               </label>
             </div>
@@ -105,13 +105,13 @@ export function EditOrderForm({
         ))}
       </div>
 
-      <div className="rounded-md border border-[#eadfce] bg-white p-4">
+      <div className="rounded-md border border-[#ead8c3] bg-gradient-to-br from-white to-[#fffaf4] p-4 shadow-sm">
         <p className="mb-3 text-sm font-bold text-[#4c1525]">Measurements</p>
         {order.measurements.length ? (
           <>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {order.measurements.map((measurement, index) => (
-                <label key={measurement.id} className="grid gap-1 rounded-md border border-[#eadfce] bg-white p-3 text-sm">
+                <label key={measurement.id} className="grid gap-1 rounded-md border border-[#ead8c3] bg-white/95 p-3 text-sm shadow-sm">
                   <input type="hidden" name={`measurements.${index}.id`} value={measurement.id} />
                   <span className="flex items-center justify-between gap-2">
                     <strong className="text-[#4c1525]">{measurement.displayCode}</strong>
@@ -122,14 +122,14 @@ export function EditOrderForm({
               ))}
             </div>
             <label className="mt-3 grid gap-1.5 text-sm font-medium text-[#3b312d]">
-              <span>Special Notes</span>
+              <span className="text-xs font-bold uppercase tracking-[0.08em] text-[#6f352b]">Special Notes</span>
               <Textarea name="measurementNotes" defaultValue={specialNotes} />
             </label>
           </>
         ) : measurementTemplate ? (
           <MeasurementGrid template={measurementTemplate} editable valuePrefix="newMeasurement" metaPrefix="newMeasurementMeta" />
         ) : (
-          <div className="rounded-md border border-dashed border-[#d8c7b4] bg-[#fffdf8] p-6 text-center text-sm text-[#7c6d66]">
+          <div className="rounded-md border border-dashed border-[#dfc5a8] bg-[#fff7ec] p-6 text-center text-sm text-[#7c6d66]">
             No measurements are saved and no measurement template is available.
           </div>
         )}
@@ -143,11 +143,11 @@ export function EditOrderForm({
           <Input name="accessoriesCostRupees" type="number" min={0} step="0.01" defaultValue={paiseToRupees(order.totals.accessoriesCostPaise)} />
         </Field>
         <label className="grid gap-1.5 text-sm font-medium text-[#3b312d] md:col-span-2">
-          <span>Customer notes</span>
+          <span className="text-xs font-bold uppercase tracking-[0.08em] text-[#6f352b]">Customer notes</span>
           <Textarea name="customerNotes" defaultValue={order.customerNotes ?? ""} />
         </label>
         <label className="grid gap-1.5 text-sm font-medium text-[#3b312d] md:col-span-2">
-          <span>Internal notes</span>
+          <span className="text-xs font-bold uppercase tracking-[0.08em] text-[#6f352b]">Internal notes</span>
           <Textarea name="internalNotes" defaultValue={order.internalNotes ?? ""} />
         </label>
       </div>

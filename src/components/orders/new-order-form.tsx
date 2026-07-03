@@ -321,7 +321,7 @@ export function NewOrderForm({
               onChange={(event) => setPhonePrimary(event.target.value)}
             />
           </Field>
-          <div className="rounded-md border border-[#eadfce] bg-[#fdf8ef] p-3 text-sm">
+          <div className="rounded-md border border-[#ead8c3] bg-gradient-to-br from-[#fffdfa] to-[#fff1df] p-3 text-sm shadow-sm">
             <p className="font-semibold text-[#4c1525]">Returning customer match</p>
             <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
               <label className="relative">
@@ -341,7 +341,7 @@ export function NewOrderForm({
             </div>
             {returningCustomerMatches.length ? (
               <select
-                className="mt-2 h-10 w-full rounded-md border border-[#d8c7b4] bg-white px-3 text-sm"
+                className="mt-2 h-10 w-full rounded-md border border-[#dfc5a8] bg-white/95 px-3 text-sm outline-none focus:border-[#d99a62] focus:ring-2 focus:ring-[#d99a62]/30"
                 value={selectedReturningCustomerId}
                 onChange={(event) => setSelectedReturningCustomerId(event.target.value)}
                 aria-label="Returning customer suggestions"
@@ -380,7 +380,7 @@ export function NewOrderForm({
             <Input name="deliveryDate" type="date" defaultValue={deliveryDate} />
           </Field>
           <Field label="Priority">
-            <select name="priority" className="h-10 rounded-md border border-[#d8c7b4] bg-white px-3 text-sm" defaultValue="Normal">
+            <select name="priority" className="h-10 rounded-md border border-[#dfc5a8] bg-white/95 px-3 text-sm outline-none focus:border-[#d99a62] focus:ring-2 focus:ring-[#d99a62]/30" defaultValue="Normal">
               <option>Normal</option>
               <option>Urgent</option>
               <option>Express</option>
@@ -398,7 +398,7 @@ export function NewOrderForm({
         </CardHeader>
         <CardContent className="grid gap-5">
           <div className="grid gap-1.5 text-sm font-medium text-[#3b312d]">
-            <label htmlFor="cloth-count">Number of cloth / garments</label>
+            <label htmlFor="cloth-count" className="text-xs font-bold uppercase tracking-[0.08em] text-[#6f352b]">Number of cloth / garments</label>
             <div className="grid grid-cols-[40px_1fr_40px] gap-2">
               <Button
                 type="button"
@@ -434,16 +434,16 @@ export function NewOrderForm({
               <details
                 key={index}
                 open={index === 0}
-                className="rounded-md border border-[#eadfce] bg-white p-4"
+                className="rounded-md border border-[#ead8c3] bg-gradient-to-br from-white to-[#fffaf4] p-4 shadow-sm"
               >
-                <summary className="cursor-pointer text-sm font-bold text-[#4c1525]">
+                <summary className="cursor-pointer text-sm font-bold text-[#3f0f20]">
                   Dress {index + 1}: {item.garmentType}
                 </summary>
                 <div className="mt-4 grid gap-4 lg:grid-cols-[1.2fr_.6fr_.7fr_.7fr_.7fr_.7fr]">
                   <Field label="Garment type">
                     <select
                       name={`items.${index}.garmentType`}
-                      className="h-10 rounded-md border border-[#d8c7b4] bg-white px-3 text-sm"
+                      className="h-10 rounded-md border border-[#dfc5a8] bg-white/95 px-3 text-sm outline-none focus:border-[#d99a62] focus:ring-2 focus:ring-[#d99a62]/30"
                       value={item.garmentType}
                       onChange={(event) => updateItem(index, { garmentType: event.target.value })}
                     >
@@ -453,7 +453,7 @@ export function NewOrderForm({
                     </select>
                   </Field>
                   <div className="grid gap-1.5 text-sm font-medium text-[#3b312d]">
-                    <label htmlFor={`items-${index}-quantity`}>Quantity</label>
+                    <label htmlFor={`items-${index}-quantity`} className="text-xs font-bold uppercase tracking-[0.08em] text-[#6f352b]">Quantity</label>
                     <div className="grid grid-cols-[40px_1fr_40px] gap-2">
                       <Button
                         type="button"
@@ -529,14 +529,14 @@ export function NewOrderForm({
                     <Input name={`items.${index}.designReference`} placeholder="Optional" />
                   </Field>
                   <label className="grid gap-1 text-sm font-medium lg:col-span-4">
-                    <span>Stitching instructions</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.08em] text-[#6f352b]">Stitching instructions</span>
                     <Textarea
                       name={`items.${index}.stitchingInstructions`}
                       defaultValue=""
                     />
                   </label>
                 </div>
-                <div className="mt-4 rounded-md border border-[#eadfce] bg-[#fffdf8] p-3">
+                <div className="mt-4 rounded-md border border-[#ead8c3] bg-[#fff7ec] p-3 shadow-inner shadow-[#f5e3cf]/50">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="text-sm font-bold text-[#4c1525]">Extra costs</p>
                     <Button
@@ -587,8 +587,8 @@ export function NewOrderForm({
               </details>
             ))}
           </div>
-          <div className="rounded-md border border-[#eadfce] bg-white p-4">
-            <h3 className="text-sm font-bold text-[#4c1525]">Measurements</h3>
+          <div className="rounded-md border border-[#ead8c3] bg-gradient-to-br from-white to-[#fffaf4] p-4 shadow-sm">
+            <h3 className="text-sm font-bold text-[#3f0f20]">Measurements</h3>
             <div className="mt-4">
               <MeasurementGrid
                 key={measurementGridKey}
@@ -602,7 +602,7 @@ export function NewOrderForm({
               />
             </div>
           </div>
-          <div className="grid gap-3 rounded-lg border border-[#eadfce] bg-white p-4 md:grid-cols-[1fr_220px]">
+          <div className="grid gap-3 rounded-lg border border-[#ead8c3] bg-gradient-to-br from-white to-[#fff7ec] p-4 shadow-sm md:grid-cols-[1fr_220px]">
             <div>
               <p className="font-semibold text-[#4c1525]">Customer cloth sample</p>
               <p className="mt-1 text-sm text-[#7c6d66]">
@@ -646,7 +646,7 @@ export function NewOrderForm({
                 </p>
               ) : null}
             </div>
-            <div className="flex min-h-36 items-center justify-center rounded-md border border-dashed border-[#d8c7b4] bg-[#fdf8ef]">
+            <div className="flex min-h-36 items-center justify-center rounded-md border border-dashed border-[#dfc5a8] bg-[#fff1df]">
               {clothSampleDataUrl ? (
                 // Data URLs are generated from tablet camera input and are not remotely optimizable.
                 // eslint-disable-next-line @next/next/no-img-element
@@ -673,7 +673,7 @@ export function NewOrderForm({
               <Input name="advancePaidRupees" type="number" min={0} value={advance} onChange={(event) => setAdvance(Number(event.target.value))} />
             </Field>
             <Field label="Payment mode">
-              <select name="paymentMethod" className="h-10 rounded-md border border-[#d8c7b4] bg-white px-3 text-sm">
+              <select name="paymentMethod" className="h-10 rounded-md border border-[#dfc5a8] bg-white/95 px-3 text-sm outline-none focus:border-[#d99a62] focus:ring-2 focus:ring-[#d99a62]/30">
                 <option>Cash</option>
                 <option>UPI</option>
                 <option>Card</option>
@@ -703,15 +703,15 @@ export function NewOrderForm({
               />
             </Field>
             <label className="grid gap-1 text-sm font-medium md:col-span-2">
-              <span>Customer-facing notes</span>
+              <span className="text-xs font-bold uppercase tracking-[0.08em] text-[#6f352b]">Customer-facing notes</span>
               <Textarea name="customerNotes" placeholder="Shown on customer copy" />
             </label>
             <label className="grid gap-1 text-sm font-medium md:col-span-2">
-              <span>Internal notes</span>
+              <span className="text-xs font-bold uppercase tracking-[0.08em] text-[#6f352b]">Internal notes</span>
               <Textarea name="internalNotes" placeholder="Private stitching/workshop note" />
             </label>
           </div>
-          <div className="rounded-md border border-[#eadfce] bg-[#fdf8ef] p-4">
+          <div className="rounded-md border border-[#ead8c3] bg-gradient-to-br from-[#fffdfa] to-[#fff1df] p-4 shadow-sm">
             <p className="mb-3 flex items-center gap-2 font-semibold text-[#4c1525]">
               <Calculator className="h-4 w-4" />
               Live totals
@@ -730,7 +730,7 @@ export function NewOrderForm({
               ["Advance", totals.totalPaidPaise],
               ["Balance", totals.balanceDuePaise]
             ].map(([label, value]) => (
-              <div key={label} className="flex justify-between border-b border-[#eadfce] py-2 text-sm last:border-0">
+              <div key={label} className="flex justify-between border-b border-[#ead8c3] py-2 text-sm last:border-0">
                 <span>{label}</span>
                 <strong>{formatINR(Number(value))}</strong>
               </div>
@@ -739,7 +739,7 @@ export function NewOrderForm({
         </CardContent>
       </Card>
 
-      <div className="sticky bottom-0 flex flex-wrap justify-end gap-2 border-t border-[#eadfce] bg-[#fbf7ef]/95 py-4 backdrop-blur">
+      <div className="sticky bottom-0 flex flex-wrap justify-end gap-2 border-t border-[#ead8c3] bg-[#fff7ec]/92 py-4 backdrop-blur">
         <Button type="submit" name="intent" value="draft" variant="secondary" disabled={isPending}>
           <Save className="h-4 w-4" />
           {isPending ? "Saving..." : "Save Draft"}
