@@ -137,6 +137,23 @@ describe("NewOrderForm actions", () => {
     expect(container.querySelector('[name="items.0.extraCosts.0.label"]')).toBeNull();
   });
 
+  it("shows typed extra cost labels as price rows in live totals", () => {
+    const { container } = render(<NewOrderForm />);
+
+    fireEvent.click(screen.getByRole("button", { name: /add extra cost to dress 1/i }));
+    fireEvent.change(container.querySelector('[name="items.0.extraCosts.0.label"]') as HTMLInputElement, {
+      target: { value: "Lace" }
+    });
+    fireEvent.change(container.querySelector('[name="items.0.extraCosts.0.amountRupees"]') as HTMLInputElement, {
+      target: { value: "250" }
+    });
+
+    const liveTotals = screen.getByLabelText("Live totals");
+    expect(liveTotals.textContent).toContain("Lace price");
+    expect(liveTotals.textContent).toContain("₹250.00");
+    expect(liveTotals.textContent).not.toContain("Extra costs");
+  });
+
   it("keeps typed measurement values across rerenders", () => {
     const { container, rerender } = render(<NewOrderForm nextReceiptNumber="SJD-2026-000011" />);
     const lengthInput = container.querySelector('[name="measurement.length"]') as HTMLInputElement;

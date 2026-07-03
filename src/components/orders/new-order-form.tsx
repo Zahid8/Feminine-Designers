@@ -9,6 +9,7 @@ import { MeasurementGrid } from "@/components/measurements/measurement-grid";
 import { GARMENT_TYPES, MEASUREMENT_TEMPLATES, STORE_SETTINGS } from "@/lib/constants/business";
 import { calculateOrderTotals } from "@/lib/calculations/order";
 import { todayISO } from "@/lib/utils/date";
+import { formatExtraCostLabel } from "@/lib/utils/extra-cost-display";
 import { rupeesToPaise, formatINR } from "@/lib/utils/money";
 import { initialOrderActionState, type OrderActionState } from "@/services/orders/order-action-state";
 import type { ReturningCustomerMatch } from "@/types/customer-search";
@@ -137,6 +138,20 @@ export function NewOrderForm({
       }),
     [accessoriesCost, advance, orderDiscount, visibleItems]
   );
+  const extraCostTotalRows = useMemo(() => {
+    const groupedRows = new Map<string, number>();
+
+    visibleItems.forEach((item) => {
+      item.extraCosts.forEach((cost) => {
+        const amountPaise = rupeesToPaise(cost.amount);
+        if (!cost.label.trim() && amountPaise === 0) return;
+        const label = formatExtraCostLabel(cost.label);
+        groupedRows.set(label, (groupedRows.get(label) ?? 0) + amountPaise);
+      });
+    });
+
+    return Array.from(groupedRows.entries());
+  }, [visibleItems]);
 
   useEffect(() => {
     if (state.status === "success" && state.redirectTo) {
@@ -711,7 +726,7 @@ export function NewOrderForm({
               <Textarea name="internalNotes" placeholder="Private stitching/workshop note" />
             </label>
           </div>
-          <div className="rounded-md border border-[#ead8c3] bg-gradient-to-br from-[#fffdfa] to-[#fff1df] p-4 shadow-sm">
+          <div aria-label="Live totals" className="rounded-md border border-[#ead8c3] bg-gradient-to-br from-[#fffdfa] to-[#fff1df] p-4 shadow-sm">
             <p className="mb-3 flex items-center gap-2 font-semibold text-[#4c1525]">
               <Calculator className="h-4 w-4" />
               Live totals
@@ -722,7 +737,7 @@ export function NewOrderForm({
               ["Stitching", totals.stitchingCostPaise],
               ["Fabric price", totals.fabricPricePaise],
               ["Dye price", totals.dyePricePaise],
-              ["Extra costs", totals.extraCostPaise],
+              ...(extraCostTotalRows.length ? extraCostTotalRows : [["Extra costs", totals.extraCostPaise]]),
               ["Discount", -totals.orderDiscountPaise],
               ["CGST", totals.cgstAmountPaise],
               ["SGST", totals.sgstAmountPaise],
