@@ -14,11 +14,14 @@ describe("AppShellFrame", () => {
     const toggle = screen.getByRole("button", { name: /hide sidebar/i });
 
     expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    expect(toggle.innerHTML).toContain("M4 12h16");
     expect(sidebar.className).not.toContain("w-0");
 
     fireEvent.click(toggle);
 
-    expect(screen.getByRole("button", { name: /show sidebar/i }).getAttribute("aria-expanded")).toBe("false");
+    const collapsedToggle = screen.getByRole("button", { name: /show sidebar/i });
+    expect(collapsedToggle.getAttribute("aria-expanded")).toBe("false");
+    expect(collapsedToggle.innerHTML).toContain("M4 12h16");
     expect(sidebar.className).toContain("w-0");
 
     fireEvent.click(screen.getByRole("button", { name: /show sidebar/i }));

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Home, Menu, ReceiptText, Search, Settings, UserRoundPlus, Users, X } from "lucide-react";
+import { Home, Menu, ReceiptText, Search, Settings, UserRoundPlus, Users } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { LogoMark } from "@/components/shared/logo-mark";
@@ -62,7 +62,7 @@ export function AppShellFrame({
                 aria-expanded={sidebarExpanded}
                 onClick={() => setSidebarExpanded((current) => !current)}
               >
-                {sidebarExpanded ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+                <Menu className="h-4 w-4" />
               </Button>
               <div className="flex min-w-0 items-center gap-3 rounded-md border border-[#e8dcca] bg-white px-3 py-2 text-sm text-[#7c6d66]">
                 <Search className="h-4 w-4 shrink-0" />
