@@ -397,16 +397,38 @@ export function NewOrderForm({
           <CardTitle>Garment Items</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-5">
-          <Field label="Number of cloth / garments">
-            <Input
-              name="clothCount"
-              type="number"
-              min={1}
-              max={12}
-              value={clothCount}
-              onChange={(event) => updateClothCount(Number(event.target.value))}
-            />
-          </Field>
+          <div className="grid gap-1.5 text-sm font-medium text-[#3b312d]">
+            <label htmlFor="cloth-count">Number of cloth / garments</label>
+            <div className="grid grid-cols-[40px_1fr_40px] gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                className="min-h-10 px-0"
+                onClick={() => updateClothCount(clothCount - 1)}
+                aria-label="Decrease number of cloth"
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
+              <Input
+                id="cloth-count"
+                name="clothCount"
+                type="number"
+                min={1}
+                max={12}
+                value={clothCount}
+                onChange={(event) => updateClothCount(Number(event.target.value))}
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                className="min-h-10 px-0"
+                onClick={() => updateClothCount(clothCount + 1)}
+                aria-label="Increase number of cloth"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
           <div className="grid gap-4">
             {visibleItems.map((item, index) => (
               <details
@@ -430,15 +452,37 @@ export function NewOrderForm({
                       ))}
                     </select>
                   </Field>
-                  <Field label="Quantity">
-                    <Input
-                      name={`items.${index}.quantity`}
-                      type="number"
-                      min={1}
-                      value={item.quantity}
-                      onChange={(event) => updateItem(index, { quantity: Number(event.target.value) })}
-                    />
-                  </Field>
+                  <div className="grid gap-1.5 text-sm font-medium text-[#3b312d]">
+                    <label htmlFor={`items-${index}-quantity`}>Quantity</label>
+                    <div className="grid grid-cols-[40px_1fr_40px] gap-2">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="min-h-10 px-0"
+                        onClick={() => updateItem(index, { quantity: Math.max(1, item.quantity - 1) })}
+                        aria-label={`Decrease quantity for dress ${index + 1}`}
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      <Input
+                        id={`items-${index}-quantity`}
+                        name={`items.${index}.quantity`}
+                        type="number"
+                        min={1}
+                        value={item.quantity}
+                        onChange={(event) => updateItem(index, { quantity: Math.max(1, Number(event.target.value) || 1) })}
+                      />
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="min-h-10 px-0"
+                        onClick={() => updateItem(index, { quantity: item.quantity + 1 })}
+                        aria-label={`Increase quantity for dress ${index + 1}`}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
                   <Field label="Rate">
                     <Input
                       name={`items.${index}.rateRupees`}
@@ -488,7 +532,7 @@ export function NewOrderForm({
                     <span>Stitching instructions</span>
                     <Textarea
                       name={`items.${index}.stitchingInstructions`}
-                      defaultValue={index === 0 ? "Princess cut, padded, lining required" : ""}
+                      defaultValue=""
                     />
                   </label>
                 </div>

@@ -99,6 +99,31 @@ describe("NewOrderForm actions", () => {
     expect(container.querySelector('[name="items.0.dyePriceRupees"]')).toBeDefined();
   });
 
+  it("uses plus and minus controls for garment count and dress quantity", () => {
+    const { container } = render(<NewOrderForm />);
+    const clothCountInput = screen.getByRole("spinbutton", { name: /number of cloth \/ garments/i }) as HTMLInputElement;
+    const quantityInput = container.querySelector('[name="items.0.quantity"]') as HTMLInputElement;
+
+    fireEvent.click(screen.getByRole("button", { name: /increase number of cloth/i }));
+    expect(clothCountInput.value).toBe("2");
+    expect(screen.getByText(/dress 2:/i)).toBeDefined();
+
+    fireEvent.click(screen.getByRole("button", { name: /decrease number of cloth/i }));
+    expect(clothCountInput.value).toBe("1");
+
+    fireEvent.click(screen.getByRole("button", { name: /increase quantity for dress 1/i }));
+    expect(quantityInput.value).toBe("2");
+
+    fireEvent.click(screen.getByRole("button", { name: /decrease quantity for dress 1/i }));
+    expect(quantityInput.value).toBe("1");
+  });
+
+  it("starts stitching instructions blank", () => {
+    render(<NewOrderForm />);
+
+    expect((screen.getByLabelText(/stitching instructions/i) as HTMLTextAreaElement).value).toBe("");
+  });
+
   it("adds and removes dynamic per-dress extra cost fields", () => {
     const { container } = render(<NewOrderForm />);
 
