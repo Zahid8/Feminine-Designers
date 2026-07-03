@@ -127,7 +127,7 @@ function ReceiptPanel({
       </header>
       <div className={isCustomer ? "my-4 grid grid-cols-2 gap-3 rounded-md border border-[#eadfce] bg-[#fffaf5] p-3" : "grid grid-cols-2 gap-3 border-b border-[#eadfce] py-3"}>
         <Info label="Receipt" value={order.receiptNumber ?? "Draft"} />
-        <Info label="Copy" value={mode === "store" ? "Store Copy" : "Customer Copy"} />
+        {mode === "store" ? <Info label="Copy" value="Store Copy" /> : null}
         <Info label="Customer" value={order.customer.fullName} />
         <Info label="Phone" value={order.customer.phonePrimary} />
         <Info label="Order date" value={formatDate(order.orderDate)} />
@@ -234,9 +234,11 @@ function ReceiptItemSummary({
             {order.items.length} {order.items.length === 1 ? "garment" : "garments"}
           </p>
         </div>
-        <span className="rounded-full bg-[#f8eadb] px-3 py-1 text-[10px] font-bold uppercase text-[#7d1f36]">
-          {mode === "store" ? "Store Copy" : "Customer Copy"}
-        </span>
+        {mode === "store" ? (
+          <span className="rounded-full bg-[#f8eadb] px-3 py-1 text-[10px] font-bold uppercase text-[#7d1f36]">
+            Store Copy
+          </span>
+        ) : null}
       </div>
       <div className={compact ? "mt-2 grid gap-2" : "mt-3 grid gap-3"}>
         {order.items.map((item, index) => (

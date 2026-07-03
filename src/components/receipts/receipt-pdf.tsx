@@ -429,7 +429,7 @@ function PdfPanel({
       </View>
       <View style={infoGridStyle}>
         <Info label="Receipt" value={order.receiptNumber ?? "Draft"} compact={compact} />
-        <Info label="Copy" value={mode === "store" ? "Store Copy" : "Customer Copy"} compact={compact} />
+        {mode === "store" ? <Info label="Copy" value="Store Copy" compact={compact} /> : null}
         <Info label="Customer" value={order.customer.fullName} compact={compact} />
         <Info label="Phone" value={order.customer.phonePrimary} compact={compact} />
         <Info label="Order date" value={formatDate(order.orderDate)} compact={compact} />
@@ -518,7 +518,7 @@ function ReceiptPdfItemSummary({ order, mode }: { order: OrderWithCustomer; mode
             {order.items.length} {order.items.length === 1 ? "garment" : "garments"}
           </Text>
         </View>
-        <Text style={styles.customerSummaryBadge}>{mode === "store" ? "Store Copy" : "Customer Copy"}</Text>
+        {mode === "store" ? <Text style={styles.customerSummaryBadge}>Store Copy</Text> : null}
       </View>
       {order.items.map((item, index) => (
         <View key={item.id} style={styles.customerItemCard}>

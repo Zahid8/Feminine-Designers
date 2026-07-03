@@ -67,6 +67,7 @@
 - 2026-07-03T07:53Z [CODE] Extra-cost item labels now display as `<label> price` in order detail, HTML receipt copies, and PDF receipt copies while preserving the raw saved label in forms/data. Customer, store, and combined receipt tests cover labels such as `Lace price` and `Shantoon price`.
 - 2026-07-03T08:01Z [CODE] Removed the horizontal per-cost garment table from customer, store, and combined receipt copies in both HTML and PDF renderers. Receipts now use item-summary cards plus a retained, more visually styled vertical `Payment summary` table for subtotal, accessories, stitching, fabric, dye, extra costs, discount, tax, grand total, advance, and balance.
 - 2026-07-03T08:09Z [CODE] New Order live totals now display typed extra-cost labels as `<label> price` rows, grouped by label, instead of always showing the generic `Extra costs` row when labelled extra costs exist.
+- 2026-07-03T08:16Z [CODE] Customer receipt labels were deduplicated in HTML and PDF receipts: standalone customer copy and the customer pane inside combined copy now show only one `Customer Receipt` label and no repeated `Customer Copy` text. Store-copy labels remain for store panels.
 
 ## [DISCOVERIES]
 - 2026-07-01T06:24Z [TOOL] `IMG_1174.JPG` is a 5712x4284 JPEG, likely the bill reference image, but no `public/Logo.PNG` logo file exists.
@@ -158,3 +159,4 @@
 - 2026-07-03T07:53Z [TOOL] Verification passed after extra-cost label display change: focused receipt tests covered customer/store/combined HTML and PDF copies (`3 files`, `13 tests`), then `npm run typecheck`, `npm run lint`, `npm run test` (`39 files`, `118 tests`), and `npm run build` all passed.
 - 2026-07-03T08:01Z [TOOL] Verification passed after receipt table redesign: focused receipt tests covered no horizontal cost table on customer/store/combined HTML and PDF copies (`2 files`, `16 tests`); then `npm run typecheck`, `npm run lint`, `npm run test` (`39 files`, `124 tests`), and `npm run build` passed.
 - 2026-07-03T08:09Z [TOOL] Verification passed after New Order live totals extra-label fix: focused form/PDF receipt tests passed (`2 files`, `24 tests`), then `npm run typecheck`, `npm run lint`, `npm run test` (`39 files`, `125 tests`), and `npm run build` passed.
+- 2026-07-03T08:16Z [TOOL] Verification passed after customer receipt label deduplication: focused receipt tests passed (`2 files`, `20 tests`), then `npm run typecheck`, `npm run lint`, `npm run test` (`39 files`, `129 tests`), and `npm run build` passed.

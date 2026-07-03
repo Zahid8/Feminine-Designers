@@ -74,4 +74,11 @@ describe("ReceiptPdfDocument customer presentation", () => {
     expect(text).toContain("Item summary");
     expect(text).not.toMatch(/RATE\s+STITCHING\s+FABRIC\s+DYE\s+EXTRA\s+AMOUNT/);
   });
+
+  it.each(["customer", "combined"] as const)("shows only one customer receipt label on %s copies", async (type) => {
+    const text = await extractPdfText(type);
+
+    expect(text.match(/customer receipt/gi) ?? []).toHaveLength(1);
+    expect(text).not.toMatch(/customer copy/i);
+  });
 });

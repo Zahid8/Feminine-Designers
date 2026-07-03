@@ -62,4 +62,11 @@ describe("ReceiptHtml customer presentation", () => {
     expect(headings).not.toContain("Dye");
     expect(headings).not.toContain("Extra");
   });
+
+  it.each(["customer", "combined"] as const)("shows only one customer receipt label on %s copies", (type) => {
+    render(<ReceiptHtml order={orders[0]} settings={STORE_SETTINGS} type={type} />);
+
+    expect(screen.getAllByText("Customer Receipt")).toHaveLength(1);
+    expect(screen.queryAllByText("Customer Copy")).toHaveLength(0);
+  });
 });

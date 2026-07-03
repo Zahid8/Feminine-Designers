@@ -1,5 +1,5 @@
 {
-  "last_turn_at": "2026-07-03T08:09:44.547Z",
-  "turn_count": 66,
-  "last_agent_output": "Yes, verified: in all PDF bills, extra costs appear as `<label> price`, not as `Extra cost`.\n\nCovere"
+  "last_turn_at": "2026-07-03T08:16:57.962Z",
+  "turn_count": 67,
+  "last_agent_output": "Fixed.\n\nCustomer receipt now shows only one label: `Customer Receipt`.\n\nRemoved the repeated `Custom"
 }
