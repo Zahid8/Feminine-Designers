@@ -66,3 +66,12 @@ describe("ReceiptPdfDocument extra cost labels", () => {
     expect(text).not.toContain("Extra: Lace Rs. 250.00");
   });
 });
+
+describe("ReceiptPdfDocument customer presentation", () => {
+  it.each(["customer", "store", "combined"] as const)("uses an item summary instead of the horizontal cost table on %s copies", async (type) => {
+    const text = await extractPdfText(type);
+
+    expect(text).toContain("Item summary");
+    expect(text).not.toMatch(/RATE\s+STITCHING\s+FABRIC\s+DYE\s+EXTRA\s+AMOUNT/);
+  });
+});

@@ -49,3 +49,17 @@ describe("ReceiptHtml extra cost labels", () => {
     expect(screen.queryByText(/Extra: Lace ₹250.00/i)).toBeNull();
   });
 });
+
+describe("ReceiptHtml customer presentation", () => {
+  it.each(["customer", "store", "combined"] as const)("uses an item summary instead of the horizontal cost table on %s copies", (type) => {
+    const { container } = render(<ReceiptHtml order={orders[0]} settings={STORE_SETTINGS} type={type} />);
+    const headings = Array.from(container.querySelectorAll("th")).map((heading) => heading.textContent?.trim());
+
+    expect(screen.getAllByText("Item summary").length).toBeGreaterThan(0);
+    expect(headings).not.toContain("Rate");
+    expect(headings).not.toContain("Stitching");
+    expect(headings).not.toContain("Fabric Price");
+    expect(headings).not.toContain("Dye");
+    expect(headings).not.toContain("Extra");
+  });
+});
