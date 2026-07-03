@@ -15,6 +15,7 @@ import { getOrderById } from "@/services/orders/order-service";
 import { getMeasurementTemplateForGarment } from "@/services/measurements/measurement-service";
 import { formatDate, formatDateTime } from "@/lib/utils/date";
 import { formatINR } from "@/lib/utils/money";
+import { formatExtraCostLine } from "@/lib/utils/extra-cost-display";
 import { updateOrderAction } from "@/app/orders/[id]/actions";
 
 export default async function OrderDetailPage({
@@ -79,7 +80,7 @@ export default async function OrderDetailPage({
                   </p>
                   {item.extraCosts.length ? (
                     <p className="text-xs text-[#7c6d66]">
-                      Extra costs: {item.extraCosts.map((cost) => `${cost.label} ${formatINR(cost.amountPaise)}`).join(", ")}
+                      {item.extraCosts.map((cost) => formatExtraCostLine(cost.label, formatINR(cost.amountPaise))).join(", ")}
                     </p>
                   ) : null}
                   {item.fabricLength ? <p className="text-sm text-[#7c6d66]">Fabric length: {item.fabricLength}</p> : null}

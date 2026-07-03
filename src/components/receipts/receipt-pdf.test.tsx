@@ -8,10 +8,11 @@ import { describe, expect, it } from "vitest";
 import { ReceiptPdfDocument } from "@/components/receipts/receipt-pdf";
 import { STORE_SETTINGS } from "@/lib/constants/business";
 import { orders } from "@/lib/data/mock";
+import { rupeesToPaise } from "@/lib/utils/money";
 import type { ReceiptType } from "@/types/domain";
 
-async function extractPdfText(type: ReceiptType) {
-  const buffer = await renderToBuffer(<ReceiptPdfDocument order={orders[0]} settings={STORE_SETTINGS} type={type} />);
+async function extractPdfText(type: ReceiptType, order = orders[0]) {
+  const buffer = await renderToBuffer(<ReceiptPdfDocument order={order} settings={STORE_SETTINGS} type={type} />);
   const filePath = join(tmpdir(), `receipt-${type}-${randomUUID()}.pdf`);
   writeFileSync(filePath, buffer);
 
@@ -38,5 +39,30 @@ describe("ReceiptPdfDocument delivery dates", () => {
 
     expect(combinedText).toContain("02/07/2026");
     expect(combinedText).toContain("05/07/2026");
+  });
+});
+
+describe("ReceiptPdfDocument extra cost labels", () => {
+  it.each(["customer", "store", "combined"] as const)("shows custom extra cost labels as price lines on %s copies", async (type) => {
+    const order = {
+      ...orders[0],
+      items: [
+        {
+          ...orders[0].items[0],
+          extraCostPaise: rupeesToPaise(850),
+          extraCosts: [
+            { id: "extra-1", label: "Lace", amountPaise: rupeesToPaise(250), sortOrder: 1 },
+            { id: "extra-2", label: "Shantoon", amountPaise: rupeesToPaise(600), sortOrder: 2 }
+          ]
+        },
+        ...orders[0].items.slice(1)
+      ]
+    };
+
+    const text = await extractPdfText(type, order);
+
+    expect(text).toContain("Lace price Rs. 250.00");
+    expect(text).toMatch(/Shantoon price\s+Rs\. 600\.00/);
+    expect(text).not.toContain("Extra: Lace Rs. 250.00");
   });
 });

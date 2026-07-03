@@ -10,6 +10,7 @@ import { formatMeasurementValue, isPrintableMeasurementValue } from "@/lib/utils
 import { shouldBreakAfterMeasurement } from "@/lib/utils/measurement-sections";
 import { receiptFileName } from "@/lib/utils/receipt-file-name";
 import { uniqueMeasurementNotes } from "@/lib/utils/receipt-notes";
+import { formatExtraCostLine } from "@/lib/utils/extra-cost-display";
 
 const customerReceiptFooter = [
   "Delivery date is approximate. Please bring this receipt at the time of delivery.",
@@ -135,7 +136,7 @@ function ReceiptPanel({
                 <strong>{item.garmentType}</strong>
                 {item.extraCosts.length ? (
                   <p className="text-xs text-[#6f625d]">
-                    Extra: {item.extraCosts.map((cost) => `${cost.label} ${formatINR(cost.amountPaise)}`).join(", ")}
+                    {item.extraCosts.map((cost) => formatExtraCostLine(cost.label, formatINR(cost.amountPaise))).join(", ")}
                   </p>
                 ) : null}
                 {mode === "store" ? <p className="text-xs text-[#6f625d]">{item.stitchingInstructions}</p> : null}

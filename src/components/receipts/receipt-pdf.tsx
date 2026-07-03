@@ -7,6 +7,7 @@ import { formatMeasurementValue, isPrintableMeasurementValue } from "@/lib/utils
 import { shouldBreakAfterMeasurement } from "@/lib/utils/measurement-sections";
 import { getPublicPngDataUri } from "@/lib/utils/pdf-assets";
 import { uniqueMeasurementNotes } from "@/lib/utils/receipt-notes";
+import { formatExtraCostLine } from "@/lib/utils/extra-cost-display";
 
 const customerReceiptFooter = [
   "Delivery date is approximate. Please bring this receipt at the time of delivery.",
@@ -331,7 +332,7 @@ function PdfPanel({
               <Text style={styles.value}>{item.garmentType}</Text>
               {item.extraCosts.length ? (
                 <Text style={styles.itemInstruction}>
-                  Extra: {item.extraCosts.map((cost) => `${cost.label} ${formatPdfINR(cost.amountPaise)}`).join(", ")}
+                  {item.extraCosts.map((cost) => formatExtraCostLine(cost.label, formatPdfINR(cost.amountPaise))).join(", ")}
                 </Text>
               ) : null}
               {mode === "store" && item.stitchingInstructions ? (
