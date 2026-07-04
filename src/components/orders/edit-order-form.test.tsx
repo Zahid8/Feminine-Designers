@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { EditOrderForm } from "@/components/orders/edit-order-form";
 import { orders } from "@/lib/data/mock";
@@ -41,5 +41,24 @@ describe("EditOrderForm", () => {
     expect(prioritySelect.name).toBe("priority");
     expect(prioritySelect.value).toBe("Urgent");
     expect([...prioritySelect.options].map((option) => option.value)).toEqual(["Express", "Urgent", "Normal"]);
+  });
+
+  it("lets staff add a new dress and delete an existing dress while editing", () => {
+    const { container } = render(<EditOrderForm order={orders[0]} action={vi.fn()} />);
+
+    expect(screen.getByText("Dress 1")).toBeDefined();
+    expect(screen.getByText("Dress 2")).toBeDefined();
+
+    fireEvent.click(screen.getByRole("button", { name: /add dress/i }));
+
+    expect(screen.getByText("Dress 3")).toBeDefined();
+    expect(container.querySelector('[name="items.2.id"]')).toBeDefined();
+    expect(container.querySelector('[name="items.2.garmentType"]')).toBeDefined();
+
+    fireEvent.click(screen.getByRole("button", { name: /delete dress 2/i }));
+
+    expect(container.querySelector(`[value="${orders[0].items[1].id}"]`)).toBeNull();
+    expect(screen.queryByText("Dress 3")).toBeNull();
+    expect(screen.getAllByText(/Dress \d/)).toHaveLength(2);
   });
 });

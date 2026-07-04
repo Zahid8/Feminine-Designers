@@ -210,9 +210,65 @@ describe("order-edit-service", () => {
     expect(mockFrom).toHaveBeenCalledWith("order_item_extra_costs");
     expect(mockDelete).toHaveBeenCalled();
     expect(mockInsert).toHaveBeenCalledWith([
-      { order_item_id: order.items[0].id, label: "Lace", amount: "250.00", sort_order: 1 },
-      { order_item_id: order.items[0].id, label: "Shantoon", amount: "600.00", sort_order: 2 }
+      { order_id: order.id, order_item_id: order.items[0].id, item_sort_order: 1, label: "Lace", amount: "250.00", sort_order: 1 },
+      { order_id: order.id, order_item_id: order.items[0].id, item_sort_order: 1, label: "Shantoon", amount: "600.00", sort_order: 2 }
     ]);
+  });
+
+  it("deletes omitted existing dresses and inserts new dress rows while editing", async () => {
+    const { updateOrderFromForm } = await import("./order-edit-service");
+    const order = orders[0];
+    const formData = new FormData();
+    formData.set("customerName", order.customer.fullName);
+    formData.set("phonePrimary", order.customer.phonePrimary);
+    formData.set("orderDate", order.orderDate);
+    formData.set("deliveryDate", order.deliveryDate);
+    formData.set("status", order.status);
+    formData.set("priority", order.priority);
+    formData.set("items.intent", "replace");
+    formData.set("orderDiscountRupees", "0");
+    formData.set("accessoriesCostRupees", "0");
+    formData.set("items.0.id", order.items[0].id);
+    formData.set("items.0.garmentType", order.items[0].garmentType);
+    formData.set("items.0.quantity", "1");
+    formData.set("items.0.rateRupees", "1500");
+    formData.set("items.0.stitchingCostRupees", "250");
+    formData.set("items.0.fabricPriceRupees", "0");
+    formData.set("items.0.dyePriceRupees", "0");
+    formData.set("items.1.id", "");
+    formData.set("items.1.garmentType", "Lehenga");
+    formData.set("items.1.quantity", "2");
+    formData.set("items.1.rateRupees", "2100");
+    formData.set("items.1.stitchingCostRupees", "350");
+    formData.set("items.1.fabricPriceRupees", "500");
+    formData.set("items.1.dyePriceRupees", "125");
+    formData.set("items.1.fabricLength", "5 m");
+    formData.set("items.1.fabricColor", "Wine");
+    formData.set("items.1.designReference", "Panel cut");
+    formData.set("items.1.stitchingInstructions", "Add can-can");
+
+    await updateOrderFromForm(order, formData);
+
+    expect(mockFrom).toHaveBeenCalledWith("order_items");
+    expect(mockDelete).toHaveBeenCalled();
+    expect(mockEq).toHaveBeenCalledWith("id", order.items[1].id);
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        order_id: order.id,
+        garment_type: "Lehenga",
+        quantity: "2",
+        rate: "2100.00",
+        stitching_cost: "350.00",
+        fabric_price: "500.00",
+        dye_price: "125.00",
+        line_total: "5175.00",
+        fabric_length: "5 m",
+        fabric_color: "Wine",
+        design_reference: "Panel cut",
+        stitching_instructions: "Add can-can",
+        sort_order: 2
+      })
+    );
   });
 
   it("preserves existing order dates when unchanged date inputs submit blank values", async () => {

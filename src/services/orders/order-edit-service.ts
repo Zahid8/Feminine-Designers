@@ -2,7 +2,7 @@ import { calculateLineTotal, calculateOrderTotals } from "@/lib/calculations/ord
 import { normalizeDateInput } from "@/lib/utils/date";
 import { paiseToRupees, rupeesToPaise } from "@/lib/utils/money";
 import { createSupabaseAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
-import type { OrderStatus, OrderWithCustomer, PaymentStatus, Priority } from "@/types/domain";
+import type { OrderItem, OrderStatus, OrderWithCustomer, PaymentStatus, Priority } from "@/types/domain";
 
 function readString(formData: FormData, key: string, fallback = "") {
   const value = formData.get(key);
@@ -34,6 +34,46 @@ function orderItemIndexes(formData: FormData) {
     if (match) indexes.add(Number(match[1]));
   }
   return [...indexes].sort((a, b) => a - b);
+}
+
+interface SubmittedItemRow {
+  index: number;
+  id: string;
+  existingItem?: OrderItem;
+}
+
+function submittedItemRows(order: OrderWithCustomer, formData: FormData): SubmittedItemRow[] {
+  return orderItemIndexes(formData).map((index) => {
+    const id = readString(formData, `items.${index}.id`);
+    return {
+      index,
+      id,
+      existingItem: id ? order.items.find((item) => item.id === id) : undefined
+    };
+  });
+}
+
+function effectiveItemRows(order: OrderWithCustomer, formData: FormData): SubmittedItemRow[] {
+  const submittedRows = submittedItemRows(order, formData);
+  const replaceItems = readString(formData, "items.intent") === "replace";
+
+  if (replaceItems) return submittedRows;
+  if (submittedRows.length === 0) {
+    return order.items.map((item, index) => ({
+      index,
+      id: item.id,
+      existingItem: item
+    }));
+  }
+
+  const submittedById = new Map(submittedRows.filter((row) => row.id).map((row) => [row.id, row]));
+  const submittedByIndex = new Map(submittedRows.map((row) => [row.index, row]));
+
+  return order.items.map((item, index) => submittedById.get(item.id) ?? submittedByIndex.get(index) ?? {
+    index,
+    id: item.id,
+    existingItem: item
+  });
 }
 
 function extraCostIndexes(formData: FormData, itemIndex: number) {
@@ -99,25 +139,21 @@ function newMeasurementRows(order: OrderWithCustomer, formData: FormData) {
     .filter((row) => row.value !== "");
 }
 
-function editedItemDraft(order: OrderWithCustomer, index: number) {
-  return order.items[index];
-}
-
-function lineItemFromForm(order: OrderWithCustomer, formData: FormData, index: number) {
-  const fallback = editedItemDraft(order, index);
-  const quantity = readNumber(formData, `items.${index}.quantity`, fallback.quantity);
-  const ratePaise = rupeesToPaise(readNumber(formData, `items.${index}.rateRupees`, paiseToRupees(fallback.ratePaise)));
-  const discountPaise = fallback.discountPaise;
+function lineItemFromForm(formData: FormData, row: SubmittedItemRow) {
+  const fallback = row.existingItem;
+  const quantity = readNumber(formData, `items.${row.index}.quantity`, fallback?.quantity ?? 1);
+  const ratePaise = rupeesToPaise(readNumber(formData, `items.${row.index}.rateRupees`, paiseToRupees(fallback?.ratePaise ?? 0)));
+  const discountPaise = fallback?.discountPaise ?? 0;
   const stitchingCostPaise = rupeesToPaise(
-    readNumber(formData, `items.${index}.stitchingCostRupees`, paiseToRupees(fallback.stitchingCostPaise))
+    readNumber(formData, `items.${row.index}.stitchingCostRupees`, paiseToRupees(fallback?.stitchingCostPaise ?? 0))
   );
   const fabricPricePaise = rupeesToPaise(
-    readNumber(formData, `items.${index}.fabricPriceRupees`, paiseToRupees(fallback.fabricPricePaise))
+    readNumber(formData, `items.${row.index}.fabricPriceRupees`, paiseToRupees(fallback?.fabricPricePaise ?? 0))
   );
   const dyePricePaise = rupeesToPaise(
-    readNumber(formData, `items.${index}.dyePriceRupees`, paiseToRupees(fallback.dyePricePaise))
+    readNumber(formData, `items.${row.index}.dyePriceRupees`, paiseToRupees(fallback?.dyePricePaise ?? 0))
   );
-  const extraCosts = extraCostsFromForm(formData, index);
+  const extraCosts = extraCostsFromForm(formData, row.index);
 
   return {
     quantity,
@@ -140,7 +176,10 @@ export async function updateOrderFromForm(order: OrderWithCustomer, formData: Fo
   }
 
   const admin = createSupabaseAdminClient();
-  const itemIndexes = orderItemIndexes(formData);
+  const itemRows = effectiveItemRows(order, formData);
+  if (itemRows.length === 0) {
+    throw new Error("An order must have at least one dress item.");
+  }
   const measurementNote = readString(formData, "measurementNotes");
   const now = new Date().toISOString();
   const nextStatus = readLastString<OrderStatus>(formData, "status", order.status);
@@ -148,19 +187,7 @@ export async function updateOrderFromForm(order: OrderWithCustomer, formData: Fo
   const clothSampleDataUrl = readString(formData, "clothSampleDataUrl");
   const removeClothSample = readString(formData, "removeClothSample") === "1";
 
-  const editedLineItems = order.items.map((item, index) =>
-    itemIndexes.includes(index)
-      ? lineItemFromForm(order, formData, index)
-      : {
-        quantity: item.quantity,
-        ratePaise: item.ratePaise,
-        discountPaise: item.discountPaise,
-        stitchingCostPaise: item.stitchingCostPaise,
-        fabricPricePaise: item.fabricPricePaise,
-        dyePricePaise: item.dyePricePaise,
-        extraCostPaise: item.extraCostPaise
-      }
-  );
+  const editedLineItems = itemRows.map((row) => lineItemFromForm(formData, row));
 
   const totals = calculateOrderTotals({
     items: editedLineItems,
@@ -214,55 +241,77 @@ export async function updateOrderFromForm(order: OrderWithCustomer, formData: Fo
       .eq("id", order.id)
   );
 
-  for (const index of itemIndexes) {
-    const item = order.items[index];
-    if (!item) continue;
+  const submittedExistingItemIds = new Set(itemRows.filter((row) => row.id).map((row) => row.id));
+  const deletedItemIds = order.items.map((item) => item.id).filter((itemId) => !submittedExistingItemIds.has(itemId));
 
-    const quantity = readNumber(formData, `items.${index}.quantity`, item.quantity);
-    const rateRupees = readNumber(formData, `items.${index}.rateRupees`, paiseToRupees(item.ratePaise));
+  await assertUpdate(await admin.from("order_item_extra_costs").delete().eq("order_id", order.id));
+
+  for (const item of order.items) {
+    await assertUpdate(await admin.from("order_item_extra_costs").delete().eq("order_item_id", item.id));
+  }
+
+  for (const itemId of deletedItemIds) {
+    await assertUpdate(await admin.from("order_items").delete().eq("id", itemId));
+  }
+
+  for (const row of itemRows) {
+    const item = row.existingItem;
+    const index = row.index;
+
+    const quantity = readNumber(formData, `items.${index}.quantity`, item?.quantity ?? 1);
+    const rateRupees = readNumber(formData, `items.${index}.rateRupees`, paiseToRupees(item?.ratePaise ?? 0));
     const draft = {
       quantity,
       ratePaise: rupeesToPaise(rateRupees),
-      discountPaise: item.discountPaise,
+      discountPaise: item?.discountPaise ?? 0,
       stitchingCostPaise: rupeesToPaise(
-        readNumber(formData, `items.${index}.stitchingCostRupees`, paiseToRupees(item.stitchingCostPaise))
+        readNumber(formData, `items.${index}.stitchingCostRupees`, paiseToRupees(item?.stitchingCostPaise ?? 0))
       ),
       fabricPricePaise: rupeesToPaise(
-        readNumber(formData, `items.${index}.fabricPriceRupees`, paiseToRupees(item.fabricPricePaise))
+        readNumber(formData, `items.${index}.fabricPriceRupees`, paiseToRupees(item?.fabricPricePaise ?? 0))
       ),
-      dyePricePaise: rupeesToPaise(readNumber(formData, `items.${index}.dyePriceRupees`, paiseToRupees(item.dyePricePaise)))
+      dyePricePaise: rupeesToPaise(readNumber(formData, `items.${index}.dyePriceRupees`, paiseToRupees(item?.dyePricePaise ?? 0)))
     };
     const extraCosts = extraCostsFromForm(formData, index);
     const extraCostPaise = sumExtraCosts(extraCosts);
     const draftWithExtraCost = { ...draft, extraCostPaise };
+    const itemPayload = {
+      garment_type: readString(formData, `items.${index}.garmentType`, item?.garmentType ?? ""),
+      quantity: String(quantity),
+      rate: rateRupees.toFixed(2),
+      discount_amount: toRupeesDecimal(item?.discountPaise ?? 0),
+      stitching_cost: toRupeesDecimal(draft.stitchingCostPaise),
+      fabric_price: toRupeesDecimal(draft.fabricPricePaise),
+      dye_price: toRupeesDecimal(draft.dyePricePaise),
+      extra_cost: toRupeesDecimal(extraCostPaise),
+      line_total: toRupeesDecimal(calculateLineTotal(draftWithExtraCost)),
+      fabric_length: readString(formData, `items.${index}.fabricLength`, item?.fabricLength ?? "") || null,
+      fabric_color: readString(formData, `items.${index}.fabricColor`, item?.fabricColor ?? "") || null,
+      design_reference: readString(formData, `items.${index}.designReference`, item?.designReference ?? "") || null,
+      stitching_instructions: readString(formData, `items.${index}.stitchingInstructions`, item?.stitchingInstructions ?? "") || null,
+      sort_order: index + 1,
+      updated_at: now
+    };
 
-    await assertUpdate(
-      await admin
-        .from("order_items")
-        .update({
-          garment_type: readString(formData, `items.${index}.garmentType`, item.garmentType),
-          quantity: String(quantity),
-          rate: rateRupees.toFixed(2),
-          discount_amount: toRupeesDecimal(item.discountPaise),
-          stitching_cost: toRupeesDecimal(draft.stitchingCostPaise),
-          fabric_price: toRupeesDecimal(draft.fabricPricePaise),
-          dye_price: toRupeesDecimal(draft.dyePricePaise),
-          extra_cost: toRupeesDecimal(extraCostPaise),
-          line_total: toRupeesDecimal(calculateLineTotal(draftWithExtraCost)),
-          fabric_length: readString(formData, `items.${index}.fabricLength`, item.fabricLength ?? "") || null,
-          fabric_color: readString(formData, `items.${index}.fabricColor`, item.fabricColor ?? "") || null,
-          design_reference: readString(formData, `items.${index}.designReference`, item.designReference ?? "") || null,
-          stitching_instructions: readString(formData, `items.${index}.stitchingInstructions`, item.stitchingInstructions ?? "") || null,
-          updated_at: now
-        })
-        .eq("id", item.id)
-    );
+    if (item) {
+      await assertUpdate(await admin.from("order_items").update(itemPayload).eq("id", item.id));
+    } else {
+      const { error } = await admin.from("order_items").insert({
+        ...itemPayload,
+        order_id: order.id,
+        delivered: false,
+        delivered_at: null,
+        created_at: now
+      });
+      if (error) throw new Error(error.message);
+    }
 
-    await assertUpdate(await admin.from("order_item_extra_costs").delete().eq("order_item_id", item.id));
     if (extraCosts.length > 0) {
       const { error } = await admin.from("order_item_extra_costs").insert(
         extraCosts.map((cost) => ({
-          order_item_id: item.id,
+          order_id: order.id,
+          order_item_id: item?.id ?? null,
+          item_sort_order: index + 1,
           label: cost.label,
           amount: toRupeesDecimal(cost.amountPaise),
           sort_order: cost.sortOrder
