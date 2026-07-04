@@ -1,5 +1,6 @@
 import { daysOverdue, isOrderOverdue } from "@/lib/calculations/order";
 import { isPastOrderForList } from "@/lib/calculations/status";
+import { compareOrdersByPriorityAndDelivery } from "@/lib/orders/order-sort";
 import { indiaNoonDate, todayISO } from "@/lib/utils/date";
 import type { OrderWithCustomer, PaymentMethod } from "@/types/domain";
 
@@ -98,7 +99,7 @@ function paymentRowsForOrders(orders: OrderWithCustomer[]) {
 }
 
 function sortByDeliveryDate(orders: (OrderWithCustomer & { overdue?: boolean; daysOverdue?: number })[]) {
-  return [...orders].sort((a, b) => a.deliveryDate.localeCompare(b.deliveryDate) || a.customer.fullName.localeCompare(b.customer.fullName));
+  return [...orders].sort(compareOrdersByPriorityAndDelivery);
 }
 
 function sortByBalanceDesc<T extends OrderWithCustomer>(orders: T[]) {

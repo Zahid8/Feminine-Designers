@@ -14,12 +14,21 @@ vi.mock("@/app/orders/actions", () => ({
 }));
 
 describe("OrderTable", () => {
-  it("renders rows sorted by delivery date", () => {
-    const { container } = render(<OrderTable orders={[orders[0], orders[1]]} />);
+  it("renders rows sorted by priority before delivery date", () => {
+    const urgentLater = { ...orders[0], priority: "Urgent" as const, deliveryDate: "2026-07-10" };
+    const expressMiddle = {
+      ...orders[1],
+      id: "express-middle",
+      priority: "Express" as const,
+      deliveryDate: "2026-07-05",
+      receiptNumber: "SJD-2026-000003"
+    };
+    const normalEarlier = { ...orders[1], id: "normal-earlier", priority: "Normal" as const, deliveryDate: "2026-07-01" };
+    const { container } = render(<OrderTable orders={[normalEarlier, urgentLater, expressMiddle]} />);
 
     const desktopReceiptCells = [...container.querySelectorAll("tbody tr td:nth-child(2)")].map((cell) => cell.textContent);
 
-    expect(desktopReceiptCells).toEqual([orders[1].receiptNumber, orders[0].receiptNumber]);
+    expect(desktopReceiptCells).toEqual([expressMiddle.receiptNumber, urgentLater.receiptNumber, normalEarlier.receiptNumber]);
   });
 
   it("lets staff sort visible orders by balance or total", () => {

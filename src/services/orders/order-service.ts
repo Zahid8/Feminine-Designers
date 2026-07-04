@@ -1,5 +1,6 @@
 import { getOrdersWithOverdueMeta, orders } from "@/lib/data/mock";
 import { daysOverdue, isOrderOverdue } from "@/lib/calculations/order";
+import { compareOrdersByPriorityAndDelivery, type PriorityDeliverySortable } from "@/lib/orders/order-sort";
 import { hasSupabaseAdminEnv, createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { isMissingSupabaseSchemaError } from "@/lib/supabase/errors";
 import { todayISO } from "@/lib/utils/date";
@@ -304,13 +305,8 @@ async function fetchSupabaseOrders() {
   return (data as unknown as SupabaseOrderRecord[]).map(mapOrder);
 }
 
-function sortByDeliveryDate<T extends { deliveryDate: string; customer: { fullName: string }; receiptNumber?: string }>(orders: T[]) {
-  return [...orders].sort(
-    (a, b) =>
-      a.deliveryDate.localeCompare(b.deliveryDate) ||
-      a.customer.fullName.localeCompare(b.customer.fullName) ||
-      (a.receiptNumber ?? "").localeCompare(b.receiptNumber ?? "")
-  );
+function sortByDeliveryDate<T extends PriorityDeliverySortable>(orders: T[]) {
+  return [...orders].sort(compareOrdersByPriorityAndDelivery);
 }
 
 function withOverdueMeta(order: OrderWithCustomer): OrderWithOverdueMeta {

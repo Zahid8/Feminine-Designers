@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { OrderWithCustomer, ReceiptType, StoreSettings } from "@/types/domain";
 import { Button } from "@/components/ui/button";
-import { formatDate } from "@/lib/utils/date";
+import { addDaysISO, formatDate } from "@/lib/utils/date";
 import { formatINR } from "@/lib/utils/money";
 import { formatMeasurementValue, isPrintableMeasurementValue } from "@/lib/utils/measurement-display";
 import { shouldBreakAfterMeasurement } from "@/lib/utils/measurement-sections";
@@ -84,6 +84,7 @@ function ReceiptPanel({
   const printableMeasurements = order.measurements.filter((measurement) => isPrintableMeasurementValue(measurement.value));
   const specialNotes = uniqueMeasurementNotes(order.measurements);
   const isCustomer = mode === "customer";
+  const deliveryDateForReceipt = mode === "store" ? addDaysISO(order.deliveryDate, -3) : order.deliveryDate;
 
   return (
     <section className={compact ? "text-[11px]" : "text-sm"}>
@@ -131,7 +132,7 @@ function ReceiptPanel({
         <Info label="Customer" value={order.customer.fullName} />
         <Info label="Phone" value={order.customer.phonePrimary} />
         <Info label="Order date" value={formatDate(order.orderDate)} />
-        <Info label="Delivery" value={formatDate(order.deliveryDate)} />
+        <Info label="Delivery" value={formatDate(deliveryDateForReceipt)} />
       </div>
       <ReceiptItemSummary order={order} compact={compact} mode={mode} />
       {mode === "store" ? (

@@ -10,11 +10,11 @@ describe("order-service", () => {
     vi.clearAllMocks();
   });
 
-  it("lists orders sorted by delivery date", async () => {
+  it("lists orders sorted by priority before delivery date", async () => {
     const { listOrders } = await import("./order-service");
 
     const result = await listOrders();
 
-    expect(result.map((order) => order.id)).toEqual(["order-2", "order-1"]);
+    expect(result.map((order) => order.id)).toEqual(["order-1", "order-2"]);
   });
 });

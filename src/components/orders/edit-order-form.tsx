@@ -7,7 +7,9 @@ import { MeasurementGrid } from "@/components/measurements/measurement-grid";
 import { normalizeDateInput } from "@/lib/utils/date";
 import { paiseToRupees } from "@/lib/utils/money";
 import { uniqueMeasurementNotes } from "@/lib/utils/receipt-notes";
-import type { MeasurementTemplate, OrderWithCustomer } from "@/types/domain";
+import type { MeasurementTemplate, OrderWithCustomer, Priority } from "@/types/domain";
+
+const priorityChoices: Priority[] = ["Express", "Urgent", "Normal"];
 
 export function EditOrderForm({
   order,
@@ -38,9 +40,22 @@ export function EditOrderForm({
         <Field label="Assigned tailor">
           <Input name="assignedTailor" defaultValue={order.assignedTailor ?? ""} />
         </Field>
+        <Field label="Priority">
+          <select
+            name="priority"
+            defaultValue={order.priority}
+            className="h-10 w-full rounded-md border border-[#dfc5a8] bg-white/95 px-3 text-sm outline-none shadow-inner shadow-[#f5e3cf]/50 transition focus:border-[#d99a62] focus:ring-2 focus:ring-[#d99a62]/30"
+          >
+            {priorityChoices.map((priority) => (
+              <option key={priority} value={priority}>
+                {priority}
+              </option>
+            ))}
+          </select>
+        </Field>
       </div>
 
-      <EditOrderChoiceFields status={order.status} paymentStatus={order.totals.paymentStatus} priority={order.priority} />
+      <EditOrderChoiceFields status={order.status} paymentStatus={order.totals.paymentStatus} />
 
       <ClothSamplePhotoField currentImageUrl={order.clothSampleImageUrl} />
 

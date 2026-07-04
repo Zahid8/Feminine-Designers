@@ -37,8 +37,8 @@ describe("buildDashboardModel", () => {
     expect(model.views["order-value-today"].orders.map((order) => order.id)).toEqual(["order-1"]);
     expect(model.views["order-value-month"].orders.map((order) => order.id)).toEqual(["order-1"]);
     expect(model.views["deliveries-today"].orders.map((order) => order.id)).toEqual(["order-2"]);
-    expect(model.views.pending.orders.map((order) => order.id)).toEqual(["order-2", "order-1"]);
-    expect(model.views.outstanding.orders.map((order) => order.id)).toEqual(["order-2", "order-1"]);
+    expect(model.views.pending.orders.map((order) => order.id)).toEqual(["order-1", "order-2"]);
+    expect(model.views.outstanding.orders.map((order) => order.id)).toEqual(["order-1", "order-2"]);
   });
 
   it("derives collected-today payment rows with order and customer context", () => {
@@ -118,5 +118,37 @@ describe("buildDashboardModel", () => {
     );
     expect(model.views["order-value-today"].orders.map((order) => order.id)).toEqual(["current-order"]);
     expect(model.views.pending.orders.map((order) => order.id)).toEqual(["backfilled-order", "current-order"]);
+  });
+
+  it("prioritizes express and urgent orders before normal orders in default dashboard queues", () => {
+    const urgentLater = {
+      ...orders[0],
+      id: "urgent-later",
+      priority: "Urgent" as const,
+      deliveryDate: "2026-07-10",
+      receiptNumber: "SJD-2026-000003"
+    };
+    const expressMiddle = {
+      ...orders[1],
+      id: "express-middle",
+      priority: "Express" as const,
+      deliveryDate: "2026-07-05",
+      receiptNumber: "SJD-2026-000002"
+    };
+    const normalEarlier = {
+      ...orders[1],
+      id: "normal-earlier",
+      priority: "Normal" as const,
+      deliveryDate: "2026-07-01",
+      receiptNumber: "SJD-2026-000001"
+    };
+
+    const model = buildDashboardModel([normalEarlier, expressMiddle, urgentLater], "2026-07-01");
+
+    expect(model.views.pending.orders.map((order) => order.id)).toEqual([
+      "express-middle",
+      "urgent-later",
+      "normal-earlier"
+    ]);
   });
 });

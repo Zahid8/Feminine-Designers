@@ -12,7 +12,7 @@ describe("EditOrderChoiceFields", () => {
   it("submits one canonical status value after a status-only checkbox change", () => {
     const { container, getByLabelText } = render(
       <form>
-        <EditOrderChoiceFields status="Ready" paymentStatus="Partial" priority="Normal" />
+        <EditOrderChoiceFields status="Ready" paymentStatus="Partial" />
       </form>
     );
 
@@ -25,7 +25,7 @@ describe("EditOrderChoiceFields", () => {
   it("does not submit a payment override until paid or not paid is selected", () => {
     const { container, getByLabelText } = render(
       <form>
-        <EditOrderChoiceFields status="Ready" paymentStatus="Partial" priority="Normal" />
+        <EditOrderChoiceFields status="Ready" paymentStatus="Partial" />
       </form>
     );
 
@@ -35,4 +35,5 @@ describe("EditOrderChoiceFields", () => {
 
     expect(hiddenInput(container, "paymentStatus").value).toBe("Paid");
   });
+
 });

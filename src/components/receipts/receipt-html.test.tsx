@@ -50,6 +50,28 @@ describe("ReceiptHtml extra cost labels", () => {
   });
 });
 
+describe("ReceiptHtml delivery dates", () => {
+  it("subtracts 3 days from the delivery date for the store copy only", () => {
+    const { unmount } = render(<ReceiptHtml order={orders[0]} settings={STORE_SETTINGS} type="store" />);
+
+    expect(screen.getByText("02/07/2026")).toBeDefined();
+    expect(screen.queryByText("05/07/2026")).toBeNull();
+
+    unmount();
+    render(<ReceiptHtml order={orders[0]} settings={STORE_SETTINGS} type="customer" />);
+
+    expect(screen.getByText("05/07/2026")).toBeDefined();
+    expect(screen.queryByText("02/07/2026")).toBeNull();
+  });
+
+  it("uses the adjusted date only in the store section of the combined copy", () => {
+    render(<ReceiptHtml order={orders[0]} settings={STORE_SETTINGS} type="combined" />);
+
+    expect(screen.getByText("02/07/2026")).toBeDefined();
+    expect(screen.getByText("05/07/2026")).toBeDefined();
+  });
+});
+
 describe("ReceiptHtml customer presentation", () => {
   it.each(["customer", "store", "combined"] as const)("uses an item summary instead of the horizontal cost table on %s copies", (type) => {
     const { container } = render(<ReceiptHtml order={orders[0]} settings={STORE_SETTINGS} type={type} />);

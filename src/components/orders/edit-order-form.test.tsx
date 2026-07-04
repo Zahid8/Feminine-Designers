@@ -31,4 +31,15 @@ describe("EditOrderForm", () => {
     expect((screen.getByLabelText(/^order date$/i) as HTMLInputElement).value).toBe("2026-06-15");
     expect((screen.getByLabelText(/^delivery date$/i) as HTMLInputElement).value).toBe("2026-06-22");
   });
+
+  it("has a direct priority selector for editing saved orders", () => {
+    render(<EditOrderForm order={{ ...orders[0], priority: "Urgent" }} action={vi.fn()} />);
+
+    const prioritySelect = screen.getByLabelText(/^priority$/i) as HTMLSelectElement;
+
+    expect(prioritySelect.tagName).toBe("SELECT");
+    expect(prioritySelect.name).toBe("priority");
+    expect(prioritySelect.value).toBe("Urgent");
+    expect([...prioritySelect.options].map((option) => option.value)).toEqual(["Express", "Urgent", "Normal"]);
+  });
 });

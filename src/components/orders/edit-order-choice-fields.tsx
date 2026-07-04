@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import { ORDER_STATUSES } from "@/lib/constants/business";
-import type { OrderStatus, PaymentStatus, Priority } from "@/types/domain";
+import type { OrderStatus, PaymentStatus } from "@/types/domain";
 
-const priorities: Priority[] = ["Normal", "Urgent", "Express"];
 const paymentChoices: Array<{ label: string; value: Extract<PaymentStatus, "Paid" | "Unpaid"> }> = [
   { label: "Not paid", value: "Unpaid" },
   { label: "Paid", value: "Paid" }
@@ -19,22 +18,18 @@ function fallbackStatus(status: OrderStatus): OrderStatus {
 
 export function EditOrderChoiceFields({
   status,
-  paymentStatus,
-  priority
+  paymentStatus
 }: {
   status: OrderStatus;
   paymentStatus: PaymentStatus;
-  priority: Priority;
 }) {
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus>(status);
-  const [selectedPriority, setSelectedPriority] = useState<Priority>(priority);
   const [paymentOverride, setPaymentOverride] = useState<Extract<PaymentStatus, "Paid" | "Unpaid"> | "">("");
   const visiblePaymentStatus = paymentOverride || paymentStatus;
 
   return (
-    <div className="grid gap-4 lg:grid-cols-3">
+    <div className="grid gap-4 lg:grid-cols-2">
       <input type="hidden" name="status" value={selectedStatus} />
-      <input type="hidden" name="priority" value={selectedPriority} />
       {paymentOverride ? <input type="hidden" name="paymentStatus" value={paymentOverride} /> : null}
 
       <div className="rounded-md border border-[#ead8c3] bg-gradient-to-br from-white to-[#fffaf4] p-4 shadow-sm">
@@ -78,24 +73,6 @@ export function EditOrderChoiceFields({
         </div>
       </div>
 
-      <div className="rounded-md border border-[#ead8c3] bg-gradient-to-br from-white to-[#fffaf4] p-4 shadow-sm">
-        <p className="mb-3 text-sm font-bold text-[#4c1525]">Priority</p>
-        <div className="flex flex-wrap gap-2">
-          {priorities.map((choice) => (
-            <label key={choice} className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#dfc5a8] bg-[#fff7ec] px-2 text-xs font-semibold">
-              <input
-                type="checkbox"
-                checked={selectedPriority === choice}
-                onChange={(event) => {
-                  if (event.target.checked) setSelectedPriority(choice);
-                }}
-                className="h-4 w-4"
-              />
-              {choice}
-            </label>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }
