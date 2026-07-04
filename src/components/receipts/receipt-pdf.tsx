@@ -8,6 +8,7 @@ import { shouldBreakAfterMeasurement } from "@/lib/utils/measurement-sections";
 import { getPublicPngDataUri } from "@/lib/utils/pdf-assets";
 import { uniqueMeasurementNotes } from "@/lib/utils/receipt-notes";
 import { formatExtraCostLine } from "@/lib/utils/extra-cost-display";
+import { formatFabricLengthDisplay } from "@/lib/utils/fabric-length-display";
 
 const customerReceiptFooter = [
   "Delivery date is approximate. Please bring this receipt at the time of delivery.",
@@ -520,28 +521,32 @@ function ReceiptPdfItemSummary({ order, mode }: { order: OrderWithCustomer; mode
         </View>
         {mode === "store" ? <Text style={styles.customerSummaryBadge}>Store Copy</Text> : null}
       </View>
-      {order.items.map((item, index) => (
-        <View key={item.id} style={styles.customerItemCard}>
-          <View style={styles.customerItemBody}>
-            <Text style={styles.customerItemEyebrow}>Dress {index + 1}</Text>
-            <Text style={styles.customerItemName}>{item.garmentType}</Text>
-            <Text style={styles.customerItemMetaLine}>
-              Qty {item.quantity}
-              {item.fabricLength ? ` | Fabric ${item.fabricLength}` : ""}
-            </Text>
-            {item.extraCosts.length ? (
+      {order.items.map((item, index) => {
+        const fabricLength = formatFabricLengthDisplay(item.fabricLength);
+
+        return (
+          <View key={item.id} style={styles.customerItemCard}>
+            <View style={styles.customerItemBody}>
+              <Text style={styles.customerItemEyebrow}>Dress {index + 1}</Text>
+              <Text style={styles.customerItemName}>{item.garmentType}</Text>
               <Text style={styles.customerItemMetaLine}>
-                {item.extraCosts.map((cost) => formatExtraCostLine(cost.label, formatPdfINR(cost.amountPaise))).join(", ")}
+                Qty {item.quantity}
+                {fabricLength ? ` | Fabric ${fabricLength}` : ""}
               </Text>
-            ) : null}
-            {mode === "store" && item.stitchingInstructions ? <Text style={styles.customerItemMetaLine}>{item.stitchingInstructions}</Text> : null}
+              {item.extraCosts.length ? (
+                <Text style={styles.customerItemMetaLine}>
+                  {item.extraCosts.map((cost) => formatExtraCostLine(cost.label, formatPdfINR(cost.amountPaise))).join(", ")}
+                </Text>
+              ) : null}
+              {mode === "store" && item.stitchingInstructions ? <Text style={styles.customerItemMetaLine}>{item.stitchingInstructions}</Text> : null}
+            </View>
+            <View style={styles.customerAmountBox}>
+              <Text style={styles.customerAmountLabel}>Amount</Text>
+              <Text style={styles.customerAmountValue}>{formatPdfINR(item.lineTotalPaise)}</Text>
+            </View>
           </View>
-          <View style={styles.customerAmountBox}>
-            <Text style={styles.customerAmountLabel}>Amount</Text>
-            <Text style={styles.customerAmountValue}>{formatPdfINR(item.lineTotalPaise)}</Text>
-          </View>
-        </View>
-      ))}
+        );
+      })}
     </View>
   );
 }

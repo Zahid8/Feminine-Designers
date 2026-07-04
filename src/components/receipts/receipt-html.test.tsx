@@ -72,6 +72,25 @@ describe("ReceiptHtml delivery dates", () => {
   });
 });
 
+describe("ReceiptHtml fabric length display", () => {
+  it.each(["customer", "store", "combined"] as const)("adds meter unit when fabric length is saved as a plain number on %s copies", (type) => {
+    const order = {
+      ...orders[0],
+      items: [
+        {
+          ...orders[0].items[0],
+          fabricLength: "1"
+        }
+      ]
+    };
+
+    render(<ReceiptHtml order={order} settings={STORE_SETTINGS} type={type} />);
+
+    expect(screen.getAllByText(/Fabric 1 m/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Fabric 1(?!\s*m)/i)).toBeNull();
+  });
+});
+
 describe("ReceiptHtml customer presentation", () => {
   it.each(["customer", "store", "combined"] as const)("uses an item summary instead of the horizontal cost table on %s copies", (type) => {
     const { container } = render(<ReceiptHtml order={orders[0]} settings={STORE_SETTINGS} type={type} />);

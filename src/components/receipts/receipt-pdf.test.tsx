@@ -67,6 +67,25 @@ describe("ReceiptPdfDocument extra cost labels", () => {
   });
 });
 
+describe("ReceiptPdfDocument fabric length display", () => {
+  it.each(["customer", "store", "combined"] as const)("adds meter unit when fabric length is saved as a plain number on %s copies", async (type) => {
+    const order = {
+      ...orders[0],
+      items: [
+        {
+          ...orders[0].items[0],
+          fabricLength: "1"
+        }
+      ]
+    };
+
+    const text = await extractPdfText(type, order);
+
+    expect(text).toContain("Fabric 1 m");
+    expect(text).not.toMatch(/Fabric 1(?!\s*m)/);
+  });
+});
+
 describe("ReceiptPdfDocument customer presentation", () => {
   it.each(["customer", "store", "combined"] as const)("uses an item summary instead of the horizontal cost table on %s copies", async (type) => {
     const text = await extractPdfText(type);

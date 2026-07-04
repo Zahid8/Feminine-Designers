@@ -11,6 +11,7 @@ import { shouldBreakAfterMeasurement } from "@/lib/utils/measurement-sections";
 import { receiptFileName } from "@/lib/utils/receipt-file-name";
 import { uniqueMeasurementNotes } from "@/lib/utils/receipt-notes";
 import { formatExtraCostLine } from "@/lib/utils/extra-cost-display";
+import { formatFabricLengthDisplay } from "@/lib/utils/fabric-length-display";
 
 const customerReceiptFooter = [
   "Delivery date is approximate. Please bring this receipt at the time of delivery.",
@@ -242,30 +243,34 @@ function ReceiptItemSummary({
         ) : null}
       </div>
       <div className={compact ? "mt-2 grid gap-2" : "mt-3 grid gap-3"}>
-        {order.items.map((item, index) => (
-          <div key={item.id} className="rounded-md border border-[#ead7c1] bg-white p-3 shadow-[0_8px_20px_rgba(76,21,37,0.05)] print:shadow-none">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-[10px] font-bold uppercase text-[#b06f47]">Dress {index + 1}</p>
-                <p className={compact ? "font-semibold text-[#4c1525]" : "text-base font-semibold text-[#4c1525]"}>{item.garmentType}</p>
-                <p className="mt-1 text-xs text-[#6f625d]">
-                  Qty {item.quantity}
-                  {item.fabricLength ? ` · Fabric ${item.fabricLength}` : ""}
-                </p>
-                {item.extraCosts.length ? (
+        {order.items.map((item, index) => {
+          const fabricLength = formatFabricLengthDisplay(item.fabricLength);
+
+          return (
+            <div key={item.id} className="rounded-md border border-[#ead7c1] bg-white p-3 shadow-[0_8px_20px_rgba(76,21,37,0.05)] print:shadow-none">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-bold uppercase text-[#b06f47]">Dress {index + 1}</p>
+                  <p className={compact ? "font-semibold text-[#4c1525]" : "text-base font-semibold text-[#4c1525]"}>{item.garmentType}</p>
                   <p className="mt-1 text-xs text-[#6f625d]">
-                    {item.extraCosts.map((cost) => formatExtraCostLine(cost.label, formatINR(cost.amountPaise))).join(", ")}
+                    Qty {item.quantity}
+                    {fabricLength ? ` · Fabric ${fabricLength}` : ""}
                   </p>
-                ) : null}
-                {mode === "store" && item.stitchingInstructions ? <p className="mt-1 text-xs text-[#6f625d]">{item.stitchingInstructions}</p> : null}
-              </div>
-              <div className="min-w-24 rounded-md bg-[#fff6eb] px-3 py-2 text-right">
-                <p className="text-[10px] uppercase text-[#9a7055]">Amount</p>
-                <p className="font-bold text-[#4c1525]">{formatINR(item.lineTotalPaise)}</p>
+                  {item.extraCosts.length ? (
+                    <p className="mt-1 text-xs text-[#6f625d]">
+                      {item.extraCosts.map((cost) => formatExtraCostLine(cost.label, formatINR(cost.amountPaise))).join(", ")}
+                    </p>
+                  ) : null}
+                  {mode === "store" && item.stitchingInstructions ? <p className="mt-1 text-xs text-[#6f625d]">{item.stitchingInstructions}</p> : null}
+                </div>
+                <div className="min-w-24 rounded-md bg-[#fff6eb] px-3 py-2 text-right">
+                  <p className="text-[10px] uppercase text-[#9a7055]">Amount</p>
+                  <p className="font-bold text-[#4c1525]">{formatINR(item.lineTotalPaise)}</p>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );
