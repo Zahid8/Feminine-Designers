@@ -1,5 +1,5 @@
 import { daysOverdue, isOrderOverdue } from "@/lib/calculations/order";
-import { isPastOrderForList } from "@/lib/calculations/status";
+import { isCompletedOrderForList, isPastOrderForList } from "@/lib/calculations/status";
 import { compareOrdersByPriorityAndDelivery } from "@/lib/orders/order-sort";
 import { indiaNoonDate, todayISO } from "@/lib/utils/date";
 import type { OrderWithCustomer, PaymentMethod } from "@/types/domain";
@@ -133,7 +133,7 @@ function makeView(
 
 export function buildDashboardModel(orders: OrderWithCustomer[], today: string): DashboardModel {
   const enrichedOrders = orders.map((order) => withOverdueMeta(order, today));
-  const currentOrders = enrichedOrders.filter((order) => !isPastOrderForList(order, today));
+  const currentOrders = enrichedOrders.filter((order) => !isCompletedOrderForList(order) && !isPastOrderForList(order, today));
   const activeOrders = enrichedOrders.filter(isActiveOrder);
   const ordersToday = sortByDeliveryDate(enrichedOrders.filter((order) => order.orderDate === today));
   const orderValueToday = ordersToday.reduce((sum, order) => sum + order.totals.grandTotalPaise, 0);

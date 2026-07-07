@@ -6,9 +6,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Field, Input } from "@/components/ui/input";
 import { OrderTable } from "@/components/orders/order-table";
 import { listOrders } from "@/services/orders/order-service";
-import { isPastOrderForList } from "@/lib/calculations/status";
+import { isCompletedOrderForList, isPastOrderForList } from "@/lib/calculations/status";
 import { cn } from "@/lib/utils/cn";
 import { todayISO } from "@/lib/utils/date";
+
+type OrdersView = "current" | "past" | "completed";
 
 export default async function OrdersPage({
   searchParams
@@ -18,17 +20,18 @@ export default async function OrdersPage({
   const params = await searchParams;
   const orders = await listOrders({ query: params.q, status: params.status as never });
   const today = todayISO();
-  const selectedView = params.view === "past" ? "past" : "current";
-  const currentOrders = orders.filter((order) => !isPastOrderForList(order, today));
+  const selectedView: OrdersView = params.view === "past" || params.view === "completed" ? params.view : "current";
+  const completedOrders = orders.filter(isCompletedOrderForList);
   const pastOrders = orders.filter((order) => isPastOrderForList(order, today));
-  const visibleOrders = selectedView === "past" ? pastOrders : currentOrders;
+  const currentOrders = orders.filter((order) => !isCompletedOrderForList(order) && !isPastOrderForList(order, today));
+  const visibleOrders = selectedView === "completed" ? completedOrders : selectedView === "past" ? pastOrders : currentOrders;
   const tabBaseParams = new URLSearchParams();
   if (params.q) tabBaseParams.set("q", params.q);
   if (params.status) tabBaseParams.set("status", params.status);
 
-  function tabHref(view: "current" | "past") {
+  function tabHref(view: OrdersView) {
     const nextParams = new URLSearchParams(tabBaseParams);
-    if (view === "past") nextParams.set("view", "past");
+    if (view !== "current") nextParams.set("view", view);
     return `/orders${nextParams.size ? `?${nextParams.toString()}` : ""}`;
   }
 
@@ -61,7 +64,7 @@ export default async function OrdersPage({
             </select>
           </Field>
           <form id="orders-filter" className="flex items-end">
-            {selectedView === "past" ? <input type="hidden" name="view" value="past" /> : null}
+            {selectedView !== "current" ? <input type="hidden" name="view" value={selectedView} /> : null}
             <Button type="submit">Apply</Button>
           </form>
         </CardContent>
@@ -69,11 +72,12 @@ export default async function OrdersPage({
       <div className="mb-4 flex flex-wrap gap-2">
         {[
           ["current", "Current Orders", currentOrders.length],
-          ["past", "Past Orders", pastOrders.length]
+          ["past", "Past Orders", pastOrders.length],
+          ["completed", "Completed Orders", completedOrders.length]
         ].map(([view, label, count]) => (
           <Link
             key={view}
-            href={tabHref(view as "current" | "past")}
+            href={tabHref(view as OrdersView)}
             className={cn(
               "inline-flex min-h-10 items-center gap-2 rounded-md border px-4 py-2 text-sm font-semibold",
               selectedView === view

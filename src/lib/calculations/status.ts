@@ -9,6 +9,10 @@ export function nextAllowedStatuses(from: OrderStatus): OrderStatus[] {
   return (STATUS_TRANSITIONS[from] ?? []) as OrderStatus[];
 }
 
+export function isCompletedOrderForList(order: { status: OrderStatus }): boolean {
+  return order.status === "Delivered";
+}
+
 export function isPastOrderForList(order: { status: OrderStatus; deliveryDate: string }, today: string): boolean {
-  return order.status === "Delivered" || order.status === "Cancelled" || order.deliveryDate < today;
+  return !isCompletedOrderForList(order) && order.deliveryDate < today;
 }
