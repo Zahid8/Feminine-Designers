@@ -2,7 +2,7 @@ import { calculateLineTotal, calculateOrderTotals } from "@/lib/calculations/ord
 import { normalizeDateInput } from "@/lib/utils/date";
 import { paiseToRupees, rupeesToPaise } from "@/lib/utils/money";
 import { createSupabaseAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
-import type { OrderItem, OrderStatus, OrderWithCustomer, PaymentStatus, Priority } from "@/types/domain";
+import type { OrderItem, OrderStatus, OrderWithCustomer, PaymentMethod, PaymentStatus, Priority } from "@/types/domain";
 
 function readString(formData: FormData, key: string, fallback = "") {
   const value = formData.get(key);
@@ -186,6 +186,14 @@ export async function updateOrderFromForm(order: OrderWithCustomer, formData: Fo
   const nextPriority = readLastString<Priority>(formData, "priority", order.priority);
   const clothSampleDataUrl = readString(formData, "clothSampleDataUrl");
   const removeClothSample = readString(formData, "removeClothSample") === "1";
+  const paymentFieldsSubmitted = formData.has("advancePaidRupees") || formData.has("paymentMethod") || formData.has("paymentReference");
+  const existingPaymentTotalPaise = order.payments.reduce((sum, payment) => sum + payment.amountPaise, 0);
+  const editedAdvancePaidPaise = rupeesToPaise(readNumber(formData, "advancePaidRupees", paiseToRupees(existingPaymentTotalPaise)));
+  const editedPayments = paymentFieldsSubmitted
+    ? editedAdvancePaidPaise > 0
+      ? [{ amountPaise: editedAdvancePaidPaise }]
+      : []
+    : order.payments.map((payment) => ({ amountPaise: payment.amountPaise }));
 
   const editedLineItems = itemRows.map((row) => lineItemFromForm(formData, row));
 
@@ -195,7 +203,7 @@ export async function updateOrderFromForm(order: OrderWithCustomer, formData: Fo
     orderDiscountPaise: rupeesToPaise(readNumber(formData, "orderDiscountRupees", paiseToRupees(order.totals.orderDiscountPaise))),
     cgstRate: order.totals.cgstRate,
     sgstRate: order.totals.sgstRate,
-    payments: order.payments.map((payment) => ({ amountPaise: payment.amountPaise }))
+    payments: editedPayments
   });
 
   await assertUpdate(
@@ -240,6 +248,23 @@ export async function updateOrderFromForm(order: OrderWithCustomer, formData: Fo
       })
       .eq("id", order.id)
   );
+
+  if (paymentFieldsSubmitted) {
+    await assertUpdate(await admin.from("payments").delete().eq("order_id", order.id));
+
+    if (editedAdvancePaidPaise > 0) {
+      const latestPayment = order.payments.at(-1);
+      const { error } = await admin.from("payments").insert({
+        order_id: order.id,
+        amount: toRupeesDecimal(editedAdvancePaidPaise),
+        payment_method: readLastString<PaymentMethod>(formData, "paymentMethod", latestPayment?.method ?? "Cash"),
+        payment_reference: readString(formData, "paymentReference", latestPayment?.paymentReference ?? "") || null,
+        paid_at: now,
+        notes: "Advance updated from saved bill edit"
+      });
+      if (error) throw new Error(error.message);
+    }
+  }
 
   const submittedExistingItemIds = new Set(itemRows.filter((row) => row.id).map((row) => row.id));
   const deletedItemIds = order.items.map((item) => item.id).filter((itemId) => !submittedExistingItemIds.has(itemId));

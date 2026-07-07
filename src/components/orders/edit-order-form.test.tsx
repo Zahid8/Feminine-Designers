@@ -43,6 +43,22 @@ describe("EditOrderForm", () => {
     expect([...prioritySelect.options].map((option) => option.value)).toEqual(["Express", "Urgent", "Normal"]);
   });
 
+  it("shows the same payment controls as new order when editing a saved bill", () => {
+    render(<EditOrderForm order={orders[0]} action={vi.fn()} />);
+
+    const advanceInput = screen.getByLabelText(/^advance paid$/i) as HTMLInputElement;
+    const paymentModeSelect = screen.getByLabelText(/^payment mode$/i) as HTMLSelectElement;
+    const paymentReferenceInput = screen.getByLabelText(/^payment reference$/i) as HTMLInputElement;
+
+    expect(advanceInput.name).toBe("advancePaidRupees");
+    expect(advanceInput.value).toBe("1500");
+    expect(paymentModeSelect.name).toBe("paymentMethod");
+    expect(paymentModeSelect.value).toBe("UPI");
+    expect([...paymentModeSelect.options].map((option) => option.value)).toEqual(["Cash", "UPI", "Card", "Bank Transfer", "Mixed"]);
+    expect(paymentReferenceInput.name).toBe("paymentReference");
+    expect(paymentReferenceInput.value).toBe("UPI-2451");
+  });
+
   it("lets staff add a new dress and delete an existing dress while editing", () => {
     const { container } = render(<EditOrderForm order={orders[0]} action={vi.fn()} />);
 

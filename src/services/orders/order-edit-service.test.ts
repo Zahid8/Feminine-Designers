@@ -215,6 +215,43 @@ describe("order-edit-service", () => {
     ]);
   });
 
+  it("replaces the saved advance payment and recalculates balance when payment fields change", async () => {
+    const { updateOrderFromForm } = await import("./order-edit-service");
+    const order = orders[0];
+    const formData = new FormData();
+    formData.set("customerName", order.customer.fullName);
+    formData.set("phonePrimary", order.customer.phonePrimary);
+    formData.set("orderDate", order.orderDate);
+    formData.set("deliveryDate", order.deliveryDate);
+    formData.set("status", order.status);
+    formData.set("priority", order.priority);
+    formData.set("advancePaidRupees", "2000");
+    formData.set("paymentMethod", "Card");
+    formData.set("paymentReference", "CARD-7788");
+
+    await updateOrderFromForm(order, formData);
+
+    expect(mockFrom).toHaveBeenCalledWith("payments");
+    expect(mockDelete).toHaveBeenCalled();
+    expect(mockEq).toHaveBeenCalledWith("order_id", order.id);
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        order_id: order.id,
+        amount: "2000.00",
+        payment_method: "Card",
+        payment_reference: "CARD-7788",
+        notes: "Advance updated from saved bill edit"
+      })
+    );
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        advance_paid: "2000.00",
+        balance_due: "1465.00",
+        payment_status: "Partial"
+      })
+    );
+  });
+
   it("deletes omitted existing dresses and inserts new dress rows while editing", async () => {
     const { updateOrderFromForm } = await import("./order-edit-service");
     const order = orders[0];

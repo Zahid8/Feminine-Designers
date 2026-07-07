@@ -7,9 +7,10 @@ import { MeasurementGrid } from "@/components/measurements/measurement-grid";
 import { normalizeDateInput } from "@/lib/utils/date";
 import { paiseToRupees } from "@/lib/utils/money";
 import { uniqueMeasurementNotes } from "@/lib/utils/receipt-notes";
-import type { MeasurementTemplate, OrderWithCustomer, Priority } from "@/types/domain";
+import type { MeasurementTemplate, OrderWithCustomer, PaymentMethod, Priority } from "@/types/domain";
 
 const priorityChoices: Priority[] = ["Express", "Urgent", "Normal"];
+const paymentMethodChoices: PaymentMethod[] = ["Cash", "UPI", "Card", "Bank Transfer", "Mixed"];
 
 export function EditOrderForm({
   order,
@@ -21,6 +22,7 @@ export function EditOrderForm({
   action: (formData: FormData) => void | Promise<void>;
 }) {
   const specialNotes = uniqueMeasurementNotes(order.measurements).join("\n");
+  const latestPayment = order.payments.at(-1);
 
   return (
     <form action={action} className="grid gap-5">
@@ -92,6 +94,25 @@ export function EditOrderForm({
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
+        <Field label="Advance paid">
+          <Input name="advancePaidRupees" type="number" min={0} step="0.01" defaultValue={paiseToRupees(order.totals.totalPaidPaise)} />
+        </Field>
+        <Field label="Payment mode">
+          <select
+            name="paymentMethod"
+            defaultValue={latestPayment?.method ?? "Cash"}
+            className="h-10 w-full rounded-md border border-[#dfc5a8] bg-white/95 px-3 text-sm outline-none shadow-inner shadow-[#f5e3cf]/50 transition focus:border-[#d99a62] focus:ring-2 focus:ring-[#d99a62]/30"
+          >
+            {paymentMethodChoices.map((method) => (
+              <option key={method} value={method}>
+                {method}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Payment reference">
+          <Input name="paymentReference" defaultValue={latestPayment?.paymentReference ?? ""} />
+        </Field>
         <Field label="Order discount">
           <Input name="orderDiscountRupees" type="number" min={0} step="0.01" defaultValue={paiseToRupees(order.totals.orderDiscountPaise)} />
         </Field>
