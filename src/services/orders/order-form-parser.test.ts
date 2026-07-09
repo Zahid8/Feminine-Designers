@@ -68,6 +68,23 @@ describe("parseOrderFormData", () => {
     expect(parseOrderFormData(formData).order.status).toBe("Draft");
   });
 
+  it("allows any non-empty customer name characters, including numbers and symbols", () => {
+    const formData = new FormData();
+    formData.set("intent", "order");
+    formData.set("customerName", "7");
+    formData.set("phonePrimary", "9718926185");
+    formData.set("orderDate", "2026-07-01");
+    formData.set("deliveryDate", "2026-07-05");
+    formData.set("priority", "Normal");
+    formData.set("garmentType", "Blouse");
+    formData.set("quantity", "1");
+    formData.set("rateRupees", "1200");
+    formData.set("advancePaidRupees", "0");
+    formData.set("paymentMethod", "Cash");
+
+    expect(parseOrderFormData(formData).order.customerName).toBe("7");
+  });
+
   it("keeps blank global measurement fields blank before receipt filtering", () => {
     const formData = new FormData();
     formData.set("intent", "order");

@@ -25,7 +25,7 @@ export const orderItemSchema = z.object({
 });
 
 export const newOrderSchema = z.object({
-  customerName: z.string().trim().min(2),
+  customerName: z.string().trim().min(1, "Customer name is required."),
   phonePrimary: indianPhoneSchema,
   orderDate: z.string().min(1),
   deliveryDate: z.string().min(1),
