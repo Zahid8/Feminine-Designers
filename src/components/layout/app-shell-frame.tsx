@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { LogoMark } from "@/components/shared/logo-mark";
 import { IndiaClock } from "@/components/shared/india-clock";
+import { PageTransition } from "@/components/shared/page-transition";
 import { GlobalSearch } from "@/components/layout/global-search";
 import { KeyboardShortcuts } from "@/components/layout/keyboard-shortcuts";
 import { ToastProvider } from "@/components/ui/toast";
@@ -129,8 +130,8 @@ export function AppShellFrame({
               </div>
             </div>
           </header>
-          <main className="page-enter px-3 pb-28 pt-4 sm:px-4 md:px-8 md:pt-6 lg:pb-10">
-            {children}
+          <main className="px-3 pb-28 pt-4 sm:px-4 md:px-8 md:pt-6 lg:pb-10">
+            <PageTransition>{children}</PageTransition>
           </main>
         </div>
         <nav

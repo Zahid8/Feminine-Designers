@@ -28,6 +28,10 @@ Layout is responsive: laptops (`lg`+) get the collapsible sidebar; phones and ta
 - `src/app/manifest.ts` plus `public/icons/*` make the app installable to a tablet or phone home screen.
 - New-order and edit forms warn before the tab is closed with unsaved edits (in-app links are not blocked).
 
+## Page transitions
+
+`next.config.ts` enables `experimental.viewTransition`, and `PageTransition` (`src/components/shared/page-transition.tsx`) wraps page content in React's `<ViewTransition>`, giving a 160 ms cross-fade between pages (CSS in `globals.css`). `ViewTransition` exists only in the React build bundled with Next's App Router, so the wrapper falls back to plain children elsewhere (tests). Browsers without the View Transitions API, and users with reduced-motion enabled, get instant navigation. It adds no client JavaScript.
+
 ## Public bill links
 
 `src/lib/receipts/bill-link.ts` signs order ids with HMAC-SHA256 (key from `BILL_LINK_SECRET`, else derived from `SUPABASE_SERVICE_ROLE_KEY`; 22-char base64url signature, constant-time compare). `GET /bill/<orderId>/<signature>` (`src/app/bill/[orderId]/[signature]/route.tsx`) returns only the customer-copy PDF, inline, `no-store`, `noindex`. `middleware.ts` lets `/bill/*` through without the staff cookie; every other route still requires login. Absolute links are built from the request host (`src/lib/http/request-origin.ts`).

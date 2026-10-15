@@ -201,7 +201,20 @@
   animation: toast-enter 200ms ease-out both;
 }
 
+/* Page transitions: a short cross-fade of the page content; navigation chrome is part of each page's tree. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 160ms;
+  animation-timing-function: ease-out;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+
   *,
   *::before,
   *::after {
