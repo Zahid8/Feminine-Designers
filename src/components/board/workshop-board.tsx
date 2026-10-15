@@ -171,7 +171,7 @@ export function WorkshopBoard({
             <section
               key={column.id}
               aria-label={`${column.title} orders`}
-              className="flex w-[85vw] max-w-sm shrink-0 snap-start flex-col rounded-3xl bg-surface-sunken p-3 shadow-pressed sm:w-[60vw] lg:w-auto lg:max-w-none"
+              className="flex max-h-[min(70vh,44rem)] w-[85vw] max-w-sm shrink-0 snap-start flex-col rounded-3xl bg-surface-sunken p-3 shadow-pressed sm:w-[60vw] lg:w-auto lg:max-w-none"
             >
               <header className="mb-3 flex items-center gap-3 px-1">
                 <span
@@ -195,7 +195,7 @@ export function WorkshopBoard({
                   </p>
                 </div>
               </header>
-              <ul className="grid gap-3">
+              <ul className="grid min-h-0 gap-3 overflow-y-auto overscroll-contain pb-1 pr-1 [scrollbar-width:thin]">
                 {cards.length === 0 ? (
                   <li className="rounded-2xl border border-dashed border-line-strong px-4 py-8 text-center text-sm text-muted">
                     Nothing here right now.
