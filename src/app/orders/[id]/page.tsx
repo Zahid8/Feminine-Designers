@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeading } from "@/components/shared/page-heading";
 import { ButtonLink } from "@/components/ui/button";
-import { FileText, Printer, Store } from "lucide-react";
+import { FileText, Pencil, Printer, Store, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MeasurementGrid } from "@/components/measurements/measurement-grid";
 import { OrderItemDeliveryTracker } from "@/components/orders/order-item-delivery-tracker";
@@ -81,6 +81,17 @@ export default async function OrderDetailPage({
               <Printer className="h-4 w-4" aria-hidden />
               Combined Print
             </ButtonLink>
+            {editing ? (
+              <ButtonLink href={`/orders/${order.id}`} variant="secondary">
+                <X className="h-4 w-4" aria-hidden />
+                Cancel Edit
+              </ButtonLink>
+            ) : (
+              <ButtonLink href={`/orders/${order.id}?edit=1#edit-order`} variant="secondary">
+                <Pencil className="h-4 w-4" aria-hidden />
+                Edit Order
+              </ButtonLink>
+            )}
             <DeleteOrderButton orderId={order.id} receiptNumber={order.receiptNumber} />
           </div>
         }
@@ -206,22 +217,20 @@ export default async function OrderDetailPage({
           </Card>
         </div>
       </div>
-      <Card className="mt-5">
+      <Card id="edit-order" className="mt-5 scroll-mt-24">
         <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <CardTitle>{editing ? "Edit Saved Bill" : "Order Details Editing"}</CardTitle>
-          <div className="flex flex-wrap gap-2">
-            {editing ? (
-              <ButtonLink href={`/orders/${order.id}`} variant="secondary">Cancel Edit</ButtonLink>
-            ) : (
-              <ButtonLink href={`/orders/${order.id}?edit=1`}>Edit Order Details</ButtonLink>
-            )}
-          </div>
+          {editing ? (
+            <ButtonLink href={`/orders/${order.id}`} variant="secondary">
+              Cancel Edit
+            </ButtonLink>
+          ) : null}
         </CardHeader>
         <CardContent>
           {editing ? (
             <EditOrderForm order={order} measurementTemplate={measurementTemplate} action={updateOrderAction.bind(null, order.id)} />
           ) : (
-            <p className="text-sm text-muted">Click Edit Order Details to change customer info, status, measurements, cloth photo, notes, costs, priority, or tailor.</p>
+            <p className="text-sm text-muted">Use the Edit Order button at the top to change customer info, status, measurements, cloth photo, notes, costs, priority, or tailor.</p>
           )}
         </CardContent>
       </Card>
