@@ -9,7 +9,7 @@ import { isPlainShortcut } from "@/lib/ui/keyboard";
 const SHORTCUTS: [string, string][] = [
   ["Ctrl/⌘ K  or  /", "Search orders and customers"],
   ["N", "New order"],
-  ["B", "Workshop board"],
+  ["B", "Workshop board (dashboard)"],
   ["D", "Dashboard"],
   ["?", "Show this list"],
   ["Esc", "Close search or dialogs"]
@@ -26,7 +26,7 @@ export function KeyboardShortcuts() {
       const key = event.key.toLowerCase();
       if (event.key === "?") setOpen(true);
       else if (key === "n") router.push("/orders/new");
-      else if (key === "b") router.push("/board");
+      else if (key === "b") router.push("/dashboard?view=board#work-area");
       else if (key === "d") router.push("/dashboard");
       else return;
       event.preventDefault();

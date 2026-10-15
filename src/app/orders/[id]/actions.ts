@@ -7,7 +7,8 @@ import { deleteOrderById } from "@/services/orders/order-delete-service";
 import { updateOrderFromForm } from "@/services/orders/order-edit-service";
 import { getOrderById } from "@/services/orders/order-service";
 import { updateOrderStage } from "@/services/orders/order-status-service";
-import { setOrderPaymentStatus } from "@/services/payments/payment-service";
+import { recordPayment, reversePayment, setOrderPaymentStatus } from "@/services/payments/payment-service";
+import { rupeesToPaise } from "@/lib/utils/money";
 import type { OrderStatus, PaymentStatus } from "@/types/domain";
 
 function lastFormValue(formData: FormData, key: string) {
@@ -25,7 +26,6 @@ function revalidateOrderSurfaces(orderId: string) {
   revalidatePath("/orders");
   revalidatePath("/customers");
   revalidatePath("/dashboard");
-  revalidatePath("/board");
 }
 
 export async function setOrderItemDeliveredAction(orderId: string, itemId: string, delivered: boolean) {
@@ -80,5 +80,17 @@ export async function setOrderStageAction(orderId: string, status: OrderStatus) 
 
 export async function setOrderPaymentStatusAction(orderId: string, status: Extract<PaymentStatus, "Paid" | "Unpaid">) {
   await setOrderPaymentStatus(orderId, status);
+  revalidateOrderSurfaces(orderId);
+}
+
+/** Bookkeeping only: notes cash or UPI money the customer handed over. No payment is processed. */
+export async function recordPaymentAction(orderId: string, amountRupees: number, method: "Cash" | "UPI") {
+  const paymentId = await recordPayment(orderId, { amountPaise: rupeesToPaise(amountRupees), method });
+  revalidateOrderSurfaces(orderId);
+  return paymentId;
+}
+
+export async function removePaymentAction(orderId: string, paymentId: string) {
+  await reversePayment(paymentId);
   revalidateOrderSurfaces(orderId);
 }

@@ -700,9 +700,6 @@ export function NewOrderForm({
               <select name="paymentMethod" className="h-11 w-full rounded-xl border border-transparent bg-surface-sunken px-3 text-sm text-ink shadow-pressed outline-none transition focus:border-gold focus:bg-surface-strong focus:ring-2 focus:ring-gold/30">
                 <option>Cash</option>
                 <option>UPI</option>
-                <option>Card</option>
-                <option>Bank Transfer</option>
-                <option>Mixed</option>
               </select>
             </Field>
             <Field label="Payment reference">

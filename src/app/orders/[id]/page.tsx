@@ -12,8 +12,10 @@ import { EditOrderForm } from "@/components/orders/edit-order-form";
 import { OrderStatusCheckboxEditor } from "@/components/orders/order-status-checkbox-editor";
 import { DeliveryUrgencyBadge, PaymentBadge, PriorityBadge, StatusBadge } from "@/components/ui/status-badge";
 import { OrderProgress } from "@/components/orders/order-progress";
+import { PaymentsPanel } from "@/components/orders/payments-panel";
 import { ContactActions } from "@/components/shared/contact-actions";
 import { STORE_SETTINGS } from "@/lib/constants/business";
+import { summarizeGarments } from "@/lib/orders/garment-summary";
 import { getOrderById } from "@/services/orders/order-service";
 import { getMeasurementTemplateForGarment } from "@/services/measurements/measurement-service";
 import { formatDate, formatDateTime, todayISO } from "@/lib/utils/date";
@@ -35,6 +37,16 @@ export default async function OrderDetailPage({
   const receiptLabel = order.receiptNumber ?? "your order";
   const balanceDue = order.totals.balanceDuePaise;
   const customerMessages = [
+    {
+      label: "Order confirmation",
+      text: [
+        `Hello ${order.customer.fullName}, thank you for your order at ${STORE_SETTINGS.storeName}.`,
+        `Receipt: ${receiptLabel}`,
+        `Items: ${summarizeGarments(order.items)}`,
+        `Total: ${formatINR(order.totals.grandTotalPaise)} | Paid: ${formatINR(order.totals.totalPaidPaise)} | Balance: ${formatINR(balanceDue)}`,
+        `Expected delivery: ${formatDate(order.deliveryDate)}`
+      ].join("\n")
+    },
     {
       label: "Ready for pickup",
       text: `Hello ${order.customer.fullName}, your order ${receiptLabel} at ${STORE_SETTINGS.storeName} is ready for pickup.${balanceDue > 0 ? ` Balance due: ${formatINR(balanceDue)}.` : ""} Thank you!`
@@ -158,12 +170,23 @@ export default async function OrderDetailPage({
                 ["Grand Total", order.totals.grandTotalPaise],
                 ["Paid", order.totals.totalPaidPaise],
                 ["Balance", order.totals.balanceDuePaise]
-              ].map(([label, value]) => (
+              ]
+                // Optional charges are only listed when they apply, matching the receipts.
+                .filter(([label, value]) => Number(value) !== 0 || ["Subtotal", "CGST", "SGST", "Grand Total", "Paid", "Balance"].includes(String(label)))
+                .map(([label, value]) => (
                 <div key={label} className="flex justify-between border-b border-line py-2 last:border-0">
                   <span>{label}</span>
                   <strong>{formatINR(Number(value))}</strong>
                 </div>
               ))}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Payments</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PaymentsPanel orderId={order.id} payments={order.payments} balanceDuePaise={order.totals.balanceDuePaise} />
             </CardContent>
           </Card>
           <Card>

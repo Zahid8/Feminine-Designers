@@ -81,6 +81,52 @@ export async function settleOrderBalance(orderId: string, method: PaymentMethod 
   return (payment as { id: string }).id;
 }
 
+/** Records a payment of any amount (part or full) and updates the order balance. Returns the payment id. */
+export async function recordPayment(
+  orderId: string,
+  { amountPaise, method, reference, notes }: { amountPaise: number; method: PaymentMethod; reference?: string; notes?: string }
+): Promise<string> {
+  ensureSupabasePayments();
+  if (!Number.isFinite(amountPaise) || amountPaise <= 0) throw new Error("Enter a payment amount greater than zero.");
+
+  const admin = createSupabaseAdminClient();
+  const { data: order, error: orderError } = await admin.from("orders").select("advance_paid,balance_due,grand_total").eq("id", orderId).single();
+  if (orderError) throw new Error(orderError.message);
+  if (!order) throw new Error("Order was not found.");
+
+  const totals = order as SupabaseOrderPaymentTotals;
+  const grandTotalPaise = rupeesToPaise(Number(totals.grand_total));
+  const nextAdvancePaise = rupeesToPaise(Number(totals.advance_paid)) + amountPaise;
+  const paidAt = new Date().toISOString();
+
+  const { data: payment, error: paymentError } = await admin
+    .from("payments")
+    .insert({
+      order_id: orderId,
+      amount: toRupeesDecimal(amountPaise),
+      payment_method: method,
+      payment_reference: reference?.trim() || null,
+      paid_at: paidAt,
+      notes: notes?.trim() || "Payment recorded on order page"
+    })
+    .select("id")
+    .single();
+  if (paymentError) throw new Error(paymentError.message);
+
+  const { error: updateError } = await admin
+    .from("orders")
+    .update({
+      advance_paid: toRupeesDecimal(nextAdvancePaise),
+      balance_due: toRupeesDecimal(grandTotalPaise - nextAdvancePaise),
+      payment_status: paymentStatus(grandTotalPaise, nextAdvancePaise),
+      updated_at: paidAt
+    })
+    .eq("id", orderId);
+  if (updateError) throw new Error(updateError.message);
+
+  return (payment as { id: string }).id;
+}
+
 function paymentStatus(grandTotalPaise: number, paidPaise: number) {
   if (paidPaise <= 0) return "Unpaid";
   if (paidPaise === grandTotalPaise) return "Paid";

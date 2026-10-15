@@ -54,7 +54,7 @@ describe("EditOrderForm", () => {
     expect(advanceInput.value).toBe("1500");
     expect(paymentModeSelect.name).toBe("paymentMethod");
     expect(paymentModeSelect.value).toBe("UPI");
-    expect([...paymentModeSelect.options].map((option) => option.value)).toEqual(["Cash", "UPI", "Card", "Bank Transfer", "Mixed"]);
+    expect([...paymentModeSelect.options].map((option) => option.value)).toEqual(["Cash", "UPI"]);
     expect(paymentReferenceInput.name).toBe("paymentReference");
     expect(paymentReferenceInput.value).toBe("UPI-2451");
   });

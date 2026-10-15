@@ -16,6 +16,10 @@ vi.mock("@/components/orders/order-item-delivery-tracker", () => ({
   OrderItemDeliveryTracker: () => <div />
 }));
 
+vi.mock("@/components/orders/payments-panel", () => ({
+  PaymentsPanel: () => <div>Payments panel</div>
+}));
+
 vi.mock("@/components/orders/delete-order-button", () => ({
   DeleteOrderButton: () => <button type="button">Delete Order</button>
 }));

@@ -11,7 +11,8 @@ import { uniqueMeasurementNotes } from "@/lib/utils/receipt-notes";
 import type { MeasurementTemplate, OrderWithCustomer, PaymentMethod, Priority } from "@/types/domain";
 
 const priorityChoices: Priority[] = ["Express", "Urgent", "Normal"];
-const paymentMethodChoices: PaymentMethod[] = ["Cash", "UPI", "Card", "Bank Transfer", "Mixed"];
+// The shop takes cash or UPI. Older orders saved with another method keep showing it.
+const paymentMethodChoices: PaymentMethod[] = ["Cash", "UPI"];
 
 export function EditOrderForm({
   order,
@@ -104,7 +105,7 @@ export function EditOrderForm({
             defaultValue={latestPayment?.method ?? "Cash"}
             className="h-11 w-full rounded-xl border border-transparent bg-surface-sunken px-3 text-sm text-ink shadow-pressed outline-none transition focus:border-gold focus:bg-surface-strong focus:ring-2 focus:ring-gold/30"
           >
-            {paymentMethodChoices.map((method) => (
+            {[...paymentMethodChoices, ...(latestPayment && !paymentMethodChoices.includes(latestPayment.method) ? [latestPayment.method] : [])].map((method) => (
               <option key={method} value={method}>
                 {method}
               </option>

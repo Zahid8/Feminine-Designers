@@ -176,4 +176,22 @@ describe("payment service", () => {
       })
     );
   });
+
+  it("records a part payment and leaves the rest of the balance due", async () => {
+    const { recordPayment } = await import("./payment-service");
+
+    await expect(recordPayment("order-1", { amountPaise: 50_000, method: "UPI", reference: " txn-1 " })).resolves.toBe("payment-9");
+
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.objectContaining({ order_id: "order-1", amount: "500.00", payment_method: "UPI", payment_reference: "txn-1" })
+    );
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ advance_paid: "1000.00", balance_due: "700.00", payment_status: "Partial" })
+    );
+  });
+
+  it("rejects empty payment amounts", async () => {
+    const { recordPayment } = await import("./payment-service");
+    await expect(recordPayment("order-1", { amountPaise: 0, method: "Cash" })).rejects.toThrow(/greater than zero/);
+  });
 });

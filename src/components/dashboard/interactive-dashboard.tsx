@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, ArrowRight, Banknote, CalendarDays, CheckCircle2, Clock, IndianRupee, PackageCheck, ReceiptText } from "lucide-react";
+import { AlertTriangle, ArrowRight, Banknote, CalendarDays, CheckCircle2, Clock, IndianRupee, KanbanSquare, List, PackageCheck, ReceiptText } from "lucide-react";
 import { startTransition, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ComponentType } from "react";
@@ -14,6 +14,7 @@ import { cardNavigationHandler } from "@/lib/ui/card-navigation";
 import { ContactActions } from "@/components/shared/contact-actions";
 import { useToast } from "@/components/ui/toast";
 import { WeekStrip } from "@/components/dashboard/week-strip";
+import { WorkshopBoard } from "@/components/board/workshop-board";
 import { formatDate, formatDateTime } from "@/lib/utils/date";
 import { formatINR } from "@/lib/utils/money";
 import { orderSortOptions, sortOrders, type OrderSortKey } from "@/lib/orders/order-sort";
@@ -354,10 +355,21 @@ function CollectionChart({ days }: { days: DashboardCollectionDay[] }) {
   );
 }
 
-export function InteractiveDashboard({ model }: { model: DashboardModel }) {
+export type DashboardWorkView = "board" | "list";
+
+export function InteractiveDashboard({
+  model,
+  boardOrders = [],
+  initialWorkView = "board"
+}: {
+  model: DashboardModel;
+  boardOrders?: OrderWithCustomer[];
+  initialWorkView?: DashboardWorkView;
+}) {
   const router = useRouter();
   const toast = useToast();
   const [selectedViewId, setSelectedViewId] = useState<DashboardViewId>("pending");
+  const [workView, setWorkView] = useState<DashboardWorkView>(initialWorkView);
   const [sortKey, setSortKey] = useState<OrderSortKey>("deliveryDate");
   const [hiddenCompletedOrderIds, setHiddenCompletedOrderIds] = useState<string[]>([]);
   const [hiddenPaidOrderIds, setHiddenPaidOrderIds] = useState<string[]>([]);
@@ -458,15 +470,53 @@ export function InteractiveDashboard({ model }: { model: DashboardModel }) {
   }
 
   return (
-    <div className="grid gap-5">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         {model.cards.map((card) => (
-          <MetricCard key={card.id} card={card} selected={card.id === selectedViewId} onSelect={() => setSelectedViewId(card.id)} />
+          <MetricCard
+            key={card.id}
+            card={card}
+            selected={workView === "list" && card.id === selectedViewId}
+            onSelect={() => {
+              setSelectedViewId(card.id);
+              setWorkView("list");
+              document.getElementById("work-area")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
+            }}
+          />
         ))}
       </div>
       <WeekStrip week={model.week} overdue={model.overdue} />
 
-      <div className="grid gap-5 xl:grid-cols-[1.45fr_.55fr]">
+      <div id="work-area" className="flex scroll-mt-24 flex-wrap items-center justify-between gap-3">
+        <h2 className="font-serif text-2xl font-semibold text-wine-deep">{workView === "board" ? "Workshop board" : "Order list"}</h2>
+        <div role="tablist" aria-label="Work view" className="inline-flex gap-1 rounded-2xl bg-surface-sunken p-1.5 shadow-pressed">
+          {(
+            [
+              ["board", "Board", KanbanSquare],
+              ["list", "List", List]
+            ] as const
+          ).map(([view, label, Icon]) => (
+            <button
+              key={view}
+              type="button"
+              role="tab"
+              aria-selected={workView === view}
+              onClick={() => setWorkView(view)}
+              className={cn(
+                "inline-flex min-h-10 items-center gap-2 rounded-xl px-4 text-sm font-semibold transition",
+                workView === view ? "bg-gradient-to-br from-wine to-rose text-white shadow-brand" : "text-ink-soft hover:bg-surface hover:text-wine"
+              )}
+            >
+              <Icon className="h-4 w-4" aria-hidden />
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {workView === "board" ? <WorkshopBoard orders={boardOrders} today={model.today} /> : null}
+
+      <div className={cn("grid gap-5 xl:grid-cols-[1.45fr_.55fr]", workView === "board" && "hidden")}>
         <Card>
           <CardHeader className="flex flex-col gap-2 p-5 md:flex-row md:items-start md:justify-between">
             <div>

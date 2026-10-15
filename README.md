@@ -372,13 +372,21 @@ Roles:
 - **Open by clicking anywhere**: click any order or customer card/row to open it. Checkboxes and buttons inside a card still do their own job.
 - Delivery countdown badges (**Due today**, **Tomorrow**, **Overdue 5d**) appear on open orders.
 
-- **Keyboard** (laptop): `?` shows all shortcuts, `N` new order, `B` board, `D` dashboard.
+- **Keyboard** (laptop): `?` shows all shortcuts, `N` new order, `B` workshop board, `D` dashboard.
 - Actions such as **Done**, **Paid**, and board moves show a small notification with **Undo** for a few seconds.
-- On phones and tablets, **Settings** is the gear button at the top right.
+- On phones and tablets, **Settings** is the gear button at the top right; the bottom bar is Dashboard, Orders, New Order, Customers, Reports.
 
-### Workshop Board
+### Workshop Board (on the Dashboard)
 
-Open **Board** (`/board`). Orders are grouped by stage: **New → In Stitching → Ready → Delivered** (delivered orders stay visible for 7 days). Tap **Start stitching**, **Mark ready**, or **Delivered** to move an order on, or the ← button to move it back. Swipe sideways between columns on a phone. Tap the card itself to open the order.
+The dashboard's work area opens on the **Board** tab. Orders are grouped by stage: **New → In Stitching → Ready → Delivered** (delivered orders stay visible for 7 days). Tap **Start stitching**, **Mark ready**, or **Delivered** to move an order on, or the ← button to move it back; each move can be undone from the notification. If tailors are assigned, filter the board by tailor. Swipe sideways between columns on a phone. Tap a card to open the order. The **List** tab is the classic work queue, and tapping any summary card switches to it. The old `/board` link redirects here.
+
+### Payments
+
+Customers pay at the counter in cash or UPI; the app only records what was received. On an order, **Payments → Record money received** takes the amount and Cash/UPI and updates the balance (part payments are fine). Each payment is listed with a delete button, and **Undo** appears right after adding one. Payment mode choices are Cash and UPI.
+
+### Reports
+
+Open **Reports** (sidebar on a laptop, bottom bar on phones/tablets). Pick a period (Today, Last 7 days, This month, Last month, This year, All time) to see money collected (split by Cash/UPI), orders taken, billed value, average order, outstanding balance, a collections chart, the garment mix, and top customers. **Export CSV** downloads the period's orders for Excel or Google Sheets.
 
 ### Install on a tablet or phone
 

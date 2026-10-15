@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, KanbanSquare, LogOut, Menu, Plus, ReceiptText, Settings, UserRoundPlus, Users } from "lucide-react";
+import { ChartColumn, Home, LogOut, Menu, Plus, ReceiptText, Settings, UserRoundPlus, Users } from "lucide-react";
 import { useState } from "react";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { LogoMark } from "@/components/shared/logo-mark";
@@ -16,12 +16,12 @@ const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
   { href: "/orders", label: "Orders", icon: ReceiptText },
   { href: "/orders/new", label: "New Order", icon: UserRoundPlus },
-  { href: "/board", label: "Board", icon: KanbanSquare },
   { href: "/customers", label: "Customers", icon: Users },
+  { href: "/reports", label: "Reports", icon: ChartColumn },
   { href: "/settings", label: "Settings", icon: Settings }
 ];
 
-// Phones and tablets: five tabs, Settings lives behind the header gear button.
+// Phones and tablets: five tabs; Settings is the header gear button.
 const mobileNavItems = navItems.filter((item) => item.href !== "/settings");
 
 function isActivePath(pathname: string, href: string) {
