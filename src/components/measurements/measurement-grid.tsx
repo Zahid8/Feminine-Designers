@@ -31,10 +31,10 @@ export function MeasurementGrid({
         const controlledValue = controlledValues?.[field.fieldKey];
         return (
           <div key={field.id} className="contents">
-            <label className="grid gap-1 rounded-md border border-[#ead8c3] bg-white/95 p-3 text-sm shadow-sm">
+            <label className="grid gap-1 rounded-xl border border-line bg-surface p-3 text-sm shadow-raised-sm">
               <span className="flex items-center justify-between gap-2">
-                <strong className="rounded bg-[#fff1df] px-2 py-0.5 text-[#4c1525]">{field.displayCode}</strong>
-                <span className="text-xs text-[#7c6d66]">
+                <strong className="rounded bg-peach px-2 py-0.5 text-wine-ink">{field.displayCode}</strong>
+                <span className="text-xs text-muted">
                   {"longLabel" in field && field.longLabel ? field.longLabel : field.displayLabel}
                 </span>
               </span>
@@ -63,7 +63,7 @@ export function MeasurementGrid({
             </label>
             {shouldBreakAfterMeasurement(field) ? (
               <div
-                className="h-px bg-gradient-to-r from-transparent via-[#d99a62] to-transparent sm:col-span-2 xl:col-span-3"
+                className="h-px bg-gradient-to-r from-transparent via-gold to-transparent sm:col-span-2 xl:col-span-3"
                 data-testid="measurement-section-break"
                 aria-hidden="true"
               />
@@ -72,8 +72,8 @@ export function MeasurementGrid({
         );
       })}
       {editable ? (
-        <label className="grid gap-1 rounded-md border border-[#ead8c3] bg-white/95 p-3 text-sm shadow-sm sm:col-span-2 xl:col-span-3">
-          <span className="font-semibold text-[#4c1525]">Special Notes</span>
+        <label className="grid gap-1 rounded-xl border border-line bg-surface p-3 text-sm shadow-raised-sm sm:col-span-2 xl:col-span-3">
+          <span className="font-semibold text-wine-ink">Special Notes</span>
           <Textarea name={`${valuePrefix}Notes`} placeholder="Fitting notes" />
         </label>
       ) : null}

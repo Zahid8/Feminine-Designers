@@ -9,6 +9,9 @@
 - 2026-07-01T06:24Z [TOOL] Context7 resolved official Next.js docs to `/vercel/next.js` with latest listed version `v16.2.9`; npm registry confirmed `next@16.2.9`.
 - 2026-07-01T06:24Z [TOOL] Context7 resolved Supabase SSR docs to `/supabase/ssr`; app will use `@supabase/ssr` and `@supabase/supabase-js`.
 - 2026-07-01T06:24Z [USER] Do not run graphify in this workflow; prior workspace memory records graphify as prohibited even though pasted project notes mention it.
+- 2026-10-15T16:49Z [USER] UI refresh requested (neumorphism/material allowed, keep palette) plus faster page navigation on Vercel Hobby + Supabase free.
+- 2026-10-15T16:49Z [CODE] Adopted soft-neumorphic + Material-elevation hybrid using palette-preserving Tailwind v4 tokens in `globals.css`; pure neumorphism rejected for contrast on data-dense screens. Receipts (`receipt-html.tsx`, `receipt-pdf.tsx`) intentionally untouched.
+- 2026-10-15T16:49Z [CODE] Staff password/session cookie now read from `STAFF_PASSWORD`/`STAFF_SESSION_SECRET` with legacy fallback so production does not break before env vars are set.
 
 ## [PROGRESS]
 - 2026-07-01T06:24Z [TOOL] Repository assessment found only `implementation_plan.md` and `IMG_1174.JPG`; no package manager metadata, framework, database files, env files, styles, or tests existed.
@@ -76,6 +79,9 @@
 - 2026-07-07T04:38Z [CODE] Saved-order edit form now exposes New Order payment controls for `Advance paid`, `Payment mode`, and `Payment reference`. Saving replaces the order's payment rows when those fields are submitted and recalculates `advance_paid`, `balance_due`, and `payment_status` from the edited advance.
 - 2026-07-07T04:50Z [CODE] Orders page now has three tabs: Current Orders for non-completed, non-overdue work; Past Orders for overdue orders that are not completed; Completed Orders for delivered/done orders. Dashboard current-order filtering was kept excluding both completed and overdue orders after the shared past-order classifier changed.
 - 2026-07-09T06:36Z [CODE] New Order customer name validation now accepts any non-empty trimmed value, including pure numbers and special characters; the previous two-character minimum was removed.
+- 2026-10-15T16:49Z [CODE] Codemodded ~400 raw hex classes to tokens; rewrote UI primitives (Button + new ButtonLink, Card, Input + new Select, badges, PageHeading), app shell (active nav, working header search to `/orders?q=`), dashboard metric cards (pressed when selected), orders tabs (segmented nav). Replaced invalid `<Link><Button>` nesting with `ButtonLink`.
+- 2026-10-15T16:49Z [CODE] Perf: order list queries exclude `cloth_sample_image_url`; `getOrderById` filters by id; customer lookups filter by `customer_id` and run in parallel; added per-route `loading.tsx` skeletons; `vercel.json` pins `sin1`.
+- 2026-10-15T16:49Z [CODE] Fixed IndiaClock hydration mismatch by rendering time only after mount.
 
 ## [DISCOVERIES]
 - 2026-07-01T06:24Z [TOOL] `IMG_1174.JPG` is a 5712x4284 JPEG, likely the bill reference image, but no `public/Logo.PNG` logo file exists.
@@ -117,6 +123,10 @@
 - 2026-07-02T12:26Z [TOOL] React-PDF output can be regression-tested by rendering `ReceiptPdfDocument` to a buffer and extracting text with local `pdftotext`; RED coverage confirmed store/combined PDFs originally printed the unadjusted delivery date.
 - 2026-07-02T12:32Z [TOOL] Root cause for edit-date reset: native date inputs render blank if fed timestamp-like saved date values, and the update service previously treated submitted blank date values as real updates instead of falling back to the existing order dates.
 - 2026-07-02T17:29Z [TOOL] Extra-cost persistence needs the new Supabase migration before production can store the new `orders.extra_cost`, `order_items.extra_cost`, and `order_item_extra_costs` data. The app also catches missing PostgREST relationship-cache errors (`PGRST200`) so code deployed before the SQL falls back instead of crashing order lists.
+- 2026-10-15T16:49Z [TOOL] Cloth-sample photos are base64 data URLs in `orders.cloth_sample_image_url`; with 33 orders a full order select was 5.3 MB (4.9 MB photos) and every list page fetched it. Dashboard HTML after fix: ~131 KB.
+- 2026-10-15T16:49Z [TOOL] Supabase DB host resolves to AWS `ap-southeast-1` (Singapore); Vercel default was iad1.
+- 2026-10-15T16:49Z [TOOL] Repo `Zahid8/Feminine-Designers` is PUBLIC; legacy staff password and cookie value are in git history and must be rotated via env vars.
+- 2026-10-15T16:49Z [TOOL] Tailwind v4 gotcha: unlayered element CSS (e.g. `a { color: inherit }`) overrides layered utilities like `text-white`; base rules must live in `@layer base`.
 
 ## [OUTCOMES]
 - 2026-07-01T06:39Z [TOOL] Verification passed: `npm run lint`, `npm run typecheck`, `npm run test` (4 files, 10 tests), `npm run build`, `npm audit --omit=dev`, and HTTP smoke checks for `/dashboard`, `/receipts/order-1/combined`, and `/api/receipts/order-1/combined`.
@@ -176,3 +186,4 @@
 - 2026-07-07T04:38Z [TOOL] Verification passed after saved-bill payment edit parity: focused RED tests failed on missing edit payment fields and no `payments` table update, then focused edit tests passed (`2 files`, `11 tests`); `npm run typecheck`, `npm run lint`, `npm run test` (`40 files`, `145 tests`), and `npm run build` all passed.
 - 2026-07-07T04:50Z [TOOL] Verification passed after Orders page Completed/Past split: focused RED tests failed on no `Completed Orders` tab and delivered orders counted as past, then focused status/orders/dashboard tests passed; `npm run typecheck`, `npm run lint`, `npm run test` (`41 files`, `148 tests`), and `npm run build` all passed.
 - 2026-07-09T06:36Z [TOOL] Verification passed after New Order name validation relaxation: focused RED parser test failed on one-character numeric customer name, then passed after schema change; `npm run typecheck`, `npm run lint`, `npm run test` (`41 files`, `149 tests`), and `npm run build` all passed.
+- 2026-10-15T16:49Z [TOOL] Verification passed after UI refresh + perf pass: `npm run typecheck`, `npm run lint`, `npm run test` (41 files, 151 tests), `npm run build`; prod-server smoke on port 3022 returned 200 for dashboard/orders/customers/settings/orders/new/order detail/store receipt/customer profile/measurements/search API (0.3–1.4s locally); desktop and tablet screenshots reviewed. Follow-up: set `STAFF_PASSWORD`/`STAFF_SESSION_SECRET` in Vercel; consider moving photos to Supabase Storage.

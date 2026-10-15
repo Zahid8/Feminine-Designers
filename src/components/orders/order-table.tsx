@@ -55,16 +55,16 @@ export function OrderTable({ orders }: { orders: (OrderWithCustomer & { overdue?
 
   if (sortedOrders.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-[#dfc5a8] bg-white/90 p-8 text-center text-sm text-[#7c6d66] shadow-sm">
+      <div className="rounded-2xl border border-dashed border-line-strong bg-surface p-8 text-center text-sm text-muted shadow-raised-sm">
         No orders match this view.
       </div>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-[#ead8c3] bg-white/95 shadow-[0_18px_45px_rgba(76,21,37,0.08)] ring-1 ring-white/70">
-      <div className="flex flex-wrap items-center gap-2 border-b border-[#ead8c3] bg-gradient-to-r from-[#fff7ec] to-[#fffdfa] p-3">
-        <label className="flex items-center gap-2 rounded-md border border-[#dfc5a8] bg-white/95 px-2 py-1 text-xs font-semibold shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-line bg-surface shadow-raised ring-1 ring-white/70">
+      <div className="flex flex-wrap items-center gap-2 border-b border-line bg-gradient-to-r from-cream to-paper p-3">
+        <label className="flex items-center gap-2 rounded-xl border border-line-strong bg-surface px-2 py-1 text-xs font-semibold shadow-raised-sm">
           Sort by
           <select
             aria-label="Sort orders by"
@@ -80,7 +80,7 @@ export function OrderTable({ orders }: { orders: (OrderWithCustomer & { overdue?
           </select>
         </label>
         {columns.map(([key, label]) => (
-          <label key={key} className="flex items-center gap-2 rounded-md border border-[#dfc5a8] bg-white/95 px-2 py-1 text-xs font-semibold shadow-sm">
+          <label key={key} className="flex items-center gap-2 rounded-xl border border-line-strong bg-surface px-2 py-1 text-xs font-semibold shadow-raised-sm">
             <input type="checkbox" checked={visibleColumns[key]} onChange={() => toggleColumn(key)} />
             {label}
           </label>
@@ -88,7 +88,7 @@ export function OrderTable({ orders }: { orders: (OrderWithCustomer & { overdue?
       </div>
       <div className="hidden overflow-x-auto lg:block">
         <table className="w-full text-left text-sm">
-          <thead className="bg-[#fff1df] text-xs uppercase text-[#6f625d]">
+          <thead className="bg-peach text-xs uppercase text-muted-strong">
             <tr>
               {columns.map(([key, label]) =>
                 visibleColumns[key] ? (
@@ -99,12 +99,12 @@ export function OrderTable({ orders }: { orders: (OrderWithCustomer & { overdue?
               )}
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#f0dfca]">
+          <tbody className="divide-y divide-line-soft">
             {sortedOrders.map((order) => (
-              <tr key={order.id} className="align-top transition hover:bg-[#fffaf4]">
+              <tr key={order.id} className="align-top transition hover:bg-paper-warm">
                 {visibleColumns.complete ? (
                   <td className="px-4 py-4">
-                    <label className="inline-flex items-center gap-2 text-xs font-semibold text-[#4c1525]">
+                    <label className="inline-flex items-center gap-2 text-xs font-semibold text-wine-ink">
                       <input
                         type="checkbox"
                         className="h-5 w-5"
@@ -116,15 +116,15 @@ export function OrderTable({ orders }: { orders: (OrderWithCustomer & { overdue?
                     </label>
                   </td>
                 ) : null}
-                {visibleColumns.receipt ? <td className="px-4 py-4 font-semibold text-[#4c1525]">{order.receiptNumber}</td> : null}
+                {visibleColumns.receipt ? <td className="px-4 py-4 font-semibold text-wine-ink">{order.receiptNumber}</td> : null}
                 {visibleColumns.customer ? <td className="px-4 py-4">
                   <p className="font-semibold">{order.customer.fullName}</p>
-                  <p className="text-xs text-[#7c6d66]">{order.customer.phonePrimary}</p>
+                  <p className="text-xs text-muted">{order.customer.phonePrimary}</p>
                 </td> : null}
                 {visibleColumns.garments ? <td className="px-4 py-4">{order.items.map((item) => item.garmentType).join(", ")}</td> : null}
                 {visibleColumns.dates ? <td className="px-4 py-4">
                   <p>Order: {formatDate(order.orderDate)}</p>
-                  <p className={order.overdue ? "font-semibold text-[#a83232]" : ""}>
+                  <p className={order.overdue ? "font-semibold text-danger" : ""}>
                     Delivery: {formatDate(order.deliveryDate)}
                   </p>
                 </td> : null}
@@ -137,7 +137,7 @@ export function OrderTable({ orders }: { orders: (OrderWithCustomer & { overdue?
                 {visibleColumns.balance ? <td className="px-4 py-4 font-semibold">{formatINR(order.totals.balanceDuePaise)}</td> : null}
                 {visibleColumns.action ? <td className="px-4 py-4">
                   <Link
-                    className="inline-flex min-h-9 items-center justify-center rounded-md border border-[#dfc5a8] bg-white/95 px-3 py-1.5 text-sm font-semibold text-[#4c1525] shadow-sm transition hover:border-[#d99a62] hover:bg-[#fff5ea] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d99a62]"
+                    className="inline-flex min-h-9 items-center justify-center rounded-xl border border-line-strong bg-surface px-3 py-1.5 text-sm font-semibold text-wine-ink shadow-raised-sm transition hover:border-gold hover:bg-blush focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
                     href={`/orders/${order.id}`}
                   >
                     Open
@@ -150,12 +150,12 @@ export function OrderTable({ orders }: { orders: (OrderWithCustomer & { overdue?
       </div>
       <div className="grid gap-3 p-3 lg:hidden">
         {sortedOrders.map((order) => (
-          <div key={order.id} className="rounded-md border border-[#ead8c3] bg-white/95 p-4 shadow-sm">
+          <div key={order.id} className="rounded-xl border border-line bg-surface p-4 shadow-raised-sm">
             <div className="flex items-start justify-between gap-3">
               <Link href={`/orders/${order.id}`}>
-                <p className="font-semibold text-[#4c1525]">{order.receiptNumber}</p>
+                <p className="font-semibold text-wine-ink">{order.receiptNumber}</p>
                 <p className="text-sm">{order.customer.fullName}</p>
-                <p className="text-xs text-[#7c6d66]">{order.customer.phonePrimary}</p>
+                <p className="text-xs text-muted">{order.customer.phonePrimary}</p>
               </Link>
               <StatusBadge status={order.status} />
             </div>
@@ -163,7 +163,7 @@ export function OrderTable({ orders }: { orders: (OrderWithCustomer & { overdue?
               <span>Delivery {formatDate(order.deliveryDate)}</span>
               <span className="text-right font-semibold">{formatINR(order.totals.balanceDuePaise)}</span>
             </div>
-            <label className="mt-3 flex items-center justify-between rounded-md border border-[#dfc5a8] bg-[#fff7ec] px-3 py-2 text-sm font-semibold shadow-inner shadow-[#f5e3cf]/50">
+            <label className="mt-3 flex items-center justify-between rounded-xl border border-line-strong bg-cream px-3 py-2 text-sm font-semibold shadow-pressed">
               <span>Order complete</span>
               <input
                 type="checkbox"

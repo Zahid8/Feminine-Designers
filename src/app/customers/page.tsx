@@ -1,7 +1,6 @@
-import Link from "next/link";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeading } from "@/components/shared/page-heading";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Field, Input } from "@/components/ui/input";
 import { CustomerTable } from "@/components/customers/customer-table";
@@ -25,9 +24,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
         title="Customers"
         description="Customer profiles preserve contact information, order history, balances, notes, and reusable measurement snapshots."
         action={
-          <Link href="/customers/new">
-            <Button>Add Customer</Button>
-          </Link>
+          <ButtonLink href="/customers/new">Add Customer</ButtonLink>
         }
       />
       <Card className="mb-5">

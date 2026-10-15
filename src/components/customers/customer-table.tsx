@@ -56,25 +56,25 @@ export function CustomerTable({
 
   return (
     <div className="grid gap-3">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#ead8c3] bg-gradient-to-r from-[#fff7ec] to-[#fffdfa] p-3 shadow-[0_14px_32px_rgba(76,21,37,0.07)]">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/70 bg-surface p-3 shadow-raised">
         <div className="flex flex-wrap gap-2">
           <Link
             href="/customers/new"
-            className="inline-flex min-h-10 items-center justify-center rounded-md bg-[#7d1f36] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#5d1428]"
+            className="inline-flex min-h-10 items-center justify-center rounded-xl bg-wine px-4 py-2 text-sm font-semibold text-white transition hover:bg-wine-hover"
           >
             Add New Customer
           </Link>
           <button
             type="button"
             onClick={() => setDeleteMode((current) => !current)}
-            className="inline-flex min-h-10 items-center justify-center rounded-md border border-[#a83232] bg-white px-4 py-2 text-sm font-semibold text-[#a83232] transition hover:bg-[#fff1f1]"
+            className="inline-flex min-h-10 items-center justify-center rounded-xl border border-danger bg-surface px-4 py-2 text-sm font-semibold text-danger shadow-raised-sm transition hover:bg-red-50"
           >
             Remove Customer Record
           </button>
         </div>
         <div className="flex flex-wrap gap-2">
           {columns.map(([key, label]) => (
-            <label key={key} className="flex items-center gap-2 rounded-md border border-[#dfc5a8] bg-white/95 px-2 py-1 text-xs font-semibold shadow-sm">
+            <label key={key} className="flex items-center gap-2 rounded-xl border border-line-strong bg-surface px-2 py-1 text-xs font-semibold shadow-raised-sm">
               <input type="checkbox" checked={visibleColumns[key]} onChange={() => toggleColumn(key)} />
               {label}
             </label>
@@ -86,11 +86,11 @@ export function CustomerTable({
         return (
           <div
             key={customer.id}
-            className="grid gap-3 rounded-lg border border-[#ead8c3] bg-white/95 p-4 shadow-sm transition hover:border-[#d99a62] hover:bg-[#fffaf4] hover:shadow-[0_14px_32px_rgba(76,21,37,0.08)] md:grid-cols-[1.4fr_1fr_1fr_1fr_auto]"
+            className="grid gap-3 rounded-2xl border border-line bg-surface p-4 shadow-raised-sm transition hover:border-gold hover:bg-paper-warm hover:shadow-raised md:grid-cols-[1.4fr_1fr_1fr_1fr_auto]"
           >
             {visibleColumns.customer ? <div>
-              <p className="font-semibold text-[#4c1525]">{customer.fullName}</p>
-              <p className="text-sm text-[#7c6d66]">{customer.customerCode}</p>
+              <p className="font-semibold text-wine-ink">{customer.fullName}</p>
+              <p className="text-sm text-muted">{customer.customerCode}</p>
             </div> : null}
             {visibleColumns.phone ? <p className="text-sm">{customer.phonePrimary}</p> : null}
             {visibleColumns.orders ? <p className="text-sm">{stats.orderCount} orders</p> : null}
@@ -99,13 +99,13 @@ export function CustomerTable({
               <div className="flex flex-wrap gap-2">
                 <Link
                   href={`/customers/${customer.id}`}
-                  className="inline-flex min-h-9 items-center justify-center rounded-md border border-[#dfc5a8] bg-white/95 px-3 py-1.5 text-sm font-semibold text-[#4c1525] shadow-sm transition hover:border-[#d99a62] hover:bg-[#fff5ea]"
+                  className="inline-flex min-h-9 items-center justify-center rounded-xl border border-line-strong bg-surface px-3 py-1.5 text-sm font-semibold text-wine-ink shadow-raised-sm transition hover:border-gold hover:bg-blush"
                 >
                   Open
                 </Link>
                 <Link
                   href={`/customers/${customer.id}/measurements`}
-                  className="inline-flex min-h-9 items-center justify-center rounded-md border border-[#dfc5a8] bg-white/95 px-3 py-1.5 text-sm font-semibold text-[#4c1525] shadow-sm transition hover:border-[#d99a62] hover:bg-[#fff5ea]"
+                  className="inline-flex min-h-9 items-center justify-center rounded-xl border border-line-strong bg-surface px-3 py-1.5 text-sm font-semibold text-wine-ink shadow-raised-sm transition hover:border-gold hover:bg-blush"
                 >
                   Measurements
                 </Link>
@@ -114,7 +114,7 @@ export function CustomerTable({
                     type="button"
                     disabled={pendingCustomerIds.includes(customer.id)}
                     onClick={() => archiveCustomer(customer)}
-                    className="inline-flex min-h-9 items-center justify-center rounded-md bg-[#a83232] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[#8c2727] disabled:opacity-60"
+                    className="inline-flex min-h-9 items-center justify-center rounded-xl bg-danger px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[#8c2727] disabled:opacity-60"
                   >
                     Delete
                   </button>

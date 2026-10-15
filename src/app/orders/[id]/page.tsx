@@ -52,7 +52,7 @@ export default async function OrderDetailPage({
         }
       />
       {query.saved ? (
-        <div className="mb-5 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+        <div className="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
           Edits saved successfully.
         </div>
       ) : null}
@@ -70,21 +70,21 @@ export default async function OrderDetailPage({
             <OrderStatusCheckboxEditor orderId={order.id} status={order.status} paymentStatus={order.totals.paymentStatus} />
             <div className="grid gap-3 md:grid-cols-2">
               {order.items.map((item) => (
-                <div key={item.id} className="rounded-md border border-[#ead8c3] bg-white/95 p-3 shadow-sm">
-                  <p className="font-semibold text-[#4c1525]">{item.garmentType}</p>
-                  {item.fabricColor ? <p className="text-sm text-[#7c6d66]">Fabric color: {item.fabricColor}</p> : null}
-                  <p className="text-sm text-[#7c6d66]">
+                <div key={item.id} className="rounded-xl border border-line bg-surface p-3 shadow-raised-sm">
+                  <p className="font-semibold text-wine-ink">{item.garmentType}</p>
+                  {item.fabricColor ? <p className="text-sm text-muted">Fabric color: {item.fabricColor}</p> : null}
+                  <p className="text-sm text-muted">
                     Qty {item.quantity} · Rate {formatINR(item.ratePaise)} · Stitching {formatINR(item.stitchingCostPaise)} · Fabric{" "}
                     {formatINR(item.fabricPricePaise)} · Dye {formatINR(item.dyePricePaise)} · Extra {formatINR(item.extraCostPaise)} · Total{" "}
                     {formatINR(item.lineTotalPaise)}
                   </p>
                   {item.extraCosts.length ? (
-                    <p className="text-xs text-[#7c6d66]">
+                    <p className="text-xs text-muted">
                       {item.extraCosts.map((cost) => formatExtraCostLine(cost.label, formatINR(cost.amountPaise))).join(", ")}
                     </p>
                   ) : null}
-                  {item.fabricLength ? <p className="text-sm text-[#7c6d66]">Fabric length: {item.fabricLength}</p> : null}
-                  <p className="mt-1 text-xs font-semibold text-[#4c1525]">
+                  {item.fabricLength ? <p className="text-sm text-muted">Fabric length: {item.fabricLength}</p> : null}
+                  <p className="mt-1 text-xs font-semibold text-wine-ink">
                     {item.delivered ? "Delivered" : "Not delivered"}
                   </p>
                   <p className="mt-2 text-sm">{item.stitchingInstructions}</p>
@@ -93,22 +93,22 @@ export default async function OrderDetailPage({
             </div>
             <OrderItemDeliveryTracker orderId={order.id} items={order.items} />
             {order.clothSampleImageUrl ? (
-              <div className="rounded-md border border-[#ead8c3] bg-gradient-to-br from-[#fffdfa] to-[#fff1df] p-3 shadow-sm">
-                <p className="mb-2 font-semibold text-[#4c1525]">Customer cloth sample</p>
+              <div className="rounded-xl border border-line bg-gradient-to-br from-paper to-peach p-3 shadow-raised-sm">
+                <p className="mb-2 font-semibold text-wine-ink">Customer cloth sample</p>
                 <Image
                   src={order.clothSampleImageUrl}
                   alt="Customer cloth sample"
                   width={360}
                   height={240}
                   unoptimized
-                  className="max-h-72 w-full rounded-md object-cover"
+                  className="max-h-72 w-full rounded-xl object-cover"
                 />
               </div>
             ) : null}
             {order.measurements.length ? (
               <MeasurementGrid values={order.measurements} />
             ) : (
-              <div className="rounded-md border border-dashed border-[#dfc5a8] bg-white/90 p-6 text-center text-sm text-[#7c6d66] shadow-sm">
+              <div className="rounded-xl border border-dashed border-line-strong bg-surface p-6 text-center text-sm text-muted shadow-raised-sm">
                 No measurements saved yet. Add them in Edit Saved Bill below.
               </div>
             )}
@@ -134,7 +134,7 @@ export default async function OrderDetailPage({
                 ["Paid", order.totals.totalPaidPaise],
                 ["Balance", order.totals.balanceDuePaise]
               ].map(([label, value]) => (
-                <div key={label} className="flex justify-between border-b border-[#ead8c3] py-2 last:border-0">
+                <div key={label} className="flex justify-between border-b border-line py-2 last:border-0">
                   <span>{label}</span>
                   <strong>{formatINR(Number(value))}</strong>
                 </div>
@@ -147,9 +147,9 @@ export default async function OrderDetailPage({
             </CardHeader>
             <CardContent className="grid gap-3">
               {order.statusHistory.map((entry) => (
-                <div key={entry.id} className="border-l-2 border-[#7d1f36] pl-3">
+                <div key={entry.id} className="border-l-2 border-wine pl-3">
                   <p className="font-semibold">{entry.toStatus}</p>
-                  <p className="text-xs text-[#7c6d66]">
+                  <p className="text-xs text-muted">
                     {formatDateTime(entry.changedAt)} · {entry.changedBy}
                   </p>
                 </div>
@@ -179,7 +179,7 @@ export default async function OrderDetailPage({
           {editing ? (
             <EditOrderForm order={order} measurementTemplate={measurementTemplate} action={updateOrderAction.bind(null, order.id)} />
           ) : (
-            <p className="text-sm text-[#7c6d66]">Click Edit Order Details to change customer info, status, measurements, cloth photo, notes, costs, priority, or tailor.</p>
+            <p className="text-sm text-muted">Click Edit Order Details to change customer info, status, measurements, cloth photo, notes, costs, priority, or tailor.</p>
           )}
         </CardContent>
       </Card>

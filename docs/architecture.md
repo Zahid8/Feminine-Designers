@@ -14,6 +14,17 @@ The app is organized around typed domain services:
 - `src/app/*` contains route-level screens and API endpoints.
 - `src/components/*` contains reusable UI, layout, order, customer, measurement, dashboard, and receipt components.
 
+## Visual System
+
+`src/app/globals.css` defines the palette as Tailwind v4 theme tokens (`text-wine`, `bg-surface`, `border-line`, `text-muted`, and so on) plus a soft neumorphic elevation scale: `shadow-raised-sm`, `shadow-raised`, `shadow-raised-lg` for lifted surfaces, `shadow-pressed` for inputs and selected states, and `shadow-brand`/`shadow-danger` for Material-style primary actions. Use tokens instead of raw hex classes. Shared primitives live in `src/components/ui/*` (`Button`, `ButtonLink`, `Card`, `Input`, `Select`, `Textarea`, badges). Element defaults sit in `@layer base` so utilities can override them. Receipt components keep their own print styling.
+
+## Performance
+
+- List queries in `src/services/orders/order-service.ts` select explicit columns and exclude `cloth_sample_image_url`, because cloth-sample photos are stored inline as data URLs and dominated payload size. Only `getOrderById` (detail, receipts, edits) loads the photo.
+- Customer profile and measurement lookups filter orders by `customer_id` in SQL and run their independent queries in parallel.
+- Every operational route has a `loading.tsx` that renders the app shell with a skeleton, so navigation responds immediately while server data loads.
+- `vercel.json` runs functions in `sin1`, next to the Supabase project (`ap-southeast-1`).
+
 ## Authentication
 
 Supabase Auth is the planned authentication provider. `src/lib/supabase/server.ts` and `src/lib/supabase/client.ts` use current `@supabase/ssr` patterns. RLS policies in the migration distinguish `admin` and `staff` through the `profiles.role` column.

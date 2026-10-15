@@ -1,28 +1,19 @@
-import type { InputHTMLAttributes, TextareaHTMLAttributes } from "react";
+import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
 import { cn } from "@/lib/utils/cn";
 
+export const fieldControlClass =
+  "w-full rounded-xl border border-transparent bg-surface-sunken px-3 text-sm text-ink shadow-pressed outline-none transition placeholder:text-muted-soft focus:border-gold focus:bg-surface-strong focus:ring-2 focus:ring-gold/30 disabled:cursor-not-allowed disabled:opacity-60";
+
 export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
-  return (
-    <input
-      className={cn(
-        "h-10 w-full rounded-md border border-[#dfc5a8] bg-white/95 px-3 text-sm outline-none shadow-inner shadow-[#f5e3cf]/50 transition placeholder:text-[#9b8f87] focus:border-[#d99a62] focus:ring-2 focus:ring-[#d99a62]/30",
-        className
-      )}
-      {...props}
-    />
-  );
+  return <input className={cn(fieldControlClass, "h-11", className)} {...props} />;
 }
 
 export function Textarea({ className, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  return (
-    <textarea
-      className={cn(
-        "min-h-24 w-full rounded-md border border-[#dfc5a8] bg-white/95 px-3 py-2 text-sm outline-none shadow-inner shadow-[#f5e3cf]/50 transition placeholder:text-[#9b8f87] focus:border-[#d99a62] focus:ring-2 focus:ring-[#d99a62]/30",
-        className
-      )}
-      {...props}
-    />
-  );
+  return <textarea className={cn(fieldControlClass, "min-h-24 py-2", className)} {...props} />;
+}
+
+export function Select({ className, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
+  return <select className={cn(fieldControlClass, "h-11 cursor-pointer", className)} {...props} />;
 }
 
 export function Field({
@@ -35,10 +26,10 @@ export function Field({
   hint?: string;
 }) {
   return (
-    <label className="grid gap-1.5 text-sm font-medium text-[#3b312d]">
-      <span className="text-xs font-bold uppercase tracking-[0.08em] text-[#6f352b]">{label}</span>
+    <label className="grid gap-1.5 text-sm font-medium text-ink-soft">
+      <span className="text-xs font-bold uppercase tracking-[0.08em] text-label">{label}</span>
       {children}
-      {hint ? <span className="text-xs font-normal text-[#7c6d66]">{hint}</span> : null}
+      {hint ? <span className="text-xs font-normal text-muted">{hint}</span> : null}
     </label>
   );
 }

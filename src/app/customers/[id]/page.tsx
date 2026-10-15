@@ -1,8 +1,7 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeading } from "@/components/shared/page-heading";
-import { Button } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MeasurementGrid } from "@/components/measurements/measurement-grid";
 import { OrderTable } from "@/components/orders/order-table";
@@ -20,14 +19,8 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
         description={`${profile.customer.phonePrimary} · ${profile.customer.preferredCommunication} · Outstanding ${formatINR(profile.outstandingPaise)}`}
         action={
           <div className="flex flex-wrap gap-2">
-            <Link href={`/customers/${id}/measurements`}>
-              <Button type="button" variant="secondary">
-                Measurements
-              </Button>
-            </Link>
-            <Link href="/orders/new">
-              <Button>Create New Order</Button>
-            </Link>
+            <ButtonLink href={`/customers/${id}/measurements`} variant="secondary">Measurements</ButtonLink>
+            <ButtonLink href="/orders/new">Create New Order</ButtonLink>
           </div>
         }
       />
@@ -42,7 +35,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
             <p>{profile.customer.notes}</p>
             <div className="flex flex-wrap gap-2 pt-2">
               {profile.customer.tags.map((tag) => (
-                <span key={tag} className="rounded-full border border-[#dfc5a8] bg-[#fff7ec] px-2.5 py-1 text-xs font-semibold shadow-sm">
+                <span key={tag} className="rounded-full border border-line-strong bg-cream px-2.5 py-1 text-xs font-semibold shadow-raised-sm">
                   {tag}
                 </span>
               ))}

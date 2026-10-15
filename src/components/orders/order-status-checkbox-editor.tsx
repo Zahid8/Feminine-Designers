@@ -49,12 +49,12 @@ export function OrderStatusCheckboxEditor({
   }
 
   return (
-    <div className="grid gap-3 rounded-md border border-[#ead8c3] bg-[#fff7ec] p-3 shadow-inner shadow-[#f5e3cf]/50">
+    <div className="grid gap-3 rounded-xl border border-line bg-cream p-3 shadow-pressed">
       <div>
-        <p className="mb-2 text-xs font-bold uppercase tracking-[0.08em] text-[#7c6d66]">Order status</p>
+        <p className="mb-2 text-xs font-bold uppercase tracking-[0.08em] text-muted">Order status</p>
         <div className="flex flex-wrap gap-2">
           {ORDER_STATUSES.map((choice) => (
-            <label key={choice} className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#dfc5a8] bg-white/95 px-2 text-xs font-semibold shadow-sm">
+            <label key={choice} className="inline-flex min-h-8 items-center gap-2 rounded-xl border border-line-strong bg-surface px-2 text-xs font-semibold shadow-raised-sm">
               <input
                 type="checkbox"
                 className="h-4 w-4"
@@ -68,10 +68,10 @@ export function OrderStatusCheckboxEditor({
         </div>
       </div>
       <div>
-        <p className="mb-2 text-xs font-bold uppercase tracking-[0.08em] text-[#7c6d66]">Payment status</p>
+        <p className="mb-2 text-xs font-bold uppercase tracking-[0.08em] text-muted">Payment status</p>
         <div className="flex flex-wrap gap-2">
           {paymentChoices.map((choice) => (
-            <label key={choice.value} className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#dfc5a8] bg-white/95 px-2 text-xs font-semibold shadow-sm">
+            <label key={choice.value} className="inline-flex min-h-8 items-center gap-2 rounded-xl border border-line-strong bg-surface px-2 text-xs font-semibold shadow-raised-sm">
               <input
                 type="checkbox"
                 className="h-4 w-4"
@@ -85,7 +85,7 @@ export function OrderStatusCheckboxEditor({
             </label>
           ))}
           {paymentStatus === "Partial" || paymentStatus === "Credit" ? (
-            <span className="inline-flex min-h-8 items-center rounded-md border border-amber-200 bg-amber-50 px-2 text-xs font-semibold text-amber-800">
+            <span className="inline-flex min-h-8 items-center rounded-xl border border-amber-200 bg-amber-50 px-2 text-xs font-semibold text-amber-800">
               Current: {paymentStatus}
             </span>
           ) : null}

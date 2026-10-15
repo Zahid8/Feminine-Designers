@@ -20,6 +20,7 @@ import type {
 export interface OrderFilters {
   query?: string;
   status?: OrderStatus | "All";
+  customerId?: string;
 }
 
 type OrderWithOverdueMeta = OrderWithCustomer & { overdue: boolean; daysOverdue: number };
@@ -110,7 +111,7 @@ interface SupabaseOrderRecord {
   order_date: string;
   delivery_date: string;
   assigned_tailor_name: string | null;
-  cloth_sample_image_url: string | null;
+  cloth_sample_image_url?: string | null;
   subtotal: string | number;
   item_discount_total: string | number;
   order_discount_amount: string | number;
@@ -278,24 +279,57 @@ function mapOrder(record: SupabaseOrderRecord): OrderWithCustomer {
   };
 }
 
-async function fetchSupabaseOrders() {
-  if (!hasSupabaseAdminEnv()) return undefined;
+// Cloth-sample photos are stored inline as data URLs and can be hundreds of KB each,
+// so list queries name their columns explicitly and leave the photo out. Only the
+// single-order fetch (detail page, receipts, edits) loads it.
+const ORDER_LIST_COLUMNS = [
+  "id",
+  "receipt_number",
+  "customer_id",
+  "status",
+  "priority",
+  "order_date",
+  "delivery_date",
+  "assigned_tailor_name",
+  "subtotal",
+  "item_discount_total",
+  "order_discount_amount",
+  "accessories_cost",
+  "stitching_cost",
+  "extra_cost",
+  "taxable_amount",
+  "cgst_rate",
+  "cgst_amount",
+  "sgst_rate",
+  "sgst_amount",
+  "grand_total",
+  "advance_paid",
+  "balance_due",
+  "payment_status",
+  "internal_notes",
+  "customer_notes",
+  "created_at",
+  "updated_at"
+].join(", ");
 
-  const admin = createSupabaseAdminClient();
-  const { data, error } = await admin
-    .from("orders")
-    .select(
-      `
-      *,
+const ORDER_RELATIONS = `
       customer:customers(*),
       items:order_items(*),
       measurements:order_measurements(*),
       payments(*),
       extra_costs:order_item_extra_costs(*),
       status_history:order_status_history(*)
-    `
-    )
-    .order("created_at", { ascending: false });
+    `;
+
+async function fetchSupabaseOrders(options: { orderId?: string; customerId?: string } = {}) {
+  if (!hasSupabaseAdminEnv()) return undefined;
+
+  const admin = createSupabaseAdminClient();
+  const columns = options.orderId ? `${ORDER_LIST_COLUMNS}, cloth_sample_image_url` : ORDER_LIST_COLUMNS;
+  let query = admin.from("orders").select(`${columns}, ${ORDER_RELATIONS}`);
+  if (options.orderId) query = query.eq("id", options.orderId);
+  if (options.customerId) query = query.eq("customer_id", options.customerId);
+  const { data, error } = await query.order("created_at", { ascending: false });
 
   if (error) {
     if (isMissingSupabaseSchemaError(error)) return undefined;
@@ -318,25 +352,26 @@ function withOverdueMeta(order: OrderWithCustomer): OrderWithOverdueMeta {
 }
 
 export async function listOrders(filters: OrderFilters = {}) {
-  const sourceOrders = (await fetchSupabaseOrders()) ?? getOrdersWithOverdueMeta();
+  const sourceOrders = (await fetchSupabaseOrders({ customerId: filters.customerId })) ?? getOrdersWithOverdueMeta();
   const normalized = filters.query?.trim().toLowerCase();
   return sortByDeliveryDate(
     sourceOrders
       .map(withOverdueMeta)
       .filter((order) => {
+      const customerMatch = !filters.customerId || order.customerId === filters.customerId;
       const statusMatch = !filters.status || filters.status === "All" || order.status === filters.status;
       const queryMatch =
         !normalized ||
         order.receiptNumber?.toLowerCase().includes(normalized) ||
         order.customer.fullName.toLowerCase().includes(normalized) ||
         order.customer.phonePrimary.includes(normalized);
-      return statusMatch && queryMatch;
+      return customerMatch && statusMatch && queryMatch;
       })
   );
 }
 
 export async function getOrderById(id: string) {
-  const sourceOrders = (await fetchSupabaseOrders()) ?? getOrdersWithOverdueMeta();
+  const sourceOrders = (await fetchSupabaseOrders({ orderId: id })) ?? getOrdersWithOverdueMeta();
   return sourceOrders
     .map((order) => ({
       ...order,

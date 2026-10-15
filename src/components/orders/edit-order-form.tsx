@@ -46,7 +46,7 @@ export function EditOrderForm({
           <select
             name="priority"
             defaultValue={order.priority}
-            className="h-10 w-full rounded-md border border-[#dfc5a8] bg-white/95 px-3 text-sm outline-none shadow-inner shadow-[#f5e3cf]/50 transition focus:border-[#d99a62] focus:ring-2 focus:ring-[#d99a62]/30"
+            className="h-11 w-full rounded-xl border border-transparent bg-surface-sunken px-3 text-sm text-ink shadow-pressed outline-none transition focus:border-gold focus:bg-surface-strong focus:ring-2 focus:ring-gold/30"
           >
             {priorityChoices.map((priority) => (
               <option key={priority} value={priority}>
@@ -63,31 +63,31 @@ export function EditOrderForm({
 
       <EditOrderItemsField items={order.items} />
 
-      <div className="rounded-md border border-[#ead8c3] bg-gradient-to-br from-white to-[#fffaf4] p-4 shadow-sm">
-        <p className="mb-3 text-sm font-bold text-[#4c1525]">Measurements</p>
+      <div className="rounded-xl border border-line bg-gradient-to-br from-white to-paper-warm p-4 shadow-raised-sm">
+        <p className="mb-3 text-sm font-bold text-wine-ink">Measurements</p>
         {order.measurements.length ? (
           <>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {order.measurements.map((measurement, index) => (
-                <label key={measurement.id} className="grid gap-1 rounded-md border border-[#ead8c3] bg-white/95 p-3 text-sm shadow-sm">
+                <label key={measurement.id} className="grid gap-1 rounded-xl border border-line bg-surface p-3 text-sm shadow-raised-sm">
                   <input type="hidden" name={`measurements.${index}.id`} value={measurement.id} />
                   <span className="flex items-center justify-between gap-2">
-                    <strong className="text-[#4c1525]">{measurement.displayCode}</strong>
-                    <span className="text-xs text-[#7c6d66]">{measurement.displayLabel}</span>
+                    <strong className="text-wine-ink">{measurement.displayCode}</strong>
+                    <span className="text-xs text-muted">{measurement.displayLabel}</span>
                   </span>
                   <Input name={`measurements.${index}.value`} defaultValue={measurement.value} inputMode="decimal" />
                 </label>
               ))}
             </div>
-            <label className="mt-3 grid gap-1.5 text-sm font-medium text-[#3b312d]">
-              <span className="text-xs font-bold uppercase tracking-[0.08em] text-[#6f352b]">Special Notes</span>
+            <label className="mt-3 grid gap-1.5 text-sm font-medium text-ink-soft">
+              <span className="text-xs font-bold uppercase tracking-[0.08em] text-label">Special Notes</span>
               <Textarea name="measurementNotes" defaultValue={specialNotes} />
             </label>
           </>
         ) : measurementTemplate ? (
           <MeasurementGrid template={measurementTemplate} editable valuePrefix="newMeasurement" metaPrefix="newMeasurementMeta" />
         ) : (
-          <div className="rounded-md border border-dashed border-[#dfc5a8] bg-[#fff7ec] p-6 text-center text-sm text-[#7c6d66]">
+          <div className="rounded-xl border border-dashed border-line-strong bg-cream p-6 text-center text-sm text-muted">
             No measurements are saved and no measurement template is available.
           </div>
         )}
@@ -101,7 +101,7 @@ export function EditOrderForm({
           <select
             name="paymentMethod"
             defaultValue={latestPayment?.method ?? "Cash"}
-            className="h-10 w-full rounded-md border border-[#dfc5a8] bg-white/95 px-3 text-sm outline-none shadow-inner shadow-[#f5e3cf]/50 transition focus:border-[#d99a62] focus:ring-2 focus:ring-[#d99a62]/30"
+            className="h-11 w-full rounded-xl border border-transparent bg-surface-sunken px-3 text-sm text-ink shadow-pressed outline-none transition focus:border-gold focus:bg-surface-strong focus:ring-2 focus:ring-gold/30"
           >
             {paymentMethodChoices.map((method) => (
               <option key={method} value={method}>
@@ -119,12 +119,12 @@ export function EditOrderForm({
         <Field label="Accessories cost">
           <Input name="accessoriesCostRupees" type="number" min={0} step="0.01" defaultValue={paiseToRupees(order.totals.accessoriesCostPaise)} />
         </Field>
-        <label className="grid gap-1.5 text-sm font-medium text-[#3b312d] md:col-span-2">
-          <span className="text-xs font-bold uppercase tracking-[0.08em] text-[#6f352b]">Customer notes</span>
+        <label className="grid gap-1.5 text-sm font-medium text-ink-soft md:col-span-2">
+          <span className="text-xs font-bold uppercase tracking-[0.08em] text-label">Customer notes</span>
           <Textarea name="customerNotes" defaultValue={order.customerNotes ?? ""} />
         </label>
-        <label className="grid gap-1.5 text-sm font-medium text-[#3b312d] md:col-span-2">
-          <span className="text-xs font-bold uppercase tracking-[0.08em] text-[#6f352b]">Internal notes</span>
+        <label className="grid gap-1.5 text-sm font-medium text-ink-soft md:col-span-2">
+          <span className="text-xs font-bold uppercase tracking-[0.08em] text-label">Internal notes</span>
           <Textarea name="internalNotes" defaultValue={order.internalNotes ?? ""} />
         </label>
       </div>

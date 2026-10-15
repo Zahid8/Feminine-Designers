@@ -40,11 +40,13 @@ function mapCustomer(record: SupabaseCustomerRecord): Customer {
   };
 }
 
-async function fetchSupabaseCustomers() {
+async function fetchSupabaseCustomers(customerId?: string) {
   if (!hasSupabaseAdminEnv()) return undefined;
 
   const admin = createSupabaseAdminClient();
-  const { data, error } = await admin.from("customers").select("*").is("archived_at", null).order("created_at", { ascending: false });
+  let query = admin.from("customers").select("*").is("archived_at", null);
+  if (customerId) query = query.eq("id", customerId);
+  const { data, error } = await query.order("created_at", { ascending: false });
 
   if (error) {
     if (isMissingSupabaseSchemaError(error)) return undefined;
@@ -67,14 +69,16 @@ export async function listCustomers(query?: string) {
 }
 
 export async function getCustomerById(id: string) {
-  const sourceCustomers = (await fetchSupabaseCustomers()) ?? customers;
+  const sourceCustomers = (await fetchSupabaseCustomers(id)) ?? customers;
   return sourceCustomers.find((customer) => customer.id === id);
 }
 
 export async function getCustomerProfile(id: string) {
-  const customer = await getCustomerById(id);
+  const [customer, sourceOrders] = await Promise.all([
+    getCustomerById(id),
+    hasSupabaseAdminEnv() ? listOrders({ customerId: id }) : Promise.resolve(orders)
+  ]);
   if (!customer) return undefined;
-  const sourceOrders = hasSupabaseAdminEnv() ? await listOrders() : orders;
   const customerOrders = sourceOrders.filter((order) => order.customerId === id);
   const latestMeasurements = customerOrders[0]?.measurements ?? [];
   const outstandingPaise = customerOrders.reduce((sum, order) => sum + Math.max(0, order.totals.balanceDuePaise), 0);

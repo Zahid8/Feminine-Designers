@@ -1,9 +1,8 @@
-import Link from "next/link";
 import { createCustomerAction } from "@/app/customers/new/actions";
 import { AppShell } from "@/components/layout/app-shell";
 import { MeasurementGrid } from "@/components/measurements/measurement-grid";
 import { PageHeading } from "@/components/shared/page-heading";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, Input, Textarea } from "@/components/ui/input";
 import { listMeasurementTemplates } from "@/services/measurements/measurement-service";
@@ -20,11 +19,7 @@ export default async function NewCustomerPage() {
         title="Add Customer"
         description="Create a customer profile with contact details and reusable measurements before making an order."
         action={
-          <Link href="/customers">
-            <Button type="button" variant="secondary">
-              Back to Customers
-            </Button>
-          </Link>
+          <ButtonLink href="/customers" variant="secondary">Back to Customers</ButtonLink>
         }
       />
       <form action={createCustomerAction} className="grid gap-5">
@@ -64,11 +59,7 @@ export default async function NewCustomerPage() {
         </Card>
 
         <div className="flex justify-end gap-2">
-          <Link href="/customers">
-            <Button type="button" variant="secondary">
-              Cancel
-            </Button>
-          </Link>
+          <ButtonLink href="/customers" variant="secondary">Cancel</ButtonLink>
           <Button type="submit">Save Customer</Button>
         </div>
       </form>

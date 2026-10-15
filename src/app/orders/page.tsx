@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeading } from "@/components/shared/page-heading";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Field, Input } from "@/components/ui/input";
+import { Field, Input, Select } from "@/components/ui/input";
 import { OrderTable } from "@/components/orders/order-table";
 import { listOrders } from "@/services/orders/order-service";
 import { isCompletedOrderForList, isPastOrderForList } from "@/lib/calculations/status";
@@ -39,11 +39,9 @@ export default async function OrdersPage({
     <AppShell>
       <PageHeading
         title="Orders"
-        description="Search by receipt number, customer name, or phone number. Filters are ready for server-side Supabase queries."
+        description="Search by receipt number, customer name, or phone number, and filter by order stage."
         action={
-          <Link href="/orders/new">
-            <Button>New Order</Button>
-          </Link>
+          <ButtonLink href="/orders/new">New Order</ButtonLink>
         }
       />
       <Card className="mb-5">
@@ -52,16 +50,11 @@ export default async function OrdersPage({
             <Input name="q" form="orders-filter" placeholder="Receipt, phone, customer" defaultValue={params.q ?? ""} />
           </Field>
           <Field label="Status">
-            <select
-              name="status"
-              form="orders-filter"
-              className="h-10 rounded-md border border-[#dfc5a8] bg-white/95 px-3 text-sm outline-none focus:border-[#d99a62] focus:ring-2 focus:ring-[#d99a62]/30"
-              defaultValue={params.status ?? "All"}
-            >
+            <Select name="status" form="orders-filter" defaultValue={params.status ?? "All"}>
               {["All", "Draft", "New", "In Stitching", "Ready", "Delivered", "Cancelled"].map((status) => (
                 <option key={status}>{status}</option>
               ))}
-            </select>
+            </Select>
           </Field>
           <form id="orders-filter" className="flex items-end">
             {selectedView !== "current" ? <input type="hidden" name="view" value={selectedView} /> : null}
@@ -69,7 +62,7 @@ export default async function OrdersPage({
           </form>
         </CardContent>
       </Card>
-      <div className="mb-4 flex flex-wrap gap-2">
+      <nav aria-label="Order lists" className="mb-5 inline-flex flex-wrap gap-1 rounded-2xl bg-surface-sunken p-1.5 shadow-pressed">
         {[
           ["current", "Current Orders", currentOrders.length],
           ["past", "Past Orders", pastOrders.length],
@@ -78,18 +71,17 @@ export default async function OrdersPage({
           <Link
             key={view}
             href={tabHref(view as OrdersView)}
+            aria-current={selectedView === view ? "page" : undefined}
             className={cn(
-              "inline-flex min-h-10 items-center gap-2 rounded-md border px-4 py-2 text-sm font-semibold",
-              selectedView === view
-                ? "border-[#7d1f36] bg-[#7d1f36] text-white"
-                : "border-[#dfc5a8] bg-white/95 text-[#2c2522] hover:border-[#d99a62] hover:bg-[#fff5ea]"
+              "inline-flex min-h-10 items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition",
+              selectedView === view ? "bg-gradient-to-br from-wine to-rose text-white shadow-brand" : "text-ink-soft hover:bg-surface hover:text-wine"
             )}
           >
             {label}
-            <span className={selectedView === view ? "text-white/80" : "text-[#7c6d66]"}>{count}</span>
+            <span className={cn("rounded-full px-2 py-0.5 text-xs", selectedView === view ? "bg-white/20 text-white" : "bg-surface text-muted")}>{count}</span>
           </Link>
         ))}
-      </div>
+      </nav>
       <OrderTable orders={visibleOrders} />
     </AppShell>
   );

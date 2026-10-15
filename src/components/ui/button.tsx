@@ -1,28 +1,31 @@
-import type { ButtonHTMLAttributes } from "react";
+import Link from "next/link";
+import type { ButtonHTMLAttributes, ComponentProps } from "react";
 import { cn } from "@/lib/utils/cn";
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
+
+export const buttonBaseClass =
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60";
+
+export const buttonVariantClasses: Record<ButtonVariant, string> = {
+  primary: "bg-gradient-to-br from-wine to-rose text-white shadow-brand hover:from-wine-hover hover:to-wine hover:shadow-lg active:shadow-md",
+  secondary: "border border-white/70 bg-surface text-ink shadow-raised-sm hover:text-wine active:shadow-pressed",
+  ghost: "text-wine-hover hover:bg-peach active:shadow-pressed",
+  danger: "bg-gradient-to-br from-danger to-[#c24a4a] text-white shadow-danger hover:from-[#8c2727] hover:to-danger"
+};
 
 export function Button({
   className,
   variant = "primary",
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant }) {
-  const variants: Record<ButtonVariant, string> = {
-    primary: "bg-gradient-to-r from-[#7d1f36] to-[#b84862] text-white shadow-[0_12px_24px_rgba(125,31,54,0.20)] hover:from-[#5d1428] hover:to-[#9f3953]",
-    secondary: "border border-[#e0c3a3] bg-white/90 text-[#2c2522] shadow-sm hover:border-[#d99a62] hover:bg-[#fff5ea]",
-    ghost: "text-[#5d1428] hover:bg-[#fff1df]",
-    danger: "bg-gradient-to-r from-[#a83232] to-[#c24a4a] text-white shadow-[0_12px_24px_rgba(168,50,50,0.18)] hover:from-[#8c2727] hover:to-[#a83232]"
-  };
+  return <button className={cn(buttonBaseClass, buttonVariantClasses[variant], className)} {...props} />;
+}
 
-  return (
-    <button
-      className={cn(
-        "inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d99a62] disabled:cursor-not-allowed disabled:opacity-60",
-        variants[variant],
-        className
-      )}
-      {...props}
-    />
-  );
+export function ButtonLink({
+  className,
+  variant = "primary",
+  ...props
+}: ComponentProps<typeof Link> & { variant?: ButtonVariant }) {
+  return <Link className={cn(buttonBaseClass, buttonVariantClasses[variant], className)} {...props} />;
 }

@@ -20,8 +20,8 @@ export function SummaryGrid({ summary }: { summary: DashboardSummary }) {
         return (
           <Card key={key}>
             <CardContent className="p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#7c6d66]">{label}</p>
-              <p className="mt-2 text-2xl font-bold text-[#4c1525]">{display}</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">{label}</p>
+              <p className="mt-2 text-2xl font-bold text-wine-ink">{display}</p>
             </CardContent>
           </Card>
         );

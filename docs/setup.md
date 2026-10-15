@@ -24,6 +24,8 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-public-anon-key
 SUPABASE_SERVICE_ROLE_KEY=server-only-service-role-key-do-not-expose
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+STAFF_PASSWORD=choose-a-strong-staff-password
+STAFF_SESSION_SECRET=long-random-session-secret
 ```
 
 ## Database

@@ -86,11 +86,14 @@ async function fetchProfileRows(customerId: string) {
 }
 
 export async function getCustomerMeasurementProfile(customerId: string): Promise<CustomerMeasurementProfile | undefined> {
-  const customer = await getCustomerById(customerId);
+  const [customer, customerOrders, records] = await Promise.all([
+    getCustomerById(customerId),
+    listOrders({ customerId }),
+    fetchProfileRows(customerId)
+  ]);
   if (!customer) return undefined;
 
-  const orders = (await listOrders()).filter((order) => order.customerId === customerId);
-  const records = await fetchProfileRows(customerId);
+  const orders = customerOrders.filter((order) => order.customerId === customerId);
   const sourceOrder = latestOrderWithMeasurements(orders);
   const manuallyEditedRows = records?.length ? manualProfileRows(records) : [];
   const values = manuallyEditedRows.length

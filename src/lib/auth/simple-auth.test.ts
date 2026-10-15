@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { AUTH_COOKIE_NAME, createStaffSessionValue, isStaffSession, validateStaffCredentials } from "./simple-auth";
 
 describe("simple staff auth", () => {
@@ -15,5 +15,19 @@ describe("simple staff auth", () => {
     expect(isStaffSession(sessionValue)).toBe(true);
     expect(isStaffSession("")).toBe(false);
     expect(isStaffSession("fd_staff_session")).toBe(false);
+  });
+});
+
+describe("simple staff auth with environment overrides", () => {
+  it("uses STAFF_PASSWORD and STAFF_SESSION_SECRET when configured", () => {
+    vi.stubEnv("STAFF_PASSWORD", "env-password");
+    vi.stubEnv("STAFF_SESSION_SECRET", "env-session-secret");
+
+    expect(validateStaffCredentials("saif", "env-password")).toBe(true);
+    expect(validateStaffCredentials("saif", "feminine@222")).toBe(false);
+    expect(createStaffSessionValue()).toBe("env-session-secret");
+    expect(isStaffSession("fd_staff_saif_authenticated_v1")).toBe(false);
+
+    vi.unstubAllEnvs();
   });
 });

@@ -32,11 +32,11 @@ export function EditOrderChoiceFields({
       <input type="hidden" name="status" value={selectedStatus} />
       {paymentOverride ? <input type="hidden" name="paymentStatus" value={paymentOverride} /> : null}
 
-      <div className="rounded-md border border-[#ead8c3] bg-gradient-to-br from-white to-[#fffaf4] p-4 shadow-sm">
-        <p className="mb-3 text-sm font-bold text-[#4c1525]">Order status</p>
+      <div className="rounded-xl border border-line bg-gradient-to-br from-white to-paper-warm p-4 shadow-raised-sm">
+        <p className="mb-3 text-sm font-bold text-wine-ink">Order status</p>
         <div className="flex flex-wrap gap-2">
           {ORDER_STATUSES.map((choice) => (
-            <label key={choice} className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#dfc5a8] bg-[#fff7ec] px-2 text-xs font-semibold">
+            <label key={choice} className="inline-flex min-h-8 items-center gap-2 rounded-xl border border-line-strong bg-cream px-2 text-xs font-semibold">
               <input
                 type="checkbox"
                 checked={selectedStatus === choice}
@@ -49,11 +49,11 @@ export function EditOrderChoiceFields({
         </div>
       </div>
 
-      <div className="rounded-md border border-[#ead8c3] bg-gradient-to-br from-white to-[#fffaf4] p-4 shadow-sm">
-        <p className="mb-3 text-sm font-bold text-[#4c1525]">Payment status</p>
+      <div className="rounded-xl border border-line bg-gradient-to-br from-white to-paper-warm p-4 shadow-raised-sm">
+        <p className="mb-3 text-sm font-bold text-wine-ink">Payment status</p>
         <div className="flex flex-wrap gap-2">
           {paymentChoices.map((choice) => (
-            <label key={choice.value} className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#dfc5a8] bg-[#fff7ec] px-2 text-xs font-semibold">
+            <label key={choice.value} className="inline-flex min-h-8 items-center gap-2 rounded-xl border border-line-strong bg-cream px-2 text-xs font-semibold">
               <input
                 type="checkbox"
                 checked={visiblePaymentStatus === choice.value}
@@ -66,7 +66,7 @@ export function EditOrderChoiceFields({
             </label>
           ))}
           {paymentStatus === "Partial" || paymentStatus === "Credit" ? (
-            <span className="inline-flex min-h-8 items-center rounded-md border border-amber-200 bg-amber-50 px-2 text-xs font-semibold text-amber-800">
+            <span className="inline-flex min-h-8 items-center rounded-xl border border-amber-200 bg-amber-50 px-2 text-xs font-semibold text-amber-800">
               Current: {paymentStatus}
             </span>
           ) : null}

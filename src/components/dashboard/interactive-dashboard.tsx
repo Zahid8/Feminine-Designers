@@ -27,10 +27,10 @@ const iconByCard: Record<DashboardViewId, ComponentType<{ className?: string }>>
 };
 
 const toneClasses: Record<DashboardCardModel["tone"], string> = {
-  neutral: "border-[#ead8c3] bg-gradient-to-br from-white to-[#fff4e8] hover:border-[#d99a62]",
-  good: "border-emerald-200 bg-gradient-to-br from-white to-emerald-50 hover:border-emerald-500",
-  warning: "border-amber-200 bg-gradient-to-br from-white to-amber-50 hover:border-amber-500",
-  danger: "border-red-200 bg-gradient-to-br from-white to-red-50 hover:border-red-500"
+  neutral: "bg-peach text-wine",
+  good: "bg-emerald-100 text-emerald-700",
+  warning: "bg-amber-100 text-amber-700",
+  danger: "bg-red-100 text-red-700"
 };
 
 function cardValue(card: DashboardCardModel) {
@@ -59,22 +59,24 @@ function MetricCard({
     <button
       type="button"
       onClick={onSelect}
+      aria-pressed={selected}
       className={cn(
-        "min-h-32 rounded-lg border p-4 text-left shadow-[0_18px_38px_rgba(76,21,37,0.08)] ring-1 ring-white/70 transition hover:-translate-y-0.5 hover:shadow-[0_24px_48px_rgba(76,21,37,0.12)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d99a62]",
-        toneClasses[card.tone],
-        selected && "border-[#7d1f36] ring-2 ring-[#7d1f36]/20"
+        "min-h-32 rounded-2xl border p-4 text-left transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold",
+        selected
+          ? "border-wine/30 bg-surface-sunken shadow-pressed"
+          : "border-white/70 bg-surface shadow-raised hover:-translate-y-0.5 hover:shadow-raised-lg"
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#7c6d66]">{card.label}</p>
-          <p className="mt-2 text-3xl font-bold text-[#4c1525]">{cardValue(card)}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">{card.label}</p>
+          <p className="mt-2 text-3xl font-bold text-wine-ink">{cardValue(card)}</p>
         </div>
-        <span className="rounded-md border border-white/80 bg-white/80 p-2 text-[#7d1f36] shadow-sm">
+        <span className={cn("rounded-xl p-2.5 shadow-raised-sm", toneClasses[card.tone])}>
           <Icon className="h-5 w-5" />
         </span>
       </div>
-      <p className="mt-3 text-sm font-medium text-[#6f625d]">{card.description}</p>
+      <p className="mt-3 text-sm font-medium text-muted-strong">{card.description}</p>
     </button>
   );
 }
@@ -95,21 +97,21 @@ function OrderQueue({
   onSetPaid: (orderId: string) => void;
 }) {
   if (orders.length === 0) {
-    return <div className="rounded-md border border-dashed border-[#dfc5a8] bg-white/90 p-8 text-center text-sm text-[#7c6d66] shadow-sm">{emptyText}</div>;
+    return <div className="rounded-xl border border-dashed border-line-strong bg-surface p-8 text-center text-sm text-muted shadow-raised-sm">{emptyText}</div>;
   }
 
   return (
     <div className="grid gap-3">
       {orders.map((order) => (
-        <div key={order.id} className="rounded-md border border-[#ead8c3] bg-white/95 p-4 shadow-sm transition hover:border-[#d99a62] hover:shadow-[0_14px_32px_rgba(76,21,37,0.08)]">
+        <div key={order.id} className="rounded-xl border border-line bg-surface p-4 shadow-raised-sm transition hover:border-gold hover:shadow-raised">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#7c6d66]">{order.receiptNumber ?? "Draft"}</p>
-              <h3 className="mt-1 text-lg font-semibold text-[#4c1525]">{order.customer.fullName}</h3>
-              <p className="text-sm text-[#7c6d66]">{order.customer.phonePrimary}</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">{order.receiptNumber ?? "Draft"}</p>
+              <h3 className="mt-1 text-lg font-semibold text-wine-ink">{order.customer.fullName}</h3>
+              <p className="text-sm text-muted">{order.customer.phonePrimary}</p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <label className="inline-flex min-h-8 items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-2 text-xs font-semibold text-emerald-800">
+              <label className="inline-flex min-h-8 items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-2 text-xs font-semibold text-emerald-800">
                 <input
                   type="checkbox"
                   className="h-4 w-4"
@@ -122,7 +124,7 @@ function OrderQueue({
                 />
                 Paid
               </label>
-              <label className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#dfc5a8] bg-white/95 px-2 text-xs font-semibold text-[#4c1525] shadow-sm">
+              <label className="inline-flex min-h-8 items-center gap-2 rounded-xl border border-line-strong bg-surface px-2 text-xs font-semibold text-wine-ink shadow-raised-sm">
                 <input
                   type="checkbox"
                   className="h-4 w-4"
@@ -140,28 +142,28 @@ function OrderQueue({
           </div>
           <div className="mt-4 grid gap-3 text-sm md:grid-cols-[1.4fr_1fr_1fr_1fr_1fr_auto] md:items-center">
             <p>
-              <span className="block text-xs uppercase text-[#7c6d66]">Garments</span>
+              <span className="block text-xs uppercase text-muted">Garments</span>
               <strong>{garmentSummary(order) || "No garments"}</strong>
             </p>
             <p>
-              <span className="block text-xs uppercase text-[#7c6d66]">Order date</span>
+              <span className="block text-xs uppercase text-muted">Order date</span>
               <strong>{formatDate(order.orderDate)}</strong>
             </p>
             <p>
-              <span className="block text-xs uppercase text-[#7c6d66]">Delivery</span>
-              <strong className={order.overdue ? "text-[#a83232]" : ""}>{formatDate(order.deliveryDate)}</strong>
+              <span className="block text-xs uppercase text-muted">Delivery</span>
+              <strong className={order.overdue ? "text-danger" : ""}>{formatDate(order.deliveryDate)}</strong>
             </p>
             <p>
-              <span className="block text-xs uppercase text-[#7c6d66]">Paid</span>
+              <span className="block text-xs uppercase text-muted">Paid</span>
               <strong>{formatINR(paidAmount(order))}</strong>
             </p>
             <p>
-              <span className="block text-xs uppercase text-[#7c6d66]">Balance</span>
+              <span className="block text-xs uppercase text-muted">Balance</span>
               <strong>{formatINR(order.totals.balanceDuePaise)}</strong>
             </p>
             <Link
               href={`/orders/${order.id}`}
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-[#dfc5a8] bg-white/95 px-3 py-2 text-sm font-semibold text-[#4c1525] shadow-sm transition hover:border-[#d99a62] hover:bg-[#fff5ea]"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-line-strong bg-surface px-3 py-2 text-sm font-semibold text-wine-ink shadow-raised-sm transition hover:border-gold hover:bg-blush"
             >
               Open
               <ArrowRight className="h-4 w-4" />
@@ -189,21 +191,21 @@ function PaymentQueue({
   const visiblePayments = payments.filter((payment) => !hiddenPaymentIds.includes(payment.id));
 
   if (visiblePayments.length === 0) {
-    return <div className="rounded-md border border-dashed border-[#dfc5a8] bg-white/90 p-8 text-center text-sm text-[#7c6d66] shadow-sm">{emptyText}</div>;
+    return <div className="rounded-xl border border-dashed border-line-strong bg-surface p-8 text-center text-sm text-muted shadow-raised-sm">{emptyText}</div>;
   }
 
   return (
     <div className="grid gap-3">
       {visiblePayments.map((payment) => (
-        <div key={payment.id} className="rounded-md border border-[#ead8c3] bg-white/95 p-4 shadow-sm transition hover:border-[#d99a62] hover:shadow-[0_14px_32px_rgba(76,21,37,0.08)]">
+        <div key={payment.id} className="rounded-xl border border-line bg-surface p-4 shadow-raised-sm transition hover:border-gold hover:shadow-raised">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#7c6d66]">{payment.receiptNumber}</p>
-              <h3 className="mt-1 text-lg font-semibold text-[#4c1525]">{payment.customerName}</h3>
-              <p className="text-sm text-[#7c6d66]">{payment.customerPhone}</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">{payment.receiptNumber}</p>
+              <h3 className="mt-1 text-lg font-semibold text-wine-ink">{payment.customerName}</h3>
+              <p className="text-sm text-muted">{payment.customerPhone}</p>
             </div>
             <div className="flex flex-wrap items-center justify-end gap-3 text-right">
-              <label className="inline-flex min-h-8 items-center gap-2 rounded-md border border-[#dfc5a8] bg-white/95 px-2 text-xs font-semibold text-[#4c1525] shadow-sm">
+              <label className="inline-flex min-h-8 items-center gap-2 rounded-xl border border-line-strong bg-surface px-2 text-xs font-semibold text-wine-ink shadow-raised-sm">
                 <input
                   type="checkbox"
                   className="h-4 w-4"
@@ -218,13 +220,13 @@ function PaymentQueue({
               </label>
               <Link
                 href={`/orders/${payment.orderId}`}
-                className="inline-flex min-h-9 items-center justify-center rounded-md border border-[#dfc5a8] bg-white/95 px-3 py-1.5 text-sm font-semibold text-[#4c1525] shadow-sm transition hover:border-[#d99a62] hover:bg-[#fff5ea]"
+                className="inline-flex min-h-9 items-center justify-center rounded-xl border border-line-strong bg-surface px-3 py-1.5 text-sm font-semibold text-wine-ink shadow-raised-sm transition hover:border-gold hover:bg-blush"
               >
                 Open
               </Link>
               <div>
-              <p className="text-2xl font-bold text-[#4c1525]">{formatINR(payment.amountPaise)}</p>
-              <p className="text-sm text-[#7c6d66]">
+              <p className="text-2xl font-bold text-wine-ink">{formatINR(payment.amountPaise)}</p>
+              <p className="text-sm text-muted">
                 {payment.method} · {formatDateTime(payment.paidAt)}
               </p>
               </div>
@@ -256,15 +258,15 @@ function MiniOrderList({
       <CardContent className="grid gap-2 p-4">
         {sortedOrders.length ? (
           sortedOrders.map((order) => (
-            <Link key={order.id} href={`/orders/${order.id}`} className="rounded-md border border-[#ead8c3] bg-white/95 p-3 shadow-sm transition hover:border-[#d99a62] hover:bg-[#fffaf4]">
-              <p className="font-semibold text-[#4c1525]">{order.customer.fullName}</p>
-              <p className="text-xs text-[#7c6d66]">
+            <Link key={order.id} href={`/orders/${order.id}`} className="rounded-xl border border-line bg-surface p-3 shadow-raised-sm transition hover:border-gold hover:bg-paper-warm">
+              <p className="font-semibold text-wine-ink">{order.customer.fullName}</p>
+              <p className="text-xs text-muted">
                 {order.receiptNumber ?? "Draft"} · {formatDate(order.deliveryDate)} · {formatINR(order.totals.balanceDuePaise)}
               </p>
             </Link>
           ))
         ) : (
-          <p className="text-sm text-[#7c6d66]">{emptyText}</p>
+          <p className="text-sm text-muted">{emptyText}</p>
         )}
       </CardContent>
     </Card>
@@ -280,16 +282,16 @@ function MiniPaymentList({ payments }: { payments: DashboardPaymentRow[] }) {
       <CardContent className="grid gap-2 p-4">
         {payments.length ? (
           payments.map((payment) => (
-            <Link key={payment.id} href={`/orders/${payment.orderId}`} className="flex justify-between gap-3 rounded-md border border-[#ead8c3] bg-white/95 p-3 shadow-sm transition hover:border-[#d99a62] hover:bg-[#fffaf4]">
+            <Link key={payment.id} href={`/orders/${payment.orderId}`} className="flex justify-between gap-3 rounded-xl border border-line bg-surface p-3 shadow-raised-sm transition hover:border-gold hover:bg-paper-warm">
               <span>
-                <strong className="block text-[#4c1525]">{payment.customerName}</strong>
-                <span className="text-xs text-[#7c6d66]">{payment.method}</span>
+                <strong className="block text-wine-ink">{payment.customerName}</strong>
+                <span className="text-xs text-muted">{payment.method}</span>
               </span>
               <strong>{formatINR(payment.amountPaise)}</strong>
             </Link>
           ))
         ) : (
-          <p className="text-sm text-[#7c6d66]">No recent collections.</p>
+          <p className="text-sm text-muted">No recent collections.</p>
         )}
       </CardContent>
     </Card>
@@ -309,18 +311,18 @@ function CollectionChart({ days }: { days: DashboardCollectionDay[] }) {
           days.map((day) => (
             <div key={day.date} className="grid gap-1">
               <div className="flex items-center justify-between gap-3 text-xs">
-                <span className="font-semibold text-[#4c1525]">{formatDate(day.date)}</span>
-                <span className="text-[#7c6d66]">
+                <span className="font-semibold text-wine-ink">{formatDate(day.date)}</span>
+                <span className="text-muted">
                   {formatINR(day.totalPaise)} · {day.paymentCount}
                 </span>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-[#f1ddc5]">
-                <div className="h-full rounded-full bg-gradient-to-r from-[#7d1f36] to-[#d99a62]" style={{ width: `${Math.max(8, (day.totalPaise / maxValue) * 100)}%` }} />
+                <div className="h-full rounded-full bg-gradient-to-r from-wine to-gold" style={{ width: `${Math.max(8, (day.totalPaise / maxValue) * 100)}%` }} />
               </div>
             </div>
           ))
         ) : (
-          <p className="text-sm text-[#7c6d66]">No collections recorded.</p>
+          <p className="text-sm text-muted">No collections recorded.</p>
         )}
       </CardContent>
     </Card>
@@ -412,13 +414,13 @@ export function InteractiveDashboard({ model }: { model: DashboardModel }) {
           <CardHeader className="flex flex-col gap-2 p-5 md:flex-row md:items-start md:justify-between">
             <div>
               <CardTitle>Interactive Work Queue</CardTitle>
-              <p className="mt-1 text-sm text-[#7c6d66]">
+              <p className="mt-1 text-sm text-muted">
                 {selectedView.title} · {selectedView.description}
               </p>
             </div>
             {selectedCard ? (
               <div className="flex flex-wrap items-center gap-2">
-                <label className="inline-flex min-h-10 items-center gap-2 rounded-md border border-[#dfc5a8] bg-white/95 px-3 text-xs font-semibold text-[#4c1525] shadow-sm">
+                <label className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-line-strong bg-surface px-3 text-xs font-semibold text-wine-ink shadow-raised-sm">
                   Sort by
                   <select
                     aria-label="Sort dashboard orders by"
@@ -433,7 +435,7 @@ export function InteractiveDashboard({ model }: { model: DashboardModel }) {
                     ))}
                   </select>
                 </label>
-                <span className="inline-flex min-h-10 items-center rounded-md border border-[#dfc5a8] bg-white/95 px-3 text-sm font-bold text-[#4c1525] shadow-sm">
+                <span className="inline-flex min-h-10 items-center rounded-xl border border-line-strong bg-surface px-3 text-sm font-bold text-wine-ink shadow-raised-sm">
                   {selectedCard.valueType === "money" ? formatINR(selectedCard.value) : `${selectedCount} item${selectedCount === 1 ? "" : "s"}`}
                 </span>
               </div>
@@ -466,8 +468,8 @@ export function InteractiveDashboard({ model }: { model: DashboardModel }) {
             <CardContent className="flex items-start gap-3 p-4">
               <CheckCircle2 className="mt-1 h-5 w-5 text-emerald-700" />
               <div>
-                <p className="font-semibold text-[#4c1525]">Today at a glance</p>
-                <p className="mt-1 text-sm text-[#6f625d]">
+                <p className="font-semibold text-wine-ink">Today at a glance</p>
+                <p className="mt-1 text-sm text-muted-strong">
                   {model.views["deliveries-today"].orders.length} due today, {model.views.overdue.orders.length} overdue,{" "}
                   {formatINR(model.cards.find((card) => card.id === "collected-today")?.value ?? 0)} collected.
                 </p>

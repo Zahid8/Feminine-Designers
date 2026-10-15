@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
-describe("Boutique Ledger visual system", () => {
-  it("applies premium boutique styling to shared surfaces", () => {
+describe("Soft boutique visual system", () => {
+  it("applies neumorphic tokens to shared surfaces", () => {
     render(
       <>
         <PageHeading title="Orders" description="Manage orders" />
@@ -18,9 +18,10 @@ describe("Boutique Ledger visual system", () => {
       </>
     );
 
-    expect(screen.getByRole("heading", { name: "Orders" }).className).toContain("text-[#3f0f20]");
-    expect(screen.getByTestId("card").className).toContain("shadow-[0_18px_45px_rgba(76,21,37,0.08)]");
-    expect(screen.getByRole("button", { name: "Save" }).className).toContain("bg-gradient-to-r");
-    expect(screen.getByLabelText("Customer name").className).toContain("focus:ring-[#d99a62]/30");
+    expect(screen.getByRole("heading", { name: "Orders" }).className).toContain("text-wine-deep");
+    expect(screen.getByTestId("card").className).toContain("shadow-raised");
+    expect(screen.getByRole("button", { name: "Save" }).className).toContain("shadow-brand");
+    expect(screen.getByLabelText("Customer name").className).toContain("shadow-pressed");
+    expect(screen.getByLabelText("Customer name").className).toContain("focus:ring-gold/30");
   });
 });

@@ -50,24 +50,24 @@ export function EditOrderItemsField({ items }: { items: OrderItem[] }) {
     <div className="grid gap-3">
       <input type="hidden" name="items.intent" value="replace" />
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm font-bold text-[#4c1525]">Garment Items</p>
+        <p className="text-sm font-bold text-wine-ink">Garment Items</p>
         <Button type="button" variant="secondary" onClick={addDress} aria-label="Add dress">
           <Plus className="h-4 w-4" />
           Add Dress
         </Button>
       </div>
       {editableItems.map((item, index) => (
-        <div key={item.formKey} className="rounded-md border border-[#ead8c3] bg-gradient-to-br from-white to-[#fffaf4] p-4 shadow-sm">
+        <div key={item.formKey} className="rounded-xl border border-line bg-gradient-to-br from-white to-paper-warm p-4 shadow-raised-sm">
           <input type="hidden" name={`items.${index}.id`} value={item.id ?? ""} />
           <div className="mb-3 flex items-center justify-between gap-3">
-            <p className="text-sm font-bold text-[#4c1525]">Dress {index + 1}</p>
+            <p className="text-sm font-bold text-wine-ink">Dress {index + 1}</p>
             <Button
               type="button"
               variant="ghost"
               onClick={() => deleteDress(item.formKey)}
               aria-label={`Delete dress ${index + 1}`}
               disabled={editableItems.length <= 1}
-              className="min-h-8 px-2 text-[#a83232] hover:bg-red-50"
+              className="min-h-8 px-2 text-danger hover:bg-red-50"
             >
               <X className="h-4 w-4" />
             </Button>
@@ -118,8 +118,8 @@ export function EditOrderItemsField({ items }: { items: OrderItem[] }) {
             <Field label="Design reference">
               <Input name={`items.${index}.designReference`} defaultValue={item.designReference ?? ""} />
             </Field>
-            <label className="grid gap-1.5 text-sm font-medium text-[#3b312d] lg:col-span-4">
-              <span className="text-xs font-bold uppercase tracking-[0.08em] text-[#6f352b]">Stitching instructions</span>
+            <label className="grid gap-1.5 text-sm font-medium text-ink-soft lg:col-span-4">
+              <span className="text-xs font-bold uppercase tracking-[0.08em] text-label">Stitching instructions</span>
               <Textarea name={`items.${index}.stitchingInstructions`} defaultValue={item.stitchingInstructions ?? ""} />
             </label>
           </div>

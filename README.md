@@ -214,6 +214,20 @@ NEXT_PUBLIC_APP_URL=https://your-vercel-app.vercel.app
 
 Use it for links, redirects, emails, or future WhatsApp/reminder workflows.
 
+#### `STAFF_PASSWORD` and `STAFF_SESSION_SECRET`
+
+These control the staff login at `/login` (username `saif`).
+
+```env
+STAFF_PASSWORD=choose-a-strong-staff-password
+STAFF_SESSION_SECRET=long-random-session-secret
+```
+
+- `STAFF_PASSWORD` is the password staff type on the login screen.
+- `STAFF_SESSION_SECRET` is the value stored in the `fd_staff_session` cookie. Generate it with `openssl rand -hex 32`. Changing it logs everyone out.
+
+Both are server-only. If they are missing, the app falls back to the old built-in values, which are visible in this public repository's history, so always set both in production.
+
 ## Create `.env.local`
 
 Copy the example file:
@@ -229,6 +243,8 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-public-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+STAFF_PASSWORD=choose-a-strong-staff-password
+STAFF_SESSION_SECRET=long-random-session-secret
 ```
 
 After changing `.env.local`, restart the dev server:
@@ -546,11 +562,17 @@ NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 SUPABASE_SERVICE_ROLE_KEY=...
 NEXT_PUBLIC_APP_URL=https://your-production-domain.com
+STAFF_PASSWORD=...
+STAFF_SESSION_SECRET=...
 ```
 
 4. Deploy.
 5. In Supabase, make sure the database migration and seed have been applied.
 6. Create admin/staff Auth users and matching `profiles` rows.
+
+### Function region
+
+`vercel.json` pins server functions to `sin1` (Singapore) because the Supabase project runs in AWS `ap-southeast-1`. Keeping functions next to the database avoids a cross-Pacific round trip on every query. If the Supabase project ever moves, update `regions` in `vercel.json` to the closest Vercel region.
 
 ## Current Important Note
 

@@ -68,15 +68,15 @@ export function ClothSamplePhotoField({ currentImageUrl }: { currentImageUrl?: s
   }
 
   return (
-    <div className="grid gap-3 rounded-md border border-[#ead8c3] bg-gradient-to-br from-white to-[#fffaf4] p-4 shadow-sm">
+    <div className="grid gap-3 rounded-xl border border-line bg-gradient-to-br from-white to-paper-warm p-4 shadow-raised-sm">
       <input type="hidden" name="clothSampleDataUrl" value={remove ? "" : dataUrl} />
       {remove ? <input type="hidden" name="removeClothSample" value="1" /> : null}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-bold text-[#4c1525]">Cloth sample photo</p>
-          <p className="text-xs text-[#7c6d66]">Replace or remove the store-copy cloth reference.</p>
+          <p className="text-sm font-bold text-wine-ink">Cloth sample photo</p>
+          <p className="text-xs text-muted">Replace or remove the store-copy cloth reference.</p>
         </div>
-        <label className="inline-flex min-h-10 cursor-pointer items-center justify-center rounded-md border border-[#dfc5a8] bg-white px-4 py-2 text-sm font-semibold text-[#2c2522] shadow-sm transition hover:border-[#d99a62] hover:bg-[#fff5ea]">
+        <label className="inline-flex min-h-10 cursor-pointer items-center justify-center rounded-xl border border-line-strong bg-surface px-4 py-2 text-sm font-semibold text-ink shadow-raised-sm transition hover:border-gold hover:bg-blush">
           Choose photo
           <input
             type="file"
@@ -88,14 +88,14 @@ export function ClothSamplePhotoField({ currentImageUrl }: { currentImageUrl?: s
         </label>
       </div>
       <div className="grid gap-3 md:grid-cols-[220px_1fr] md:items-start">
-        <div className="flex min-h-36 items-center justify-center overflow-hidden rounded-md border border-dashed border-[#dfc5a8] bg-[#fff1df]">
+        <div className="flex min-h-36 items-center justify-center overflow-hidden rounded-xl border border-dashed border-line-strong bg-peach">
           {preview && !remove ? (
             <Image src={preview} alt="Cloth sample preview" width={220} height={150} unoptimized className="max-h-44 w-full object-cover" />
           ) : (
-            <span className="px-4 text-center text-sm text-[#7c6d66]">No cloth sample photo</span>
+            <span className="px-4 text-center text-sm text-muted">No cloth sample photo</span>
           )}
         </div>
-        <label className="inline-flex items-center gap-2 text-sm font-semibold text-[#4c1525]">
+        <label className="inline-flex items-center gap-2 text-sm font-semibold text-wine-ink">
           <input
             type="checkbox"
             className="h-4 w-4"
@@ -110,7 +110,7 @@ export function ClothSamplePhotoField({ currentImageUrl }: { currentImageUrl?: s
           Remove current cloth sample
         </label>
       </div>
-      {error ? <p className="text-sm font-semibold text-[#a83232]">{error}</p> : null}
+      {error ? <p className="text-sm font-semibold text-danger">{error}</p> : null}
     </div>
   );
 }

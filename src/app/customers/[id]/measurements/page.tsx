@@ -1,10 +1,9 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { updateCustomerMeasurementsAction } from "@/app/customers/[id]/measurements/actions";
 import { AppShell } from "@/components/layout/app-shell";
 import { MeasurementGrid } from "@/components/measurements/measurement-grid";
 import { PageHeading } from "@/components/shared/page-heading";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, Input } from "@/components/ui/input";
 import { getCustomerMeasurementProfile } from "@/services/customers/customer-measurement-service";
@@ -32,15 +31,9 @@ export default async function CustomerMeasurementsPage({
         }`}
         action={
           <div className="flex flex-wrap gap-2">
-            <Link href={`/customers/${id}`}>
-              <Button type="button" variant="secondary">
-                Open Customer
-              </Button>
-            </Link>
+            <ButtonLink href={`/customers/${id}`} variant="secondary">Open Customer</ButtonLink>
             {!editing ? (
-              <Link href={`/customers/${id}/measurements?edit=1`}>
-                <Button type="button">Edit Measurements</Button>
-              </Link>
+              <ButtonLink href={`/customers/${id}/measurements?edit=1`}>Edit Measurements</ButtonLink>
             ) : null}
           </div>
         }
@@ -61,11 +54,7 @@ export default async function CustomerMeasurementsPage({
                 </div>
                 <MeasurementGrid values={profile.values} editable />
                 <div className="flex flex-wrap justify-end gap-2">
-                  <Link href={`/customers/${id}/measurements`}>
-                    <Button type="button" variant="secondary">
-                      Cancel
-                    </Button>
-                  </Link>
+                  <ButtonLink href={`/customers/${id}/measurements`} variant="secondary">Cancel</ButtonLink>
                   <Button type="submit">Save Measurements</Button>
                 </div>
               </form>
@@ -73,7 +62,7 @@ export default async function CustomerMeasurementsPage({
               <MeasurementGrid values={profile.values} />
             )
           ) : (
-            <div className="rounded-md border border-dashed border-[#dfc5a8] bg-white/90 p-8 text-center text-sm text-[#7c6d66] shadow-sm">
+            <div className="rounded-xl border border-dashed border-line-strong bg-surface p-8 text-center text-sm text-muted shadow-raised-sm">
               No saved measurements found for this customer yet.
             </div>
           )}

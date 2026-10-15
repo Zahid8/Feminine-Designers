@@ -13,7 +13,7 @@ describe("AppShellFrame", () => {
     const sidebar = screen.getByLabelText(/primary navigation/i);
     const toggle = screen.getByRole("button", { name: /hide sidebar/i });
 
-    expect(sidebar.className).toContain("from-[#fffdfa]");
+    expect(sidebar.className).toContain("shadow-raised");
     expect(toggle.getAttribute("aria-expanded")).toBe("true");
     expect(toggle.innerHTML).toContain("M4 12h16");
     expect(sidebar.className).not.toContain("w-0");
