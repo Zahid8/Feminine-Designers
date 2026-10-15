@@ -278,30 +278,18 @@ For a brand-new empty Supabase project, use the single setup file:
 6. Run it.
 7. Confirm the final result shows `create_order_from_payload(jsonb)`.
 
-If you prefer to run the files one by one:
+If you prefer to run the files one by one, open **SQL Editor** and run each file below in order, one query per file:
 
-1. Open Supabase dashboard.
-2. Open your project.
-3. Go to **SQL Editor**.
-4. Create a new query.
-5. Paste the full contents of `supabase/migrations/202607010001_initial_schema.sql`.
-6. Run it.
-7. Create another query.
-8. Paste the full contents of `supabase/migrations/202607010002_order_save_rpc_and_cloth_sample.sql`.
-9. Run it.
-10. Create another query.
-11. Paste the full contents of `supabase/migrations/202607010003_settings_driven_templates_and_garments.sql`.
-12. Run it.
-13. Create another query.
-14. Paste the full contents of `supabase/migrations/202607010004_reload_postgrest_schema.sql`.
-15. Run it.
-16. Paste the full contents of `supabase/migrations/202607010005_order_delete_profile_fk.sql`.
-17. Run it.
-18. Paste the full contents of `supabase/migrations/202607010006_item_stitching_cost.sql`.
-19. Run it.
-16. Create another query.
-17. Paste the full contents of `supabase/seed.sql`.
-18. Run it.
+1. `supabase/migrations/202607010001_initial_schema.sql`
+2. `supabase/migrations/202607010002_order_save_rpc_and_cloth_sample.sql`
+3. `supabase/migrations/202607010003_settings_driven_templates_and_garments.sql`
+4. `supabase/migrations/202607010004_reload_postgrest_schema.sql`
+5. `supabase/migrations/202607010005_order_delete_profile_fk.sql`
+6. `supabase/migrations/202607010006_item_stitching_cost.sql`
+7. `supabase/migrations/202607020001_item_fabric_dye_cost.sql`
+8. `supabase/migrations/202607020002_order_item_extra_costs.sql`
+9. `supabase/migrations/202610150001_cloth_sample_storage_bucket.sql`
+10. `supabase/seed.sql`
 
 To verify the save-order RPC exists, run this in SQL Editor:
 
@@ -569,6 +557,19 @@ STAFF_SESSION_SECRET=...
 4. Deploy.
 5. In Supabase, make sure the database migration and seed have been applied.
 6. Create admin/staff Auth users and matching `profiles` rows.
+
+### Cloth-sample photo storage
+
+Cloth-sample photos are uploaded to the public Supabase Storage bucket `cloth-samples` and the order stores the photo URL. Create the bucket once by running `supabase/migrations/202610150001_cloth_sample_storage_bucket.sql` in the SQL Editor (it is already included in `setup_full_database.sql`). Until the bucket exists, new photos are still saved inline in the order row, so nothing breaks.
+
+Orders saved before this change keep their photo inline. Move them into Storage with the one-time script (dry run first, then apply):
+
+```bash
+node --env-file=.env.local scripts/migrate-cloth-samples.mjs          # read-only preview
+node --env-file=.env.local scripts/migrate-cloth-samples.mjs --apply  # uploads and updates rows
+```
+
+`--apply` writes a backup of the original values to `.migration-backups/` (git-ignored) before changing anything.
 
 ### Function region
 

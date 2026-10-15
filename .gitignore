@@ -10,3 +10,6 @@ coverage
 .worktrees
 worktrees
 .superpowers
+
+# Local backups written by one-off data migration scripts
+.migration-backups/

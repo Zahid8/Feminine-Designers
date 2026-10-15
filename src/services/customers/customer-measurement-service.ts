@@ -6,6 +6,7 @@ import type { Customer, MeasurementValue, OrderWithCustomer } from "@/types/doma
 
 interface CustomerMeasurementProfileRecord {
   id: string;
+  customer_id?: string;
   field_key: string;
   value: string;
   unit: string;
@@ -67,15 +68,13 @@ function buildProfileValues(records: CustomerMeasurementProfileRecord[], sourceO
     .sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
-async function fetchProfileRows(customerId: string) {
+async function fetchProfileRows(customerIds: string[]) {
   if (!hasSupabaseAdminEnv()) return undefined;
 
   const admin = createSupabaseAdminClient();
-  const { data, error } = await admin
-    .from("customer_measurement_profiles")
-    .select("id,field_key,value,unit,source_order_id,updated_at")
-    .eq("customer_id", customerId)
-    .order("updated_at", { ascending: false });
+  const query = admin.from("customer_measurement_profiles").select("id,customer_id,field_key,value,unit,source_order_id,updated_at");
+  const filtered = customerIds.length === 1 ? query.eq("customer_id", customerIds[0]) : query.in("customer_id", customerIds);
+  const { data, error } = await filtered.order("updated_at", { ascending: false });
 
   if (error) {
     if (isMissingSupabaseSchemaError(error)) return undefined;
@@ -85,15 +84,12 @@ async function fetchProfileRows(customerId: string) {
   return data as CustomerMeasurementProfileRecord[];
 }
 
-export async function getCustomerMeasurementProfile(customerId: string): Promise<CustomerMeasurementProfile | undefined> {
-  const [customer, customerOrders, records] = await Promise.all([
-    getCustomerById(customerId),
-    listOrders({ customerId }),
-    fetchProfileRows(customerId)
-  ]);
-  if (!customer) return undefined;
-
-  const orders = customerOrders.filter((order) => order.customerId === customerId);
+function buildMeasurementProfile(
+  customer: Customer,
+  customerOrders: OrderWithCustomer[],
+  records: CustomerMeasurementProfileRecord[] | undefined
+): CustomerMeasurementProfile {
+  const orders = customerOrders.filter((order) => order.customerId === customer.id);
   const sourceOrder = latestOrderWithMeasurements(orders);
   const manuallyEditedRows = records?.length ? manualProfileRows(records) : [];
   const values = manuallyEditedRows.length
@@ -106,6 +102,33 @@ export async function getCustomerMeasurementProfile(customerId: string): Promise
     sourceOrder,
     sourceOrderId: sourceOrder?.id
   };
+}
+
+export async function getCustomerMeasurementProfile(customerId: string): Promise<CustomerMeasurementProfile | undefined> {
+  const [customer, customerOrders, records] = await Promise.all([
+    getCustomerById(customerId),
+    listOrders({ customerId }),
+    fetchProfileRows([customerId])
+  ]);
+  if (!customer) return undefined;
+
+  return buildMeasurementProfile(customer, customerOrders, records);
+}
+
+/** Builds profiles for several customers with one orders query and one profile-rows query. */
+export async function getCustomerMeasurementProfiles(customers: Customer[]): Promise<CustomerMeasurementProfile[]> {
+  if (customers.length === 0) return [];
+
+  const customerIds = customers.map((customer) => customer.id);
+  const [orders, records] = await Promise.all([listOrders({ customerIds }), fetchProfileRows(customerIds)]);
+
+  return customers.map((customer) =>
+    buildMeasurementProfile(
+      customer,
+      orders,
+      records?.filter((record) => (record.customer_id ?? customer.id) === customer.id)
+    )
+  );
 }
 
 function measurementRows(customerId: string, values: MeasurementValue[]) {

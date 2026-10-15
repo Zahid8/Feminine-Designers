@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { listCustomers } from "@/services/customers/customer-service";
-import { getCustomerMeasurementProfile } from "@/services/customers/customer-measurement-service";
+import { getCustomerMeasurementProfiles } from "@/services/customers/customer-measurement-service";
 import type { ReturningCustomerMatch } from "@/types/customer-search";
 
 export async function GET(request: Request) {
@@ -12,18 +12,14 @@ export async function GET(request: Request) {
   }
 
   const customers = (await listCustomers(query)).slice(0, 8);
-  const matches = await Promise.all(
-    customers.map(async (customer): Promise<ReturningCustomerMatch> => {
-      const profile = await getCustomerMeasurementProfile(customer.id);
-      return {
-        id: customer.id,
-        customerCode: customer.customerCode,
-        fullName: customer.fullName,
-        phonePrimary: customer.phonePrimary,
-        measurements: profile?.values ?? []
-      };
-    })
-  );
+  const profiles = await getCustomerMeasurementProfiles(customers);
+  const matches = profiles.map<ReturningCustomerMatch>(({ customer, values }) => ({
+    id: customer.id,
+    customerCode: customer.customerCode,
+    fullName: customer.fullName,
+    phonePrimary: customer.phonePrimary,
+    measurements: values
+  }));
 
   return NextResponse.json({ matches });
 }

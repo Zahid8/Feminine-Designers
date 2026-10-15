@@ -20,7 +20,10 @@ The app is organized around typed domain services:
 
 ## Performance
 
-- List queries in `src/services/orders/order-service.ts` select explicit columns and exclude `cloth_sample_image_url`, because cloth-sample photos are stored inline as data URLs and dominated payload size. Only `getOrderById` (detail, receipts, edits) loads the photo.
+- Cloth-sample photos are uploaded to the public `cloth-samples` Storage bucket (`src/services/orders/cloth-sample-storage.ts`) and the order row stores the public URL. If the upload fails the data URL is kept inline, so saving never breaks; legacy inline rows are moved with `scripts/migrate-cloth-samples.mjs`.
+- List queries in `src/services/orders/order-service.ts` select explicit columns and skip `cloth_sample_image_url`, `order_measurements`, and `order_status_history`. `getOrderById` loads everything; customer-scoped lookups load measurements and history but not the photo.
+- The returning-customer search builds all matched profiles with one orders query and one profile query (`getCustomerMeasurementProfiles`).
+- Pagination is not implemented yet. A list row is roughly 4 KB, so this only matters after several hundred orders; at that point move dashboard aggregates and the collections chart to SQL and paginate the Completed tab.
 - Customer profile and measurement lookups filter orders by `customer_id` in SQL and run their independent queries in parallel.
 - Every operational route has a `loading.tsx` that renders the app shell with a skeleton, so navigation responds immediately while server data loads.
 - `vercel.json` runs functions in `sin1`, next to the Supabase project (`ap-southeast-1`).

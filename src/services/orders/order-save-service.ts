@@ -2,6 +2,7 @@ import { calculateLineTotal, calculateOrderTotals } from "@/lib/calculations/ord
 import { rupeesToPaise, paiseToRupees } from "@/lib/utils/money";
 import { createSupabaseAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
 import { isMissingSupabaseSchemaError } from "@/lib/supabase/errors";
+import { storeClothSample } from "@/services/orders/cloth-sample-storage";
 import type { ParsedOrderForm } from "@/services/orders/order-form-parser";
 import type { Json } from "@/types/supabase";
 
@@ -95,6 +96,7 @@ export async function saveParsedOrder(parsed: ParsedOrderForm): Promise<SavedOrd
   }
 
   const admin = createSupabaseAdminClient();
+  const clothSampleImageUrl = parsed.clothSampleDataUrl ? await storeClothSample(admin, parsed.clothSampleDataUrl) : null;
   const itemDrafts = parsed.order.items.map((item) => ({
     quantity: item.quantity,
     ratePaise: rupeesToPaise(item.rateRupees),
@@ -134,7 +136,7 @@ export async function saveParsedOrder(parsed: ParsedOrderForm): Promise<SavedOrd
       order_date: parsed.order.orderDate,
       delivery_date: parsed.order.deliveryDate,
       assigned_tailor_name: parsed.order.assignedTailor || null,
-      cloth_sample_image_url: parsed.clothSampleDataUrl || null,
+      cloth_sample_image_url: clothSampleImageUrl,
       internal_notes: parsed.order.internalNotes || null,
       customer_notes: parsed.order.customerNotes || null,
       subtotal: toRupeesDecimal(totals.subtotalPaise),

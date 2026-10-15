@@ -1,4 +1,5 @@
 import { createSupabaseAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
+import { removeStoredClothSample } from "@/services/orders/cloth-sample-storage";
 
 export async function deleteOrderById(orderId: string) {
   if (!hasSupabaseAdminEnv()) {
@@ -6,6 +7,7 @@ export async function deleteOrderById(orderId: string) {
   }
 
   const admin = createSupabaseAdminClient();
+  const { data: photoRow } = await admin.from("orders").select("cloth_sample_image_url").eq("id", orderId).maybeSingle();
   const { error: profileError } = await admin
     .from("customer_measurement_profiles")
     .delete()
@@ -16,4 +18,6 @@ export async function deleteOrderById(orderId: string) {
   const { error } = await admin.from("orders").delete().eq("id", orderId);
 
   if (error) throw new Error(error.message);
+
+  await removeStoredClothSample(admin, photoRow?.cloth_sample_image_url);
 }

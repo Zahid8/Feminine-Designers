@@ -2,6 +2,7 @@ import { calculateLineTotal, calculateOrderTotals } from "@/lib/calculations/ord
 import { normalizeDateInput } from "@/lib/utils/date";
 import { paiseToRupees, rupeesToPaise } from "@/lib/utils/money";
 import { createSupabaseAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
+import { removeStoredClothSample, storeClothSample } from "@/services/orders/cloth-sample-storage";
 import type { OrderItem, OrderStatus, OrderWithCustomer, PaymentMethod, PaymentStatus, Priority } from "@/types/domain";
 
 function readString(formData: FormData, key: string, fallback = "") {
@@ -186,6 +187,8 @@ export async function updateOrderFromForm(order: OrderWithCustomer, formData: Fo
   const nextPriority = readLastString<Priority>(formData, "priority", order.priority);
   const clothSampleDataUrl = readString(formData, "clothSampleDataUrl");
   const removeClothSample = readString(formData, "removeClothSample") === "1";
+  const replacementClothSample = !removeClothSample && clothSampleDataUrl ? await storeClothSample(admin, clothSampleDataUrl) : "";
+  const nextClothSample = removeClothSample ? null : replacementClothSample || order.clothSampleImageUrl || null;
   const paymentFieldsSubmitted = formData.has("advancePaidRupees") || formData.has("paymentMethod") || formData.has("paymentReference");
   const existingPaymentTotalPaise = order.payments.reduce((sum, payment) => sum + payment.amountPaise, 0);
   const editedAdvancePaidPaise = rupeesToPaise(readNumber(formData, "advancePaidRupees", paiseToRupees(existingPaymentTotalPaise)));
@@ -226,7 +229,7 @@ export async function updateOrderFromForm(order: OrderWithCustomer, formData: Fo
         order_date: normalizeDateInput(readRequiredString(formData, "orderDate", order.orderDate)),
         delivery_date: normalizeDateInput(readRequiredString(formData, "deliveryDate", order.deliveryDate)),
         assigned_tailor_name: readString(formData, "assignedTailor", order.assignedTailor ?? "") || null,
-        cloth_sample_image_url: removeClothSample ? null : clothSampleDataUrl || order.clothSampleImageUrl || null,
+        cloth_sample_image_url: nextClothSample,
         internal_notes: readString(formData, "internalNotes", order.internalNotes ?? "") || null,
         customer_notes: readString(formData, "customerNotes", order.customerNotes ?? "") || null,
         subtotal: toRupeesDecimal(totals.subtotalPaise),
@@ -248,6 +251,10 @@ export async function updateOrderFromForm(order: OrderWithCustomer, formData: Fo
       })
       .eq("id", order.id)
   );
+
+  if (order.clothSampleImageUrl && order.clothSampleImageUrl !== nextClothSample) {
+    await removeStoredClothSample(admin, order.clothSampleImageUrl);
+  }
 
   if (paymentFieldsSubmitted) {
     await assertUpdate(await admin.from("payments").delete().eq("order_id", order.id));

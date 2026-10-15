@@ -5,7 +5,8 @@ const mockDelete = vi.fn(() => ({ eq: mockDeleteEq }));
 const mockInsert = vi.fn();
 const mockOrder = vi.fn();
 const mockEq = vi.fn(() => ({ order: mockOrder }));
-const mockSelect = vi.fn(() => ({ eq: mockEq }));
+const mockIn = vi.fn(() => ({ order: mockOrder }));
+const mockSelect = vi.fn(() => ({ eq: mockEq, in: mockIn }));
 const mockFrom = vi.fn(() => ({ delete: mockDelete, insert: mockInsert, select: mockSelect }));
 const mockGetCustomerById = vi.fn();
 const mockListOrders = vi.fn();
@@ -149,5 +150,33 @@ describe("customer measurement service", () => {
         value: "44"
       })
     ]);
+  });
+
+  it("builds profiles for several customers with one orders query and one profile query", async () => {
+    const customer = (id: string, fullName: string) => ({
+      id,
+      customerCode: id,
+      fullName,
+      phonePrimary: "9000000000",
+      preferredCommunication: "WhatsApp" as const,
+      tags: [],
+      createdAt: "2026-07-01T00:00:00Z",
+      updatedAt: "2026-07-01T00:00:00Z"
+    });
+    mockOrder.mockResolvedValue({
+      data: [
+        { id: "p1", customer_id: "customer-1", field_key: "length", value: "38", unit: "in", source_order_id: null, updated_at: "2026-07-02T00:00:00Z" },
+        { id: "p2", customer_id: "customer-2", field_key: "length", value: "41", unit: "in", source_order_id: null, updated_at: "2026-07-02T00:00:00Z" }
+      ],
+      error: null
+    });
+    const { getCustomerMeasurementProfiles } = await import("./customer-measurement-service");
+
+    const profiles = await getCustomerMeasurementProfiles([customer("customer-1", "Bebu"), customer("customer-2", "Rachna")]);
+
+    expect(mockListOrders).toHaveBeenCalledTimes(1);
+    expect(mockListOrders).toHaveBeenCalledWith({ customerIds: ["customer-1", "customer-2"] });
+    expect(mockIn).toHaveBeenCalledWith("customer_id", ["customer-1", "customer-2"]);
+    expect(profiles.map((profile) => profile.values.map((value) => value.value))).toEqual([["38"], ["41"]]);
   });
 });

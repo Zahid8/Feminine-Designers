@@ -21,6 +21,7 @@ export interface OrderFilters {
   query?: string;
   status?: OrderStatus | "All";
   customerId?: string;
+  customerIds?: string[];
 }
 
 type OrderWithOverdueMeta = OrderWithCustomer & { overdue: boolean; daysOverdue: number };
@@ -134,9 +135,9 @@ interface SupabaseOrderRecord {
   customer: SupabaseCustomerRecord;
   items: SupabaseOrderItemRecord[];
   extra_costs?: SupabaseOrderItemExtraCostRecord[];
-  measurements: SupabaseMeasurementRecord[];
+  measurements?: SupabaseMeasurementRecord[];
   payments: SupabasePaymentRecord[];
-  status_history: SupabaseStatusHistoryRecord[];
+  status_history?: SupabaseStatusHistoryRecord[];
 }
 
 function moneyToPaise(value: string | number) {
@@ -230,7 +231,7 @@ function mapOrder(record: SupabaseOrderRecord): OrderWithCustomer {
         sortOrder: item.sort_order
         };
       }),
-    measurements: record.measurements
+    measurements: (record.measurements ?? [])
       .sort((a, b) => a.sort_order - b.sort_order)
       .map<MeasurementValue>((measurement) => ({
         id: measurement.id,
@@ -245,7 +246,7 @@ function mapOrder(record: SupabaseOrderRecord): OrderWithCustomer {
         sortOrder: measurement.sort_order
       })),
     payments,
-    statusHistory: record.status_history.map<StatusHistoryEntry>((entry) => ({
+    statusHistory: (record.status_history ?? []).map<StatusHistoryEntry>((entry) => ({
       id: entry.id,
       fromStatus: entry.from_status ?? undefined,
       toStatus: entry.to_status,
@@ -312,23 +313,31 @@ const ORDER_LIST_COLUMNS = [
   "updated_at"
 ].join(", ");
 
-const ORDER_RELATIONS = `
+// List screens (dashboard, orders, customers) never show measurements or status
+// history, which are most of the remaining payload, so they are only loaded for a
+// single order or for customer-scoped lookups.
+const ORDER_LIST_RELATIONS = `
       customer:customers(*),
       items:order_items(*),
-      measurements:order_measurements(*),
       payments(*),
-      extra_costs:order_item_extra_costs(*),
+      extra_costs:order_item_extra_costs(*)
+    `;
+
+const ORDER_DETAIL_RELATIONS = `${ORDER_LIST_RELATIONS},
+      measurements:order_measurements(*),
       status_history:order_status_history(*)
     `;
 
-async function fetchSupabaseOrders(options: { orderId?: string; customerId?: string } = {}) {
+async function fetchSupabaseOrders(options: { orderId?: string; customerIds?: string[] } = {}) {
   if (!hasSupabaseAdminEnv()) return undefined;
 
   const admin = createSupabaseAdminClient();
   const columns = options.orderId ? `${ORDER_LIST_COLUMNS}, cloth_sample_image_url` : ORDER_LIST_COLUMNS;
-  let query = admin.from("orders").select(`${columns}, ${ORDER_RELATIONS}`);
+  const relations = options.orderId || options.customerIds ? ORDER_DETAIL_RELATIONS : ORDER_LIST_RELATIONS;
+  let query = admin.from("orders").select(`${columns}, ${relations}`);
   if (options.orderId) query = query.eq("id", options.orderId);
-  if (options.customerId) query = query.eq("customer_id", options.customerId);
+  if (options.customerIds?.length === 1) query = query.eq("customer_id", options.customerIds[0]);
+  else if (options.customerIds) query = query.in("customer_id", options.customerIds);
   const { data, error } = await query.order("created_at", { ascending: false });
 
   if (error) {
@@ -352,13 +361,15 @@ function withOverdueMeta(order: OrderWithCustomer): OrderWithOverdueMeta {
 }
 
 export async function listOrders(filters: OrderFilters = {}) {
-  const sourceOrders = (await fetchSupabaseOrders({ customerId: filters.customerId })) ?? getOrdersWithOverdueMeta();
+  const customerIds = filters.customerIds ?? (filters.customerId ? [filters.customerId] : undefined);
+  if (customerIds?.length === 0) return [];
+  const sourceOrders = (await fetchSupabaseOrders({ customerIds })) ?? getOrdersWithOverdueMeta();
   const normalized = filters.query?.trim().toLowerCase();
   return sortByDeliveryDate(
     sourceOrders
       .map(withOverdueMeta)
       .filter((order) => {
-      const customerMatch = !filters.customerId || order.customerId === filters.customerId;
+      const customerMatch = !customerIds || customerIds.includes(order.customerId);
       const statusMatch = !filters.status || filters.status === "All" || order.status === filters.status;
       const queryMatch =
         !normalized ||

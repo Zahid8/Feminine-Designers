@@ -12,6 +12,7 @@
 - 2026-10-15T16:49Z [USER] UI refresh requested (neumorphism/material allowed, keep palette) plus faster page navigation on Vercel Hobby + Supabase free.
 - 2026-10-15T16:49Z [CODE] Adopted soft-neumorphic + Material-elevation hybrid using palette-preserving Tailwind v4 tokens in `globals.css`; pure neumorphism rejected for contrast on data-dense screens. Receipts (`receipt-html.tsx`, `receipt-pdf.tsx`) intentionally untouched.
 - 2026-10-15T16:49Z [CODE] Staff password/session cookie now read from `STAFF_PASSWORD`/`STAFF_SESSION_SECRET` with legacy fallback so production does not break before env vars are set.
+- 2026-10-15T17:01Z [CODE] Cloth-sample photos go to public Storage bucket `cloth-samples` (stable URLs, CDN/browser caching, UUID names); upload failure falls back to inline data URL. Orders-page pagination and dashboard windowing deferred (would change all-time collections chart); revisit around ~500 orders.
 
 ## [PROGRESS]
 - 2026-07-01T06:24Z [TOOL] Repository assessment found only `implementation_plan.md` and `IMG_1174.JPG`; no package manager metadata, framework, database files, env files, styles, or tests existed.
@@ -82,6 +83,7 @@
 - 2026-10-15T16:49Z [CODE] Codemodded ~400 raw hex classes to tokens; rewrote UI primitives (Button + new ButtonLink, Card, Input + new Select, badges, PageHeading), app shell (active nav, working header search to `/orders?q=`), dashboard metric cards (pressed when selected), orders tabs (segmented nav). Replaced invalid `<Link><Button>` nesting with `ButtonLink`.
 - 2026-10-15T16:49Z [CODE] Perf: order list queries exclude `cloth_sample_image_url`; `getOrderById` filters by id; customer lookups filter by `customer_id` and run in parallel; added per-route `loading.tsx` skeletons; `vercel.json` pins `sin1`.
 - 2026-10-15T16:49Z [CODE] Fixed IndiaClock hydration mismatch by rendering time only after mount.
+- 2026-10-15T17:01Z [CODE] Added `cloth-sample-storage.ts`, bucket migration `202610150001_cloth_sample_storage_bucket.sql` (also in setup_full_database.sql), `scripts/migrate-cloth-samples.mjs` (dry-run default, `--apply` with backups), lean list relations (no measurements/status history), batched `getCustomerMeasurementProfiles` for `/api/customers/search`; removed dead `searchReturningCustomerMatches`.
 
 ## [DISCOVERIES]
 - 2026-07-01T06:24Z [TOOL] `IMG_1174.JPG` is a 5712x4284 JPEG, likely the bill reference image, but no `public/Logo.PNG` logo file exists.
@@ -127,6 +129,7 @@
 - 2026-10-15T16:49Z [TOOL] Supabase DB host resolves to AWS `ap-southeast-1` (Singapore); Vercel default was iad1.
 - 2026-10-15T16:49Z [TOOL] Repo `Zahid8/Feminine-Designers` is PUBLIC; legacy staff password and cookie value are in git history and must be rotated via env vars.
 - 2026-10-15T16:49Z [TOOL] Tailwind v4 gotcha: unlayered element CSS (e.g. `a { color: inherit }`) overrides layered utilities like `text-white`; base rules must live in `@layer base`.
+- 2026-10-15T17:01Z [TOOL] Without photos, `order_measurements` were ~313 KB of ~430 KB list payload for 33 orders; dashboard HTML 131 KB -> 97 KB after dropping them. Migration dry run: 30 inline photos, 4.67 MB; bucket missing until user runs SQL.
 
 ## [OUTCOMES]
 - 2026-07-01T06:39Z [TOOL] Verification passed: `npm run lint`, `npm run typecheck`, `npm run test` (4 files, 10 tests), `npm run build`, `npm audit --omit=dev`, and HTTP smoke checks for `/dashboard`, `/receipts/order-1/combined`, and `/api/receipts/order-1/combined`.
@@ -187,3 +190,4 @@
 - 2026-07-07T04:50Z [TOOL] Verification passed after Orders page Completed/Past split: focused RED tests failed on no `Completed Orders` tab and delivered orders counted as past, then focused status/orders/dashboard tests passed; `npm run typecheck`, `npm run lint`, `npm run test` (`41 files`, `148 tests`), and `npm run build` all passed.
 - 2026-07-09T06:36Z [TOOL] Verification passed after New Order name validation relaxation: focused RED parser test failed on one-character numeric customer name, then passed after schema change; `npm run typecheck`, `npm run lint`, `npm run test` (`41 files`, `149 tests`), and `npm run build` all passed.
 - 2026-10-15T16:49Z [TOOL] Verification passed after UI refresh + perf pass: `npm run typecheck`, `npm run lint`, `npm run test` (41 files, 151 tests), `npm run build`; prod-server smoke on port 3022 returned 200 for dashboard/orders/customers/settings/orders/new/order detail/store receipt/customer profile/measurements/search API (0.3–1.4s locally); desktop and tablet screenshots reviewed. Follow-up: set `STAFF_PASSWORD`/`STAFF_SESSION_SECRET` in Vercel; consider moving photos to Supabase Storage.
+- 2026-10-15T17:01Z [TOOL] Verification passed after storage/lean-list/search batching: typecheck, lint, test (42 files, 157 tests), build; prod smoke on port 3023 returned 200 for all main routes (0.3-1.2s), search API returned 8 matches. Pending USER actions: run bucket SQL, then migration `--apply`; set STAFF_PASSWORD/STAFF_SESSION_SECRET in Vercel.
