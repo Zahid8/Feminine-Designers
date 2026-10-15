@@ -6,6 +6,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatDate } from "@/lib/utils/date";
 import { cn } from "@/lib/utils/cn";
+import { isTypingTarget } from "@/lib/ui/keyboard";
 import type { SearchResults } from "@/types/search";
 
 type ResultItem = { key: string; href: string; title: string; subtitle: string; kind: "order" | "customer"; status?: SearchResults["orders"][number]["status"] };
@@ -28,11 +29,6 @@ function toItems(results: SearchResults): ResultItem[] {
       kind: "customer"
     }))
   ];
-}
-
-function isTypingTarget(target: EventTarget | null) {
-  const element = target as HTMLElement | null;
-  return Boolean(element?.closest("input, textarea, select, [contenteditable='true']"));
 }
 
 /** Header search with live suggestions. Enter without a selection searches the Orders page. */

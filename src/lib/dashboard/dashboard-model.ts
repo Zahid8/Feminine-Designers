@@ -1,7 +1,7 @@
 import { daysOverdue, isOrderOverdue } from "@/lib/calculations/order";
 import { isCompletedOrderForList, isPastOrderForList } from "@/lib/calculations/status";
 import { compareOrdersByPriorityAndDelivery } from "@/lib/orders/order-sort";
-import { indiaNoonDate, todayISO } from "@/lib/utils/date";
+import { addDaysISO, indiaNoonDate, todayISO } from "@/lib/utils/date";
 import type { OrderWithCustomer, PaymentMethod } from "@/types/domain";
 
 export type DashboardViewId =
@@ -49,8 +49,19 @@ export interface DashboardViewModel {
   payments: DashboardPaymentRow[];
 }
 
+export interface DashboardDeliveryDay {
+  date: string;
+  label: string;
+  weekday: string;
+  dayOfMonth: string;
+  orders: OrderWithCustomer[];
+}
+
 export interface DashboardModel {
   today: string;
+  week: DashboardDeliveryDay[];
+  /** Open orders whose delivery date has already passed, most urgent first. */
+  overdue: OrderWithCustomer[];
   cards: DashboardCardModel[];
   views: Record<DashboardViewId, DashboardViewModel>;
   insights: {
@@ -210,6 +221,10 @@ export function buildDashboardModel(orders: OrderWithCustomer[], today: string):
 
   return {
     today,
+    week: upcomingDeliveryDays(orders, today),
+    overdue: [...orders.filter((order) => order.status !== "Delivered" && order.status !== "Cancelled" && order.deliveryDate < today)].sort(
+      compareOrdersByPriorityAndDelivery
+    ),
     cards: [
       {
         id: "orders-today",
@@ -285,4 +300,23 @@ export function buildDashboardModel(orders: OrderWithCustomer[], today: string):
       readyUndelivered: readyUndelivered.slice(0, 5)
     }
   };
+}
+
+const weekdayFormatter = new Intl.DateTimeFormat("en-IN", { weekday: "short", timeZone: "UTC" });
+
+/** Open orders due on each of the next `days` days, starting today (ISO India dates, no clock reads). */
+export function upcomingDeliveryDays(orders: OrderWithCustomer[], today: string, days = 7): DashboardDeliveryDay[] {
+  const open = orders.filter((order) => order.status !== "Delivered" && order.status !== "Cancelled");
+  return Array.from({ length: days }, (_, offset) => {
+    const date = addDaysISO(today, offset);
+    const [year, month, day] = date.split("-").map(Number);
+    const weekday = weekdayFormatter.format(new Date(Date.UTC(year, month - 1, day)));
+    return {
+      date,
+      label: offset === 0 ? "Today" : offset === 1 ? "Tomorrow" : weekday,
+      weekday,
+      dayOfMonth: String(day),
+      orders: [...open.filter((order) => order.deliveryDate === date)].sort(compareOrdersByPriorityAndDelivery)
+    };
+  });
 }

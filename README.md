@@ -372,6 +372,14 @@ Roles:
 - **Open by clicking anywhere**: click any order or customer card/row to open it. Checkboxes and buttons inside a card still do their own job.
 - Delivery countdown badges (**Due today**, **Tomorrow**, **Overdue 5d**) appear on open orders.
 
+- **Keyboard** (laptop): `?` shows all shortcuts, `N` new order, `B` board, `D` dashboard.
+- Actions such as **Done**, **Paid**, and board moves show a small notification with **Undo** for a few seconds.
+- On phones and tablets, **Settings** is the gear button at the top right.
+
+### Workshop Board
+
+Open **Board** (`/board`). Orders are grouped by stage: **New → In Stitching → Ready → Delivered** (delivered orders stay visible for 7 days). Tap **Start stitching**, **Mark ready**, or **Delivered** to move an order on, or the ← button to move it back. Swipe sideways between columns on a phone. Tap the card itself to open the order.
+
 ### Install on a tablet or phone
 
 The app can be added to the home screen and opens full-screen like an app:
@@ -389,7 +397,7 @@ Open:
 /dashboard
 ```
 
-The heading greets you by the time of day. Tap a card (Pending, Overdue, Collected Today, …) to list the matching orders below it; each order row has Call and WhatsApp buttons.
+The heading greets you by the time of day. **Next 7 days** shows how many deliveries are due each day (plus an **Overdue** chip); tap a day to list its orders. Tap a card (Pending, Overdue, Collected Today, …) to list the matching orders below it; each order row has Call and WhatsApp buttons.
 
 Use it for:
 

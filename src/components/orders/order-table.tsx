@@ -11,6 +11,7 @@ import { summarizeGarments } from "@/lib/orders/garment-summary";
 import { orderSortOptions, sortOrders, type OrderSortKey } from "@/lib/orders/order-sort";
 import { setOrderCompletedAction } from "@/app/orders/actions";
 import { cardNavigationHandler } from "@/lib/ui/card-navigation";
+import { useToast } from "@/components/ui/toast";
 
 export function OrderTable({
   orders,
@@ -20,6 +21,7 @@ export function OrderTable({
   today?: string;
 }) {
   const router = useRouter();
+  const toast = useToast();
   const [pendingOrderIds, setPendingOrderIds] = useState<string[]>([]);
   const [sortKey, setSortKey] = useState<OrderSortKey>("deliveryDate");
   const sortedOrders = sortOrders(orders, sortKey);
@@ -54,7 +56,18 @@ export function OrderTable({
     setPendingOrderIds((current) => [...current, orderId]);
     startTransition(() => {
       void setOrderCompletedAction(orderId, completed)
-        .then(() => router.refresh())
+        .then(() => {
+          router.refresh();
+          toast.show(
+            completed
+              ? {
+                  message: "Order marked done and delivered.",
+                  action: { label: "Undo", onAction: () => setOrderCompletedAction(orderId, false).then(() => router.refresh()) }
+                }
+              : { message: "Order reopened." }
+          );
+        })
+        .catch((error) => toast.show({ tone: "error", message: error instanceof Error ? error.message : "Could not update the order." }))
         .finally(() => {
           setPendingOrderIds((current) => current.filter((id) => id !== orderId));
         });

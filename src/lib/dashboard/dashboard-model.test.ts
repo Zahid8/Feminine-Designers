@@ -152,3 +152,25 @@ describe("buildDashboardModel", () => {
     ]);
   });
 });
+
+describe("upcomingDeliveryDays", () => {
+  it("groups open orders by delivery date for the next seven days", async () => {
+    const { upcomingDeliveryDays } = await import("@/lib/dashboard/dashboard-model");
+    const { orders } = await import("@/lib/data/mock");
+    const base = orders[0];
+    const sample = [
+      { ...base, id: "a", status: "New" as const, deliveryDate: "2026-10-15" },
+      { ...base, id: "b", status: "Ready" as const, deliveryDate: "2026-10-16" },
+      { ...base, id: "c", status: "Delivered" as const, deliveryDate: "2026-10-16" },
+      { ...base, id: "d", status: "New" as const, deliveryDate: "2026-10-31" }
+    ];
+
+    const week = upcomingDeliveryDays(sample, "2026-10-15");
+
+    expect(week).toHaveLength(7);
+    expect(week.map((day) => day.label).slice(0, 3)).toEqual(["Today", "Tomorrow", "Sat"]);
+    expect(week[0].orders.map((order) => order.id)).toEqual(["a"]);
+    expect(week[1].orders.map((order) => order.id)).toEqual(["b"]);
+    expect(week[6].date).toBe("2026-10-21");
+  });
+});

@@ -26,7 +26,7 @@ describe("payment service", () => {
       },
       error: null
     });
-    mockInsert.mockResolvedValue({ error: null });
+    mockInsert.mockReturnValue({ select: vi.fn(() => ({ single: vi.fn(async () => ({ data: { id: "payment-9" }, error: null })) })) });
     mockUpdateEq.mockResolvedValue({ error: null });
     mockDeleteEq.mockResolvedValue({ error: null });
   });
@@ -34,7 +34,7 @@ describe("payment service", () => {
   it("settles an order balance by inserting a payment and marking the order paid", async () => {
     const { settleOrderBalance } = await import("./payment-service");
 
-    await settleOrderBalance("order-1", "UPI");
+    await expect(settleOrderBalance("order-1", "UPI")).resolves.toBe("payment-9");
 
     expect(mockFrom).toHaveBeenNthCalledWith(1, "orders");
     expect(mockSelect).toHaveBeenCalledWith("advance_paid,balance_due,grand_total");

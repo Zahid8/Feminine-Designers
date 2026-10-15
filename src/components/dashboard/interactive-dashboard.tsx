@@ -12,6 +12,8 @@ import { summarizeGarments } from "@/lib/orders/garment-summary";
 import { cn } from "@/lib/utils/cn";
 import { cardNavigationHandler } from "@/lib/ui/card-navigation";
 import { ContactActions } from "@/components/shared/contact-actions";
+import { useToast } from "@/components/ui/toast";
+import { WeekStrip } from "@/components/dashboard/week-strip";
 import { formatDate, formatDateTime } from "@/lib/utils/date";
 import { formatINR } from "@/lib/utils/money";
 import { orderSortOptions, sortOrders, type OrderSortKey } from "@/lib/orders/order-sort";
@@ -354,6 +356,7 @@ function CollectionChart({ days }: { days: DashboardCollectionDay[] }) {
 
 export function InteractiveDashboard({ model }: { model: DashboardModel }) {
   const router = useRouter();
+  const toast = useToast();
   const [selectedViewId, setSelectedViewId] = useState<DashboardViewId>("pending");
   const [sortKey, setSortKey] = useState<OrderSortKey>("deliveryDate");
   const [hiddenCompletedOrderIds, setHiddenCompletedOrderIds] = useState<string[]>([]);
@@ -371,6 +374,13 @@ export function InteractiveDashboard({ model }: { model: DashboardModel }) {
   const visibleSelectedPayments = selectedView.payments.filter((payment) => !hiddenPaymentIds.includes(payment.id));
   const selectedCount = selectedViewId === "collected-today" ? visibleSelectedPayments.length : visibleSelectedOrders.length;
 
+  function undoComplete(orderId: string) {
+    return setOrderCompletedAction(orderId, false).then(() => {
+      setHiddenCompletedOrderIds((current) => current.filter((id) => id !== orderId));
+      router.refresh();
+    });
+  }
+
   function setOrderComplete(orderId: string, completed: boolean) {
     setPendingOrderIds((current) => [...current, orderId]);
     if (completed) {
@@ -379,10 +389,17 @@ export function InteractiveDashboard({ model }: { model: DashboardModel }) {
 
     startTransition(() => {
       void setOrderCompletedAction(orderId, completed)
-        .then(() => router.refresh())
+        .then(() => {
+          router.refresh();
+          toast.show(
+            completed
+              ? { message: "Order marked done and delivered.", action: { label: "Undo", onAction: () => undoComplete(orderId) } }
+              : { message: "Order reopened." }
+          );
+        })
         .catch((error) => {
           setHiddenCompletedOrderIds((current) => current.filter((id) => id !== orderId));
-          window.alert(error instanceof Error ? error.message : "Could not update order completion.");
+          toast.show({ tone: "error", message: error instanceof Error ? error.message : "Could not update order completion." });
         })
         .finally(() => {
           setPendingOrderIds((current) => current.filter((id) => id !== orderId));
@@ -396,10 +413,23 @@ export function InteractiveDashboard({ model }: { model: DashboardModel }) {
 
     startTransition(() => {
       void settleOrderBalanceAction(orderId)
-        .then(() => router.refresh())
+        .then((paymentId) => {
+          router.refresh();
+          toast.show({
+            message: "Balance recorded as paid.",
+            action: {
+              label: "Undo",
+              onAction: () =>
+                reversePaymentAction(paymentId, orderId).then(() => {
+                  setHiddenPaidOrderIds((current) => current.filter((id) => id !== orderId));
+                  router.refresh();
+                })
+            }
+          });
+        })
         .catch((error) => {
           setHiddenPaidOrderIds((current) => current.filter((id) => id !== orderId));
-          window.alert(error instanceof Error ? error.message : "Could not mark order paid.");
+          toast.show({ tone: "error", message: error instanceof Error ? error.message : "Could not mark order paid." });
         })
         .finally(() => {
           setPendingPaidOrderIds((current) => current.filter((id) => id !== orderId));
@@ -413,10 +443,13 @@ export function InteractiveDashboard({ model }: { model: DashboardModel }) {
 
     startTransition(() => {
       void reversePaymentAction(payment.id, payment.orderId)
-        .then(() => router.refresh())
+        .then(() => {
+          router.refresh();
+          toast.show({ message: `Payment of ${formatINR(payment.amountPaise)} removed; the balance is due again.` });
+        })
         .catch((error) => {
           setHiddenPaymentIds((current) => current.filter((id) => id !== payment.id));
-          window.alert(error instanceof Error ? error.message : "Could not mark payment not paid.");
+          toast.show({ tone: "error", message: error instanceof Error ? error.message : "Could not mark payment not paid." });
         })
         .finally(() => {
           setPendingPaymentIds((current) => current.filter((id) => id !== payment.id));
@@ -431,6 +464,7 @@ export function InteractiveDashboard({ model }: { model: DashboardModel }) {
           <MetricCard key={card.id} card={card} selected={card.id === selectedViewId} onSelect={() => setSelectedViewId(card.id)} />
         ))}
       </div>
+      <WeekStrip week={model.week} overdue={model.overdue} />
 
       <div className="grid gap-5 xl:grid-cols-[1.45fr_.55fr]">
         <Card>

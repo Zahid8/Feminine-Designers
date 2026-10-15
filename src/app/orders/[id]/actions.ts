@@ -25,6 +25,7 @@ function revalidateOrderSurfaces(orderId: string) {
   revalidatePath("/orders");
   revalidatePath("/customers");
   revalidatePath("/dashboard");
+  revalidatePath("/board");
 }
 
 export async function setOrderItemDeliveredAction(orderId: string, itemId: string, delivered: boolean) {

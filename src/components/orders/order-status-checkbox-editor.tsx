@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { setOrderPaymentStatusAction, setOrderStageAction } from "@/app/orders/[id]/actions";
 import { ORDER_STATUSES } from "@/lib/constants/business";
 import type { OrderStatus, PaymentStatus } from "@/types/domain";
+import { useToast } from "@/components/ui/toast";
 
 const paymentChoices: Array<{ label: string; value: Extract<PaymentStatus, "Paid" | "Unpaid"> }> = [
   { label: "Not paid", value: "Unpaid" },
@@ -28,13 +29,22 @@ export function OrderStatusCheckboxEditor({
   paymentStatus: PaymentStatus;
 }) {
   const router = useRouter();
+  const toast = useToast();
   const [pending, setPending] = useState("");
 
   function updateStage(nextStatus: OrderStatus) {
     setPending(`stage-${nextStatus}`);
     startTransition(() => {
+      const previousStatus = status;
       void setOrderStageAction(orderId, nextStatus)
-        .then(() => router.refresh())
+        .then(() => {
+          router.refresh();
+          toast.show({
+            message: `Order moved to ${nextStatus}.`,
+            action: { label: "Undo", onAction: () => setOrderStageAction(orderId, previousStatus).then(() => router.refresh()) }
+          });
+        })
+        .catch((error) => toast.show({ tone: "error", message: error instanceof Error ? error.message : "Could not update the order stage." }))
         .finally(() => setPending(""));
     });
   }
@@ -43,7 +53,11 @@ export function OrderStatusCheckboxEditor({
     setPending(`payment-${nextStatus}`);
     startTransition(() => {
       void setOrderPaymentStatusAction(orderId, nextStatus)
-        .then(() => router.refresh())
+        .then(() => {
+          router.refresh();
+          toast.show({ message: nextStatus === "Paid" ? "Order marked paid." : "Order marked not paid." });
+        })
+        .catch((error) => toast.show({ tone: "error", message: error instanceof Error ? error.message : "Could not update payment." }))
         .finally(() => setPending(""));
     });
   }

@@ -28,7 +28,8 @@ function ensureSupabasePayments() {
   }
 }
 
-export async function settleOrderBalance(orderId: string, method: PaymentMethod = "Cash") {
+/** Records the outstanding balance as paid and returns the new payment id (used for Undo). */
+export async function settleOrderBalance(orderId: string, method: PaymentMethod = "Cash"): Promise<string> {
   ensureSupabasePayments();
 
   const admin = createSupabaseAdminClient();
@@ -52,13 +53,17 @@ export async function settleOrderBalance(orderId: string, method: PaymentMethod 
   const nextPaymentStatus = nextAdvancePaidPaise > grandTotalPaise ? "Credit" : "Paid";
   const paidAt = new Date().toISOString();
 
-  const { error: paymentError } = await admin.from("payments").insert({
-    order_id: orderId,
-    amount: toRupeesDecimal(balanceDuePaise),
-    payment_method: method,
-    paid_at: paidAt,
-    notes: "Marked paid from dashboard"
-  });
+  const { data: payment, error: paymentError } = await admin
+    .from("payments")
+    .insert({
+      order_id: orderId,
+      amount: toRupeesDecimal(balanceDuePaise),
+      payment_method: method,
+      paid_at: paidAt,
+      notes: "Marked paid from dashboard"
+    })
+    .select("id")
+    .single();
 
   if (paymentError) throw new Error(paymentError.message);
 
@@ -73,6 +78,7 @@ export async function settleOrderBalance(orderId: string, method: PaymentMethod 
     .eq("id", orderId);
 
   if (updateError) throw new Error(updateError.message);
+  return (payment as { id: string }).id;
 }
 
 function paymentStatus(grandTotalPaise: number, paidPaise: number) {

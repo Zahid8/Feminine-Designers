@@ -186,6 +186,21 @@
   animation: page-enter 220ms ease-out both;
 }
 
+@keyframes toast-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@utility toast-enter {
+  animation: toast-enter 200ms ease-out both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
