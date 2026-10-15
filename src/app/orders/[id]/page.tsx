@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeading } from "@/components/shared/page-heading";
 import { ButtonLink } from "@/components/ui/button";
-import { FileText, Pencil, Printer, Store, X } from "lucide-react";
+import { FileText, Pencil, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MeasurementGrid } from "@/components/measurements/measurement-grid";
 import { OrderItemDeliveryTracker } from "@/components/orders/order-item-delivery-tracker";
@@ -74,17 +74,9 @@ export default async function OrderDetailPage({
         description={`${order.customer.fullName} · ${order.customer.phonePrimary} · Delivery ${formatDate(order.deliveryDate)}`}
         action={
           <div className="flex flex-wrap gap-2">
-            <ButtonLink href={`/receipts/${order.id}/customer`} variant="secondary">
+            <ButtonLink href={`/receipts/${order.id}/customer`}>
               <FileText className="h-4 w-4" aria-hidden />
-              Customer Copy
-            </ButtonLink>
-            <ButtonLink href={`/receipts/${order.id}/store`} variant="secondary">
-              <Store className="h-4 w-4" aria-hidden />
-              Store Copy
-            </ButtonLink>
-            <ButtonLink href={`/receipts/${order.id}/combined`}>
-              <Printer className="h-4 w-4" aria-hidden />
-              Combined Print
+              View Bill / Receipt
             </ButtonLink>
             {editing ? (
               <ButtonLink href={`/orders/${order.id}`} variant="secondary">
@@ -222,23 +214,19 @@ export default async function OrderDetailPage({
           </Card>
         </div>
       </div>
-      <Card id="edit-order" className="mt-5 scroll-mt-24">
-        <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <CardTitle>{editing ? "Edit Saved Bill" : "Order Details Editing"}</CardTitle>
-          {editing ? (
+      {editing ? (
+        <Card id="edit-order" className="mt-5 scroll-mt-24">
+          <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <CardTitle>Edit Saved Bill</CardTitle>
             <ButtonLink href={`/orders/${order.id}`} variant="secondary">
               Cancel Edit
             </ButtonLink>
-          ) : null}
-        </CardHeader>
-        <CardContent>
-          {editing ? (
+          </CardHeader>
+          <CardContent>
             <EditOrderForm order={order} measurementTemplate={measurementTemplate} action={updateOrderAction.bind(null, order.id)} />
-          ) : (
-            <p className="text-sm text-muted">Use the Edit Order button at the top to change customer info, status, measurements, cloth photo, notes, costs, priority, or tailor.</p>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      ) : null}
     </AppShell>
   );
 }

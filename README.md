@@ -472,7 +472,7 @@ Example:
 /orders/order-1
 ```
 
-The top of the page shows a progress tracker (Received → Stitching → Ready → Delivered) and buttons to **Call** the customer or send a WhatsApp message: **Ready for pickup** and, when money is due, **Balance reminder**. Messages open WhatsApp with the text filled in, ready to send.
+The top of the page has **View Bill / Receipt** (one button; the Customer / Store / Combined switcher is inside the receipt page), **Edit Order**, and **Delete Order**. The page shows a progress tracker (Received → Stitching → Ready → Delivered) and buttons to **Call** the customer or send a WhatsApp message: **Ready for pickup** and, when money is due, **Balance reminder**. Messages open WhatsApp with the text filled in, ready to send.
 
 Use it for:
 
