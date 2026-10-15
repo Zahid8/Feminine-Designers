@@ -365,6 +365,22 @@ Roles:
 
 ## How To Use The App
 
+### Getting around
+
+- **Laptop**: the sidebar on the left (hide it with the ☰ button). **Phone/tablet**: the tab bar at the bottom; the raised middle button starts a new order.
+- **Search anything**: type in the search box at the top (or press `Ctrl/⌘ + K` or `/`). Matching orders and customers appear as you type; use ↑ ↓ and Enter, or click a result. Pressing Enter without picking a result searches the Orders page.
+- **Open by clicking anywhere**: click any order or customer card/row to open it. Checkboxes and buttons inside a card still do their own job.
+- Delivery countdown badges (**Due today**, **Tomorrow**, **Overdue 5d**) appear on open orders.
+
+### Install on a tablet or phone
+
+The app can be added to the home screen and opens full-screen like an app:
+
+- **Android / Chrome**: open the site, tap ⋮ → **Add to Home screen** (or **Install app**).
+- **iPad / iPhone Safari**: tap Share → **Add to Home Screen**. The installed app keeps its own login, so sign in once inside it.
+
+It still needs an internet connection.
+
 ### Dashboard
 
 Open:
@@ -372,6 +388,8 @@ Open:
 ```text
 /dashboard
 ```
+
+The heading greets you by the time of day. Tap a card (Pending, Overdue, Collected Today, …) to list the matching orders below it; each order row has Call and WhatsApp buttons.
 
 Use it for:
 
@@ -399,6 +417,10 @@ Workflow:
 5. Use **Take Cloth Photo** on a tablet to capture the customer fabric sample.
 6. Add global bill values: order discount, accessories cost, stitching cost, advance payment, and payment mode.
 7. Choose **Save Draft**, **Save Order**, or **Save and Print**.
+
+Starting from a customer profile with **Create New Order** fills in the customer’s name, phone, and saved measurements automatically.
+
+If you try to close or reload the tab with unsaved changes, the browser asks you to confirm first.
 
 Each dress section is saved under the same order number. Discounts are bill-level only; they are not stored per dress item.
 
@@ -434,6 +456,8 @@ Example:
 /orders/order-1
 ```
 
+The top of the page shows a progress tracker (Received → Stitching → Ready → Delivered) and buttons to **Call** the customer or send a WhatsApp message: **Ready for pickup** and, when money is due, **Balance reminder**. Messages open WhatsApp with the text filled in, ready to send.
+
 Use it for:
 
 - Payment summary
@@ -453,6 +477,8 @@ Open:
 ```text
 /customers
 ```
+
+Each customer shows initials, last order date, number of orders, and the amount due (or **Settled**). Use **Remove customers** to switch on delete buttons. A customer’s profile shows lifetime value, outstanding balance, contact details, Call/WhatsApp buttons, and **Create New Order** (prefilled).
 
 Use it for:
 
@@ -510,6 +536,8 @@ public/Logo.PNG
 ```
 
 ## Receipt And PDF Routes
+
+Receipts have a wine header with the logo, the receipt number, a compact list of garments, and a payment summary ending in **Balance due** (or **Paid in full**). Charges that are zero (for example Dye price ₹0) are left out. The store copy labels its date **Ready by** (three days before the customer’s delivery date). The receipt page has a Customer / Store / Combined switcher, **Download PDF**, and **Print**; each copy fits on one A4 page.
 
 Preview in browser:
 
