@@ -28,6 +28,10 @@ Layout is responsive: laptops (`lg`+) get the collapsible sidebar; phones and ta
 - `src/app/manifest.ts` plus `public/icons/*` make the app installable to a tablet or phone home screen.
 - New-order and edit forms warn before the tab is closed with unsaved edits (in-app links are not blocked).
 
+## Public bill links
+
+`src/lib/receipts/bill-link.ts` signs order ids with HMAC-SHA256 (key from `BILL_LINK_SECRET`, else derived from `SUPABASE_SERVICE_ROLE_KEY`; 22-char base64url signature, constant-time compare). `GET /bill/<orderId>/<signature>` (`src/app/bill/[orderId]/[signature]/route.tsx`) returns only the customer-copy PDF, inline, `no-store`, `noindex`. `middleware.ts` lets `/bill/*` through without the staff cookie; every other route still requires login. Absolute links are built from the request host (`src/lib/http/request-origin.ts`).
+
 ## Performance
 
 - Cloth-sample photos are uploaded to the public `cloth-samples` Storage bucket (`src/services/orders/cloth-sample-storage.ts`) and the order row stores the public URL. If the upload fails the data URL is kept inline, so saving never breaks; legacy inline rows are moved with `scripts/migrate-cloth-samples.mjs`.

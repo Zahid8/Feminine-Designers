@@ -553,6 +553,12 @@ public/Logo.PNG
 
 ## Receipt And PDF Routes
 
+### Sharing a bill link with the customer
+
+Every receipt page shows a **Customer bill link** panel with **Copy bill link** and **Send on WhatsApp**. The link looks like `https://<your-site>/bill/<order-id>/<code>`. When the customer taps it, their customer-copy PDF opens directly. There's no login, and they never see the store copy, measurements, or notes. The WhatsApp **Order confirmation** and **Ready for pickup** messages on the order page include the link too.
+
+The code at the end is a signature made from a server secret, so links can't be guessed or edited to open someone else's bill; a wrong code shows "Not found". The secret is `BILL_LINK_SECRET` if set, otherwise it is derived from `SUPABASE_SERVICE_ROLE_KEY`. Changing that secret disables every link shared before. Links do not expire, and the PDF always shows the bill's current state (for example, updated payments).
+
 Receipts have a wine header with the logo, the receipt number, a compact list of garments, and a payment summary ending in **Balance due** (or **Paid in full**). Charges that are zero (for example Dye price ₹0) are left out. The store copy labels its date **Ready by** (three days before the customer’s delivery date). The receipt page has a Customer / Store / Combined switcher, **Download PDF**, and **Print**; each copy fits on one A4 page.
 
 Preview in browser:

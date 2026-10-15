@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Download, Printer } from "lucide-react";
+import { ArrowLeft, Check, Download, Link as LinkIcon, MessageCircle, Printer } from "lucide-react";
+import { useState } from "react";
+import { whatsappLink } from "@/lib/contact/phone-links";
 import type { OrderWithCustomer, ReceiptType, StoreSettings } from "@/types/domain";
 import { Button, buttonBaseClass, buttonVariantClasses } from "@/components/ui/button";
 import { addDaysISO, formatDate } from "@/lib/utils/date";
@@ -30,11 +32,14 @@ const copyTabs: { type: ReceiptType; label: string }[] = [
 export function ReceiptHtml({
   order,
   settings,
-  type
+  type,
+  billLinkUrl
 }: {
   order: OrderWithCustomer;
   settings: StoreSettings;
   type: ReceiptType;
+  /** Absolute signed URL for this order's customer bill, shown to staff for sharing. */
+  billLinkUrl?: string;
 }) {
   const content =
     type === "combined" ? (
@@ -50,6 +55,7 @@ export function ReceiptHtml({
 
   return (
     <div className="min-h-screen bg-background p-3 text-ink sm:p-6 print:bg-white print:p-0">
+      {billLinkUrl ? <ShareBillLink order={order} storeName={settings.storeName} url={billLinkUrl} /> : null}
       <div className="no-print mx-auto mb-4 flex max-w-6xl flex-wrap items-center justify-between gap-3">
         <Link href={`/orders/${order.id}`} className={cn(buttonBaseClass, buttonVariantClasses.secondary)}>
           <ArrowLeft className="h-4 w-4" aria-hidden />
@@ -339,5 +345,46 @@ function Total({ label, value, strong = false }: { label: string; value: number;
       <span className={strong ? undefined : "text-muted"}>{label}</span>
       <span className="tabular-nums">{formatINR(value)}</span>
     </p>
+  );
+}
+
+/** Staff-only panel: copy or WhatsApp the customer's public bill link. */
+function ShareBillLink({ order, storeName, url }: { order: OrderWithCustomer; storeName: string; url: string }) {
+  const [copied, setCopied] = useState(false);
+  const message = `Hello ${order.customer.fullName}, here is your bill ${order.receiptNumber ?? ""} from ${storeName}: ${url}`;
+  const whatsapp = whatsappLink(order.customer.phonePrimary, message);
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      window.prompt("Copy this bill link", url);
+    }
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 2500);
+  }
+
+  return (
+    <section aria-label="Share bill link" className="no-print mx-auto mb-4 grid max-w-6xl gap-3 rounded-2xl border border-white/70 bg-surface p-4 shadow-raised sm:grid-cols-[1fr_auto] sm:items-center">
+      <div className="min-w-0">
+        <p className="font-semibold text-wine-ink">Customer bill link</p>
+        <p className="text-sm text-muted">Send this instead of the PDF file. The customer taps it and the bill PDF opens, no login needed.</p>
+        <p className="mt-2 truncate rounded-lg bg-surface-sunken px-3 py-2 font-mono text-xs text-ink-soft shadow-pressed" title={url}>
+          {url}
+        </p>
+      </div>
+      <div className="flex flex-wrap gap-2 sm:flex-col">
+        <Button onClick={() => void copy()} className="min-h-12 px-6 text-base">
+          {copied ? <Check className="h-5 w-5" aria-hidden /> : <LinkIcon className="h-5 w-5" aria-hidden />}
+          {copied ? "Link copied" : "Copy bill link"}
+        </Button>
+        {whatsapp ? (
+          <a href={whatsapp} target="_blank" rel="noopener noreferrer" className={cn(buttonBaseClass, "min-h-12 bg-gradient-to-br from-emerald-600 to-emerald-500 px-6 text-base text-white shadow-raised-sm")}>
+            <MessageCircle className="h-5 w-5" aria-hidden />
+            Send on WhatsApp
+          </a>
+        ) : null}
+      </div>
+    </section>
   );
 }

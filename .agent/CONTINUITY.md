@@ -16,6 +16,8 @@
 - 2026-10-15T18:13Z [USER] Declined setting STAFF_PASSWORD/STAFF_SESSION_SECRET; do not raise it again (private repo suggested once).
 - 2026-10-15T18:13Z [CODE] Phone/tablet bottom bar now Dashboard, Orders, New Order, Board, Customers; Settings moved to a header gear (lg:hidden) on small screens, still in the laptop sidebar.
 - 2026-10-15T18:26Z [USER] Board belongs on the dashboard, not a separate page; payments are cash/UPI only and the app just records them (no gateway).
+- 2026-10-15T19:18Z [USER] Customers open shared bill links without login and should land directly on the PDF.
+- 2026-10-15T19:18Z [CODE] Bill links: HMAC-signed `/bill/<orderId>/<sig>` returns the customer-copy PDF inline (no DB change, no new env var required; key derived from service-role key unless BILL_LINK_SECRET set). Receipt page has Copy bill link + Send on WhatsApp; order WhatsApp templates include the link.
 
 ## [PROGRESS]
 - 2026-07-01T06:24Z [TOOL] Repository assessment found only `implementation_plan.md` and `IMG_1174.JPG`; no package manager metadata, framework, database files, env files, styles, or tests existed.
@@ -203,3 +205,4 @@
 - 2026-10-15T17:53Z [TOOL] Verification passed for UI passes 1-3: typecheck, lint, test (47 files, 172 tests), build; screenshots at 390/820/1440 px reviewed; live search keyboard flow verified in headless Chrome; receipt PDFs for a 12-garment order and an 18-measurement order are 1 page each.
 - 2026-10-15T18:13Z [TOOL] Verification: typecheck, lint, test (48 files, 176 tests), build; headless Chrome moved SJD-2026-000032 New->In Stitching and Undo restored New (confirmed via REST; two status-history rows added); ? dialog and b shortcut verified.
 - 2026-10-15T18:26Z [TOOL] Verification: typecheck, lint, test (50 files, 183 tests), build; live ₹1 cash payment on SJD-2026-000032 recorded then undone (DB balance back to ₹4,515 Unpaid); phone overflow check passes on dashboard/orders/customers/reports/new/settings.
+- 2026-10-15T19:18Z [TOOL] Verification: typecheck, lint, test (51 files, 186 tests), build; logged-out GET of bill link -> 200 application/pdf inline, 1 page, customer copy only; tampered or cross-order signature -> 404; staff receipts and PDF API still redirect to login; copy button verified in headless Chrome at laptop and phone widths.

@@ -4,7 +4,8 @@ import { AUTH_COOKIE_NAME, isStaffSession, safeNextPath } from "@/lib/auth/simpl
 const PUBLIC_FILE_PATTERN = /\.(?:ico|png|jpg|jpeg|svg|webp|css|js|txt|xml|json|map|webmanifest)$/i;
 
 function isPublicPath(pathname: string) {
-  return pathname === "/login" || pathname.startsWith("/_next/") || PUBLIC_FILE_PATTERN.test(pathname);
+  // /bill/<order>/<signature> is the customer-facing bill link; the page verifies the signature itself.
+  return pathname === "/login" || pathname.startsWith("/bill/") || pathname.startsWith("/_next/") || PUBLIC_FILE_PATTERN.test(pathname);
 }
 
 function requestedPath(request: NextRequest) {

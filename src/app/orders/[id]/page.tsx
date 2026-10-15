@@ -16,6 +16,8 @@ import { PaymentsPanel } from "@/components/orders/payments-panel";
 import { ContactActions } from "@/components/shared/contact-actions";
 import { STORE_SETTINGS } from "@/lib/constants/business";
 import { summarizeGarments } from "@/lib/orders/garment-summary";
+import { billLinkPath } from "@/lib/receipts/bill-link";
+import { requestOrigin } from "@/lib/http/request-origin";
 import { getOrderById } from "@/services/orders/order-service";
 import { getMeasurementTemplateForGarment } from "@/services/measurements/measurement-service";
 import { formatDate, formatDateTime, todayISO } from "@/lib/utils/date";
@@ -34,6 +36,8 @@ export default async function OrderDetailPage({
   const order = await getOrderById(id);
   if (!order) notFound();
   const editing = query.edit === "1";
+  const billPath = billLinkPath(order.id);
+  const billUrl = billPath ? `${await requestOrigin()}${billPath}` : undefined;
   const receiptLabel = order.receiptNumber ?? "your order";
   const balanceDue = order.totals.balanceDuePaise;
   const customerMessages = [
@@ -44,12 +48,13 @@ export default async function OrderDetailPage({
         `Receipt: ${receiptLabel}`,
         `Items: ${summarizeGarments(order.items)}`,
         `Total: ${formatINR(order.totals.grandTotalPaise)} | Paid: ${formatINR(order.totals.totalPaidPaise)} | Balance: ${formatINR(balanceDue)}`,
-        `Expected delivery: ${formatDate(order.deliveryDate)}`
+        `Expected delivery: ${formatDate(order.deliveryDate)}`,
+        ...(billUrl ? [`Your bill: ${billUrl}`] : [])
       ].join("\n")
     },
     {
       label: "Ready for pickup",
-      text: `Hello ${order.customer.fullName}, your order ${receiptLabel} at ${STORE_SETTINGS.storeName} is ready for pickup.${balanceDue > 0 ? ` Balance due: ${formatINR(balanceDue)}.` : ""} Thank you!`
+      text: `Hello ${order.customer.fullName}, your order ${receiptLabel} at ${STORE_SETTINGS.storeName} is ready for pickup.${balanceDue > 0 ? ` Balance due: ${formatINR(balanceDue)}.` : ""}${billUrl ? ` Bill: ${billUrl}` : ""} Thank you!`
     },
     ...(balanceDue > 0
       ? [
