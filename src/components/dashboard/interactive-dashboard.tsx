@@ -11,6 +11,7 @@ import { DeliveryUrgencyBadge, PaymentBadge, PriorityBadge, StatusBadge } from "
 import { summarizeGarments } from "@/lib/orders/garment-summary";
 import { cn } from "@/lib/utils/cn";
 import { cardNavigationHandler } from "@/lib/ui/card-navigation";
+import { ContactActions } from "@/components/shared/contact-actions";
 import { formatDate, formatDateTime } from "@/lib/utils/date";
 import { formatINR } from "@/lib/utils/money";
 import { orderSortOptions, sortOrders, type OrderSortKey } from "@/lib/orders/order-sort";
@@ -118,7 +119,10 @@ function OrderQueue({
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">{order.receiptNumber ?? "Draft"}</p>
               <h3 className="mt-1 text-lg font-semibold text-wine-ink">{order.customer.fullName}</h3>
-              <p className="text-sm text-muted">{order.customer.phonePrimary}</p>
+              <div className="mt-1 flex flex-wrap items-center gap-2">
+                <p className="text-sm text-muted">{order.customer.phonePrimary}</p>
+                <ContactActions phone={order.customer.phonePrimary} compact className="gap-1.5 [&_a]:min-h-8 [&_a]:px-2" />
+              </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <label className="inline-flex min-h-8 items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-2 text-xs font-semibold text-emerald-800">

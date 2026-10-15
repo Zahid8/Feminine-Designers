@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, Input, Textarea } from "@/components/ui/input";
 import { MeasurementGrid } from "@/components/measurements/measurement-grid";
+import { useUnsavedChangesGuard } from "@/lib/ui/use-unsaved-changes-guard";
 import { GARMENT_TYPES, MEASUREMENT_TEMPLATES, STORE_SETTINGS } from "@/lib/constants/business";
 import { calculateOrderTotals } from "@/lib/calculations/order";
 import { todayISO } from "@/lib/utils/date";
@@ -77,7 +78,8 @@ export function NewOrderForm({
   measurementTemplates = MEASUREMENT_TEMPLATES,
   nextReceiptNumber,
   orderDate = todayISO(),
-  deliveryDate = orderDate
+  deliveryDate = orderDate,
+  initialCustomer
 }: {
   action?: (state: OrderActionState, formData: FormData) => Promise<OrderActionState>;
   garmentTypes?: GarmentType[];
@@ -85,17 +87,22 @@ export function NewOrderForm({
   nextReceiptNumber?: string;
   orderDate?: string;
   deliveryDate?: string;
+  /** Prefills customer details and saved measurements, e.g. from a customer profile. */
+  initialCustomer?: ReturningCustomerMatch;
 }) {
   const [state, formAction, isPending] = useActionState(action, initialOrderActionState);
-  const [customerName, setCustomerName] = useState("");
-  const [phonePrimary, setPhonePrimary] = useState("");
-  const [returningCustomerQuery, setReturningCustomerQuery] = useState("");
+  const unsavedGuard = useUnsavedChangesGuard();
+  const [customerName, setCustomerName] = useState(initialCustomer?.fullName ?? "");
+  const [phonePrimary, setPhonePrimary] = useState(initialCustomer?.phonePrimary ?? "");
+  const [returningCustomerQuery, setReturningCustomerQuery] = useState(initialCustomer?.fullName ?? "");
   const [returningCustomerMatches, setReturningCustomerMatches] = useState<ReturningCustomerMatch[]>([]);
   const [selectedReturningCustomerId, setSelectedReturningCustomerId] = useState("");
   const [returningCustomerStatus, setReturningCustomerStatus] = useState<"idle" | "searching" | "error">("idle");
-  const [appliedMeasurements, setAppliedMeasurements] = useState<ReturningCustomerMatch["measurements"]>([]);
-  const [measurementValues, setMeasurementValues] = useState<Record<string, string>>({});
-  const [measurementGridKey, setMeasurementGridKey] = useState("new");
+  const [appliedMeasurements, setAppliedMeasurements] = useState<ReturningCustomerMatch["measurements"]>(initialCustomer?.measurements ?? []);
+  const [measurementValues, setMeasurementValues] = useState<Record<string, string>>(() =>
+    Object.fromEntries((initialCustomer?.measurements ?? []).map((measurement) => [measurement.fieldKey, measurement.value === "NA" ? "" : measurement.value]))
+  );
+  const [measurementGridKey, setMeasurementGridKey] = useState(initialCustomer ? `${initialCustomer.id}-initial` : "new");
   const [clothCount, setClothCount] = useState(1);
   const [items, setItems] = useState([
     {
@@ -302,7 +309,7 @@ export function NewOrderForm({
   }
 
   return (
-    <form action={formAction} className="grid gap-5">
+    <form action={formAction} className="grid gap-5" onChange={unsavedGuard.onChange} onSubmit={unsavedGuard.onSubmit}>
       {state.message ? (
         <div
           className={`rounded-xl border px-4 py-3 text-sm font-semibold ${

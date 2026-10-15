@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { GuardedForm } from "@/components/shared/guarded-form";
 import { Field, Input, Textarea } from "@/components/ui/input";
 import { ClothSamplePhotoField } from "@/components/orders/cloth-sample-photo-field";
 import { EditOrderChoiceFields } from "@/components/orders/edit-order-choice-fields";
@@ -25,7 +26,7 @@ export function EditOrderForm({
   const latestPayment = order.payments.at(-1);
 
   return (
-    <form action={action} className="grid gap-5">
+    <GuardedForm action={action} className="grid gap-5">
       <div className="grid gap-4 md:grid-cols-2">
         <Field label="Customer name">
           <Input name="customerName" defaultValue={order.customer.fullName} />
@@ -132,6 +133,6 @@ export function EditOrderForm({
       <div className="flex justify-end">
         <Button type="submit">Save Edited Bill</Button>
       </div>
-    </form>
+    </GuardedForm>
   );
 }

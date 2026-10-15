@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, LogOut, Menu, Plus, ReceiptText, Search, Settings, UserRoundPlus, Users } from "lucide-react";
+import { Home, LogOut, Menu, Plus, ReceiptText, Settings, UserRoundPlus, Users } from "lucide-react";
 import { useState } from "react";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { LogoMark } from "@/components/shared/logo-mark";
 import { IndiaClock } from "@/components/shared/india-clock";
+import { GlobalSearch } from "@/components/layout/global-search";
 import { cn } from "@/lib/utils/cn";
 
 const navItems = [
@@ -90,16 +91,7 @@ export function AppShellFrame({
               >
                 <Menu className="h-4 w-4" />
               </Button>
-              <form action="/orders" method="get" role="search" className="relative min-w-0 max-w-xl flex-1">
-                <Search aria-hidden className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
-                <input
-                  type="search"
-                  name="q"
-                  aria-label="Search orders"
-                  placeholder="Search receipt, phone, or customer"
-                  className="h-11 w-full rounded-2xl border border-transparent bg-surface-sunken pl-9 pr-3 text-sm text-ink shadow-pressed outline-none transition placeholder:text-muted-soft focus:border-gold focus:bg-surface-strong focus:ring-2 focus:ring-gold/30"
-                />
-              </form>
+              <GlobalSearch />
             </div>
             <div className="flex items-center gap-2">
               <span className="hidden rounded-2xl bg-surface px-3 py-2.5 shadow-raised-sm md:inline-flex">

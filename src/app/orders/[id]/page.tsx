@@ -12,6 +12,8 @@ import { EditOrderForm } from "@/components/orders/edit-order-form";
 import { OrderStatusCheckboxEditor } from "@/components/orders/order-status-checkbox-editor";
 import { DeliveryUrgencyBadge, PaymentBadge, PriorityBadge, StatusBadge } from "@/components/ui/status-badge";
 import { OrderProgress } from "@/components/orders/order-progress";
+import { ContactActions } from "@/components/shared/contact-actions";
+import { STORE_SETTINGS } from "@/lib/constants/business";
 import { getOrderById } from "@/services/orders/order-service";
 import { getMeasurementTemplateForGarment } from "@/services/measurements/measurement-service";
 import { formatDate, formatDateTime, todayISO } from "@/lib/utils/date";
@@ -30,6 +32,22 @@ export default async function OrderDetailPage({
   const order = await getOrderById(id);
   if (!order) notFound();
   const editing = query.edit === "1";
+  const receiptLabel = order.receiptNumber ?? "your order";
+  const balanceDue = order.totals.balanceDuePaise;
+  const customerMessages = [
+    {
+      label: "Ready for pickup",
+      text: `Hello ${order.customer.fullName}, your order ${receiptLabel} at ${STORE_SETTINGS.storeName} is ready for pickup.${balanceDue > 0 ? ` Balance due: ${formatINR(balanceDue)}.` : ""} Thank you!`
+    },
+    ...(balanceDue > 0
+      ? [
+          {
+            label: "Balance reminder",
+            text: `Hello ${order.customer.fullName}, a gentle reminder that ${formatINR(balanceDue)} is pending for order ${receiptLabel} at ${STORE_SETTINGS.storeName}. Thank you!`
+          }
+        ]
+      : [])
+  ];
   const measurementTemplate = order.measurements.length === 0 ? await getMeasurementTemplateForGarment(order.items[0]?.garmentType ?? "Custom") : undefined;
 
   return (
@@ -67,6 +85,7 @@ export default async function OrderDetailPage({
           </CardHeader>
           <CardContent className="grid gap-4">
             <OrderProgress status={order.status} />
+            <ContactActions phone={order.customer.phonePrimary} messages={customerMessages} />
             <div className="flex flex-wrap gap-2">
               <StatusBadge status={order.status} />
               <DeliveryUrgencyBadge deliveryDate={order.deliveryDate} status={order.status} today={todayISO()} />

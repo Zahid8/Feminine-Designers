@@ -15,6 +15,26 @@ describe("NewOrderForm actions", () => {
     expect((screen.getByLabelText(/phone number/i) as HTMLInputElement).value).toBe("");
   });
 
+  it("prefills customer details and saved measurements when opened for a customer", () => {
+    render(
+      <NewOrderForm
+        initialCustomer={{
+          id: "customer-1",
+          customerCode: "C1",
+          fullName: "Natasha",
+          phonePrimary: "9717075751",
+          measurements: [
+            { id: "m1", fieldKey: "length", displayCode: "L", displayLabel: "Length", value: "38", unit: "in", sortOrder: 1 }
+          ]
+        }}
+      />
+    );
+
+    expect((screen.getByLabelText(/search or customer name/i) as HTMLInputElement).value).toBe("Natasha");
+    expect((screen.getByLabelText(/phone number/i) as HTMLInputElement).value).toBe("9717075751");
+    expect((document.querySelector('input[name="measurement.length"]') as HTMLInputElement).value).toBe("38");
+  });
+
   it("starts advance payment at zero", () => {
     render(<NewOrderForm />);
 

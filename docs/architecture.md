@@ -20,6 +20,14 @@ The app is organized around typed domain services:
 
 Layout is responsive: laptops (`lg`+) get the collapsible sidebar; phones and tablets get a fixed bottom tab bar (`Mobile navigation`) with a raised New Order action, and sticky page action bars sit above it. List cards and table rows open their record when clicked anywhere (`src/lib/ui/card-navigation.ts`); checkboxes, buttons, and links inside them keep their own behaviour.
 
+## Quality-of-life features
+
+- Header search (`src/components/layout/global-search.tsx`) queries `/api/search` for up to six orders and six customers; Ctrl/Cmd+K or `/` focuses it, Enter without a highlighted result searches the Orders page.
+- `ContactActions` renders Call (`tel:`) and WhatsApp (`wa.me`, Indian numbers prefixed with 91) links; the order page adds Ready-for-pickup and Balance-reminder messages.
+- `/orders/new?customer=<id>` prefills the customer and saved measurements; the customer page's Create New Order uses it.
+- `src/app/manifest.ts` plus `public/icons/*` make the app installable to a tablet or phone home screen.
+- New-order and edit forms warn before the tab is closed with unsaved edits (in-app links are not blocked).
+
 ## Performance
 
 - Cloth-sample photos are uploaded to the public `cloth-samples` Storage bucket (`src/services/orders/cloth-sample-storage.ts`) and the order row stores the public URL. If the upload fails the data URL is kept inline, so saving never breaks; legacy inline rows are moved with `scripts/migrate-cloth-samples.mjs`.

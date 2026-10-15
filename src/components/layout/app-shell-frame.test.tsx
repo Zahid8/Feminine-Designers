@@ -2,6 +2,11 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { AppShellFrame } from "@/components/layout/app-shell-frame";
 
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/orders",
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() })
+}));
+
 describe("AppShellFrame", () => {
   it("starts with the sidebar expanded and toggles it with the hamburger button", () => {
     render(
@@ -41,5 +46,6 @@ describe("AppShellFrame", () => {
     const mobileNav = screen.getByRole("navigation", { name: /mobile navigation/i });
     expect(mobileNav.className).toContain("lg:hidden");
     expect(mobileNav.querySelectorAll("a")).toHaveLength(5);
+    expect(mobileNav.querySelector('[aria-current="page"]')?.textContent).toBe("Orders");
   });
 });

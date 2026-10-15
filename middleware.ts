@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { AUTH_COOKIE_NAME, isStaffSession, safeNextPath } from "@/lib/auth/simple-auth";
 
-const PUBLIC_FILE_PATTERN = /\.(?:ico|png|jpg|jpeg|svg|webp|css|js|txt|xml|json|map)$/i;
+const PUBLIC_FILE_PATTERN = /\.(?:ico|png|jpg|jpeg|svg|webp|css|js|txt|xml|json|map|webmanifest)$/i;
 
 function isPublicPath(pathname: string) {
   return pathname === "/login" || pathname.startsWith("/_next/") || PUBLIC_FILE_PATTERN.test(pathname);

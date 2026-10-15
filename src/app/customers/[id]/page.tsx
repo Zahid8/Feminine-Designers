@@ -9,6 +9,7 @@ import { getCustomerProfile } from "@/services/customers/customer-service";
 import { formatINR } from "@/lib/utils/money";
 import { formatDate, todayISO } from "@/lib/utils/date";
 import { initialsFor } from "@/lib/utils/initials";
+import { ContactActions } from "@/components/shared/contact-actions";
 
 export default async function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -26,7 +27,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
         action={
           <div className="flex flex-wrap gap-2">
             <ButtonLink href={`/customers/${id}/measurements`} variant="secondary">Measurements</ButtonLink>
-            <ButtonLink href="/orders/new">Create New Order</ButtonLink>
+            <ButtonLink href={`/orders/new?customer=${id}`}>Create New Order</ButtonLink>
           </div>
         }
       />
@@ -45,6 +46,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
             </div>
           </CardHeader>
           <CardContent className="grid gap-4 text-sm">
+            <ContactActions phone={profile.customer.phonePrimary} />
             <dl className="grid grid-cols-2 gap-3">
               {[
                 ["Orders", String(profile.orders.length)],
