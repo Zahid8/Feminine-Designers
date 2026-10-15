@@ -121,7 +121,7 @@ export function SettingsManagement({
                     <span>{template.fields.filter((field) => field.active).length} active fields</span>
                     <ChevronDown aria-hidden className="h-4 w-4 transition group-open:rotate-180" />
                   </summary>
-                  <div className="mt-2 grid gap-2">
+                  <div className="mt-2 grid max-h-80 gap-2 overflow-y-auto overscroll-contain pr-1 [scrollbar-width:thin]">
                   {template.fields.map((field) => (
                     <div key={field.id} className="flex items-center justify-between gap-2 rounded-xl border border-line bg-cream px-2 py-1 text-xs">
                       <span>

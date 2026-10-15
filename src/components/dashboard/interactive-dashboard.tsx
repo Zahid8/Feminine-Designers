@@ -110,7 +110,7 @@ function OrderQueue({
   }
 
   return (
-    <div className="grid gap-3">
+    <div className="grid max-h-[75vh] gap-3 overflow-y-auto overscroll-contain pr-1 [scrollbar-width:thin]">
       {orders.map((order) => (
         <div
           key={order.id}
@@ -216,7 +216,7 @@ function PaymentQueue({
   }
 
   return (
-    <div className="grid gap-3">
+    <div className="grid max-h-[75vh] gap-3 overflow-y-auto overscroll-contain pr-1 [scrollbar-width:thin]">
       {visiblePayments.map((payment) => (
         <div
           key={payment.id}

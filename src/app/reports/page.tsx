@@ -108,9 +108,9 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
           {model.topCustomers.length === 0 ? (
             <p className="text-sm text-muted">No orders in this period.</p>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="max-h-96 overflow-auto overscroll-contain [scrollbar-width:thin]">
               <table className="w-full min-w-[32rem] text-sm">
-                <thead className="text-left text-xs uppercase text-muted-strong">
+                <thead className="sticky top-0 z-10 bg-surface text-left text-xs uppercase text-muted-strong">
                   <tr>
                     <th className="py-2 pr-3 font-semibold">Customer</th>
                     <th className="py-2 pr-3 text-right font-semibold">Orders</th>

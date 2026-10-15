@@ -204,7 +204,7 @@ export default async function OrderDetailPage({
             <CardHeader>
               <CardTitle>Status Timeline</CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-3">
+            <CardContent className="grid max-h-80 gap-3 overflow-y-auto overscroll-contain [scrollbar-width:thin]">
               {order.statusHistory.map((entry) => (
                 <div key={entry.id} className="border-l-2 border-wine pl-3">
                   <p className="font-semibold">{entry.toStatus}</p>

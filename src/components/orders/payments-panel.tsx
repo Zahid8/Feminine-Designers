@@ -101,7 +101,7 @@ export function PaymentsPanel({ orderId, payments, balanceDuePaise }: { orderId:
       {sorted.length === 0 ? (
         <p className="text-sm text-muted">No payments recorded yet.</p>
       ) : (
-        <ul className="grid gap-2">
+        <ul className="grid max-h-72 gap-2 overflow-y-auto overscroll-contain pr-1 [scrollbar-width:thin]">
           {sorted.map((payment) => (
             <li key={payment.id} className="flex items-center gap-3 rounded-xl border border-white/70 bg-surface px-3 py-2 shadow-raised-sm">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">

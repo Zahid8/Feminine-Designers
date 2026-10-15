@@ -80,7 +80,7 @@ export function WeekStrip({ week, overdue = [] }: { week: DashboardDeliveryDay[]
           );
         })}
       </div>
-      <div role="tabpanel" className="mt-3 grid gap-2">
+      <div role="tabpanel" className="mt-3 grid max-h-96 gap-2 overflow-y-auto overscroll-contain pr-1 [scrollbar-width:thin]">
         {selected.orders.length === 0 ? (
           <p className="rounded-xl bg-surface-sunken px-4 py-5 text-center text-sm text-muted shadow-pressed">
             No deliveries due {selected.label === "Today" || selected.label === "Tomorrow" ? selected.label.toLowerCase() : `on ${selected.weekday} ${selected.dayOfMonth}`}.

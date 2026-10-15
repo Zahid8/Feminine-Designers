@@ -107,9 +107,9 @@ export function OrderTable({
           </label>
         ))}
       </div>
-      <div className="hidden overflow-x-auto lg:block">
+      <div className="hidden max-h-[calc(100vh-17rem)] overflow-auto overscroll-contain [scrollbar-width:thin] lg:block">
         <table className="w-full text-left text-sm">
-          <thead className="bg-peach text-xs uppercase text-muted-strong">
+          <thead className="sticky top-0 z-10 bg-peach text-xs uppercase text-muted-strong shadow-[0_1px_0_var(--color-line)]">
             <tr>
               {columns.map(([key, label]) =>
                 visibleColumns[key] ? (
@@ -203,7 +203,7 @@ export function OrderTable({
           </tbody>
         </table>
       </div>
-      <div className="grid gap-3 p-3 lg:hidden">
+      <div className="grid max-h-[75vh] gap-3 overflow-y-auto overscroll-contain p-3 [scrollbar-width:thin] lg:hidden">
         {sortedOrders.map((order) => (
           <div
             key={order.id}
