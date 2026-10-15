@@ -34,6 +34,8 @@ import { uniqueMeasurementNotes } from "@/lib/utils/receipt-notes";
 import { formatExtraCostLine } from "@/lib/utils/extra-cost-display";
 import { formatFabricLengthDisplay } from "@/lib/utils/fabric-length-display";
 import { cn } from "@/lib/utils/cn";
+import { paymentSummaryLines, type SummaryLine } from "@/lib/calculations/payment-summary";
+import { groupedExtraCosts } from "@/lib/utils/extra-cost-display";
 
 const customerReceiptFooter = [
   "Delivery date is approximate. Please bring this receipt at the time of delivery.",
@@ -495,66 +497,32 @@ function ReceiptItemSummary({
   );
 }
 
-function PaymentSummary({
-  order,
-  compact
-}: {
-  order: OrderWithCustomer;
-  compact: boolean;
-}) {
-  const { totals } = order;
-  const optionalLines: [string, number][] = [
-    ["Accessories", totals.accessoriesCostPaise],
-    ["Stitching", totals.stitchingCostPaise],
-    ["Fabric price", totals.fabricPricePaise],
-    ["Dye price", totals.dyePricePaise],
-    ["Extra costs", totals.extraCostPaise],
-    ["Discount", -totals.orderDiscountPaise]
-  ];
-  const paidInFull = totals.balanceDuePaise <= 0;
+function PaymentSummary({ order, compact }: { order: OrderWithCustomer; compact: boolean }) {
+  const lines = paymentSummaryLines(order.totals, { namedExtras: groupedExtraCosts(order.items) });
+  const parts = lines.filter((line) => line.kind === "part");
+  const balance = lines.find((line) => line.kind === "balance")!;
+  const paidInFull = order.totals.balanceDuePaise <= 0;
+  const sign = (line: SummaryLine, index: number) =>
+    line.kind === "part" ? (index === 0 ? "" : "+ ") : line.kind === "tax" ? "+ " : line.kind === "discount" || line.kind === "paid" ? "− " : "";
 
   return (
-    <div
-      className={cn(
-        "h-fit break-inside-avoid rounded-xl border border-line bg-paper",
-        compact ? "p-2.5 text-[11px]" : "p-3 text-sm"
-      )}
-    >
-      <p className="mb-1 font-serif text-base font-semibold text-wine-ink">
-        Payment summary
-      </p>
-      <Total label="Subtotal" value={totals.subtotalPaise} />
-      {optionalLines
-        .filter(([, value]) => value !== 0)
-        .map(([label, value]) => (
-          <Total key={label} label={label} value={value} />
+    <div className={cn("h-fit break-inside-avoid rounded-xl border border-line bg-paper", compact ? "p-2.5 text-[11px]" : "p-3 text-sm")}>
+      <p className="mb-1 font-serif text-base font-semibold text-wine-ink">Payment summary</p>
+      {parts.length ? <p className="mb-1 text-[11px] italic text-muted">Your item amounts are made up of:</p> : null}
+      {lines
+        .filter((line) => line.kind !== "balance")
+        .map((line, index) => (
+          <Total
+            key={line.key}
+            label={`${sign(line, index)}${line.label}`}
+            value={Math.abs(line.amountPaise)}
+            strong={line.kind === "subtotal" || line.kind === "total"}
+            part={line.kind === "part"}
+          />
         ))}
-      <Total label="CGST" value={totals.cgstAmountPaise} />
-      <Total label="SGST" value={totals.sgstAmountPaise} />
-      <Total label="Grand Total" value={totals.grandTotalPaise} strong />
-      <Total label="Advance" value={totals.totalPaidPaise} />
-      <div
-        className={cn(
-          "mt-2 rounded-lg px-3 py-2",
-          paidInFull ? "bg-emerald-50 text-success" : "bg-wine text-white"
-        )}
-      >
-        <p
-          className={cn(
-            "text-[10px] uppercase tracking-wide",
-            paidInFull ? "text-success" : "text-[#f8dccb]"
-          )}
-        >
-          {paidInFull ? "Paid in full" : "Balance due"}
-        </p>
-        <p
-          className={cn(
-            "font-bold tabular-nums",
-            compact ? "text-base" : "text-xl"
-          )}
-        >
-          {formatINR(totals.balanceDuePaise)}
-        </p>
+      <div className={cn("mt-2 rounded-lg px-3 py-2", paidInFull ? "bg-emerald-50 text-success" : "bg-wine text-white")}>
+        <p className={cn("text-[10px] uppercase tracking-wide", paidInFull ? "text-success" : "text-[#f8dccb]")}>{balance.label}</p>
+        <p className={cn("font-bold tabular-nums", compact ? "text-base" : "text-xl")}>{formatINR(order.totals.balanceDuePaise)}</p>
       </div>
     </div>
   );
@@ -584,24 +552,17 @@ function Info({
   );
 }
 
-function Total({
-  label,
-  value,
-  strong = false
-}: {
-  label: string;
-  value: number;
-  strong?: boolean;
-}) {
+function Total({ label, value, strong = false, part = false }: { label: string; value: number; strong?: boolean; part?: boolean }) {
   return (
     <p
       className={cn(
         "flex justify-between gap-4 py-0.5",
-        strong && "mt-1 border-t border-line pt-1.5 font-bold text-wine-ink"
+        strong && "mt-1 border-t border-line pt-1.5 font-bold text-wine-ink",
+        part && "border-l-2 border-gold-soft pl-2 text-xs"
       )}
     >
       <span className={strong ? undefined : "text-muted"}>{label}</span>
-      <span className="tabular-nums">{formatINR(value)}</span>
+      <span className={cn("tabular-nums", part && "text-muted")}>{formatINR(value)}</span>
     </p>
   );
 }

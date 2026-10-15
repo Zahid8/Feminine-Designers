@@ -15,6 +15,9 @@ import { OrderProgress } from "@/components/orders/order-progress";
 import { PaymentsPanel } from "@/components/orders/payments-panel";
 import { ContactActions } from "@/components/shared/contact-actions";
 import { STORE_SETTINGS } from "@/lib/constants/business";
+import { paymentSummaryLines } from "@/lib/calculations/payment-summary";
+import { groupedExtraCosts } from "@/lib/utils/extra-cost-display";
+import { cn } from "@/lib/utils/cn";
 import { summarizeGarments } from "@/lib/orders/garment-summary";
 import { billLinkPath } from "@/lib/receipts/bill-link";
 import { requestOrigin } from "@/lib/http/request-origin";
@@ -165,26 +168,21 @@ export default async function OrderDetailPage({
               <CardTitle>Payment Summary</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-2 text-sm">
-              {[
-                ["Subtotal", order.totals.subtotalPaise],
-                ["Accessories", order.totals.accessoriesCostPaise],
-                ["Stitching", order.totals.stitchingCostPaise],
-                ["Fabric price", order.totals.fabricPricePaise],
-                ["Dye price", order.totals.dyePricePaise],
-                ["Extra costs", order.totals.extraCostPaise],
-                ["Discount", -order.totals.orderDiscountPaise],
-                ["CGST", order.totals.cgstAmountPaise],
-                ["SGST", order.totals.sgstAmountPaise],
-                ["Grand Total", order.totals.grandTotalPaise],
-                ["Paid", order.totals.totalPaidPaise],
-                ["Balance", order.totals.balanceDuePaise]
-              ]
-                // Optional charges are only listed when they apply, matching the receipts.
-                .filter(([label, value]) => Number(value) !== 0 || ["Subtotal", "CGST", "SGST", "Grand Total", "Paid", "Balance"].includes(String(label)))
-                .map(([label, value]) => (
-                <div key={label} className="flex justify-between border-b border-line py-2 last:border-0">
-                  <span>{label}</span>
-                  <strong>{formatINR(Number(value))}</strong>
+              {paymentSummaryLines(order.totals, { namedExtras: groupedExtraCosts(order.items) }).map((line) => (
+                <div
+                  key={line.key}
+                  className={cn(
+                    "flex justify-between border-b border-line py-2 last:border-0",
+                    line.kind === "part" && "border-l-2 border-l-gold-soft py-1.5 pl-3 text-muted-strong",
+                    (line.kind === "subtotal" || line.kind === "total") && "font-bold text-wine-ink",
+                    line.kind === "balance" && (order.totals.balanceDuePaise > 0 ? "font-bold text-wine" : "font-bold text-success")
+                  )}
+                >
+                  <span>
+                    {line.kind === "tax" ? "+ " : line.kind === "discount" || line.kind === "paid" ? "− " : ""}
+                    {line.label}
+                  </span>
+                  <strong className="tabular-nums">{formatINR(Math.abs(line.amountPaise))}</strong>
                 </div>
               ))}
             </CardContent>

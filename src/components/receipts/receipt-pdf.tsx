@@ -9,6 +9,8 @@ import { getPublicPngDataUri } from "@/lib/utils/pdf-assets";
 import { uniqueMeasurementNotes } from "@/lib/utils/receipt-notes";
 import { formatExtraCostLine } from "@/lib/utils/extra-cost-display";
 import { formatFabricLengthDisplay } from "@/lib/utils/fabric-length-display";
+import { paymentSummaryLines, type SummaryLine } from "@/lib/calculations/payment-summary";
+import { groupedExtraCosts } from "@/lib/utils/extra-cost-display";
 
 const customerReceiptFooter = [
   "Delivery date is approximate. Please bring this receipt at the time of delivery.",
@@ -156,8 +158,13 @@ const styles = StyleSheet.create({
   totalsCard: { borderWidth: 1, borderColor: colors.line, borderRadius: 8, backgroundColor: colors.paper, padding: 9 },
   totalsCardCompact: { padding: 6 },
   totalsTitle: { fontFamily: "Times-Bold", fontSize: 11.5, color: colors.wineInk, marginBottom: 4 },
-  totalRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 1.6 },
+  totalRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 1.4 },
   totalLabel: { color: colors.muted },
+  totalPart: { paddingLeft: 6, borderLeftWidth: 1.5, borderLeftColor: colors.goldSoft },
+  totalPartText: { color: colors.muted, fontSize: 8 },
+  totalsTitleCompact: { fontSize: 9.5, marginBottom: 2 },
+  balanceBoxCompact: { marginTop: 4, paddingVertical: 4 },
+  totalsCaption: { color: colors.muted, fontSize: 6.8, marginBottom: 2, fontFamily: "Helvetica-Oblique" },
   totalStrong: { borderTopWidth: 1, borderTopColor: colors.line, marginTop: 3, paddingTop: 4 },
   totalStrongText: { fontFamily: "Helvetica-Bold", color: colors.wineInk },
   balanceBox: { marginTop: 7, borderRadius: 6, backgroundColor: colors.wine, paddingVertical: 7, paddingHorizontal: 9 },
@@ -395,35 +402,33 @@ function ReceiptPdfItemSummary({ order, mode, compact }: { order: OrderWithCusto
 }
 
 function PaymentSummary({ order, compact }: { order: OrderWithCustomer; compact: boolean }) {
-  const { totals } = order;
-  // Optional charges are listed only when they apply, so the summary stays short.
-  const optionalLines: [string, number][] = [
-    ["Accessories", totals.accessoriesCostPaise],
-    ["Stitching", totals.stitchingCostPaise],
-    ["Fabric price", totals.fabricPricePaise],
-    ["Dye price", totals.dyePricePaise],
-    ["Extra costs", totals.extraCostPaise],
-    ["Discount", -totals.orderDiscountPaise]
-  ];
-  const paidInFull = totals.balanceDuePaise <= 0;
+  const lines = paymentSummaryLines(order.totals, { namedExtras: groupedExtraCosts(order.items) });
+  const parts = lines.filter((line) => line.kind === "part");
+  const balance = lines.find((line) => line.kind === "balance")!;
+  const paidInFull = order.totals.balanceDuePaise <= 0;
+  // Running calculation: parts add up to the subtotal, then taxes are added and payments taken off.
+  const sign = (line: SummaryLine, index: number) =>
+    line.kind === "part" ? (index === 0 ? "" : "+ ") : line.kind === "tax" ? "+ " : line.kind === "discount" || line.kind === "paid" ? "- " : "";
 
   return (
     <View style={compact ? [styles.totalsCard, styles.totalsCardCompact] : styles.totalsCard}>
-      <Text style={styles.totalsTitle}>Payment summary</Text>
-      <Total label="Subtotal" value={totals.subtotalPaise} />
-      {optionalLines.filter(([, value]) => value !== 0).map(([label, value]) => (
-        <Total key={label} label={label} value={value} />
-      ))}
-      <Total label="CGST" value={totals.cgstAmountPaise} />
-      <Total label="SGST" value={totals.sgstAmountPaise} />
-      <Total label="Grand Total" value={totals.grandTotalPaise} strong />
-      <Total label="Advance" value={totals.totalPaidPaise} />
-      <View style={paidInFull ? [styles.balanceBox, styles.balanceBoxPaid] : styles.balanceBox}>
-        <Text style={paidInFull ? [styles.balanceLabel, styles.balanceLabelPaid] : styles.balanceLabel}>{paidInFull ? "Paid in full" : "Balance due"}</Text>
-        <Text
-          style={[styles.balanceValue, ...(compact ? [styles.balanceValueCompact] : []), ...(paidInFull ? [styles.balanceValuePaid] : [])]}
-        >
-          {formatPdfINR(totals.balanceDuePaise)}
+      <Text style={compact ? [styles.totalsTitle, styles.totalsTitleCompact] : styles.totalsTitle}>Payment summary</Text>
+      {parts.length && !compact ? <Text style={styles.totalsCaption}>Your item amounts are made up of:</Text> : null}
+      {lines
+        .filter((line) => line.kind !== "balance")
+        .map((line, index) => (
+          <Total
+            key={line.key}
+            label={`${sign(line, index)}${line.label}`}
+            value={Math.abs(line.amountPaise)}
+            strong={line.kind === "subtotal" || line.kind === "total"}
+            part={line.kind === "part"}
+          />
+        ))}
+      <View style={[styles.balanceBox, ...(paidInFull ? [styles.balanceBoxPaid] : []), ...(compact ? [styles.balanceBoxCompact] : [])]}>
+        <Text style={paidInFull ? [styles.balanceLabel, styles.balanceLabelPaid] : styles.balanceLabel}>{balance.label}</Text>
+        <Text style={[styles.balanceValue, ...(compact ? [styles.balanceValueCompact] : []), ...(paidInFull ? [styles.balanceValuePaid] : [])]}>
+          {formatPdfINR(order.totals.balanceDuePaise)}
         </Text>
       </View>
     </View>
@@ -452,11 +457,11 @@ function Info({
   );
 }
 
-function Total({ label, value, strong = false }: { label: string; value: number; strong?: boolean }) {
+function Total({ label, value, strong = false, part = false }: { label: string; value: number; strong?: boolean; part?: boolean }) {
   return (
-    <View style={strong ? [styles.totalRow, styles.totalStrong] : styles.totalRow}>
-      <Text style={strong ? styles.totalStrongText : styles.totalLabel}>{label}</Text>
-      <Text style={strong ? styles.totalStrongText : undefined}>{formatPdfINR(value)}</Text>
+    <View style={strong ? [styles.totalRow, styles.totalStrong] : part ? [styles.totalRow, styles.totalPart] : styles.totalRow}>
+      <Text style={strong ? styles.totalStrongText : part ? styles.totalPartText : styles.totalLabel}>{label}</Text>
+      <Text style={strong ? styles.totalStrongText : part ? styles.totalPartText : undefined}>{formatPdfINR(value)}</Text>
     </View>
   );
 }

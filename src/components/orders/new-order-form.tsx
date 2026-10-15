@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, Input, Textarea } from "@/components/ui/input";
 import { MeasurementGrid } from "@/components/measurements/measurement-grid";
+import { paymentSummaryLines } from "@/lib/calculations/payment-summary";
+import { cn } from "@/lib/utils/cn";
 import { useUnsavedChangesGuard } from "@/lib/ui/use-unsaved-changes-guard";
 import { GARMENT_TYPES, MEASUREMENT_TEMPLATES, STORE_SETTINGS } from "@/lib/constants/business";
 import { calculateOrderTotals } from "@/lib/calculations/order";
@@ -737,23 +739,20 @@ export function NewOrderForm({
               <Calculator className="h-4 w-4" />
               Live totals
             </p>
-            {[
-              ["Subtotal", totals.subtotalPaise],
-              ["Accessories", totals.accessoriesCostPaise],
-              ["Stitching", totals.stitchingCostPaise],
-              ["Fabric price", totals.fabricPricePaise],
-              ["Dye price", totals.dyePricePaise],
-              ...(extraCostTotalRows.length ? extraCostTotalRows : [["Extra costs", totals.extraCostPaise]]),
-              ["Discount", -totals.orderDiscountPaise],
-              ["CGST", totals.cgstAmountPaise],
-              ["SGST", totals.sgstAmountPaise],
-              ["Grand Total", totals.grandTotalPaise],
-              ["Advance", totals.totalPaidPaise],
-              ["Balance", totals.balanceDuePaise]
-            ].map(([label, value]) => (
-              <div key={label} className="flex justify-between border-b border-line py-2 text-sm last:border-0">
-                <span>{label}</span>
-                <strong>{formatINR(Number(value))}</strong>
+            {paymentSummaryLines(totals, { namedExtras: extraCostTotalRows.map(([label, amountPaise]) => ({ label: String(label), amountPaise: Number(amountPaise) })) }).map((line) => (
+              <div
+                key={line.key}
+                className={cn(
+                  "flex justify-between border-b border-line py-2 text-sm last:border-0",
+                  line.kind === "part" && "border-l-2 border-l-gold-soft py-1.5 pl-3 text-muted-strong",
+                  (line.kind === "subtotal" || line.kind === "total" || line.kind === "balance") && "font-bold text-wine-ink"
+                )}
+              >
+                <span>
+                  {line.kind === "tax" ? "+ " : line.kind === "discount" || line.kind === "paid" ? "− " : ""}
+                  {line.label}
+                </span>
+                <strong className="tabular-nums">{formatINR(Math.abs(line.amountPaise))}</strong>
               </div>
             ))}
           </div>
