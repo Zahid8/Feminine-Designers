@@ -3,7 +3,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { PageHeading } from "@/components/shared/page-heading";
 import { ButtonLink } from "@/components/ui/button";
 import { buildDashboardModel } from "@/lib/dashboard/dashboard-model";
-import { todayISO } from "@/lib/utils/date";
+import { formatLongDay, indiaGreeting, todayISO } from "@/lib/utils/date";
 import { listOrders } from "@/services/orders/order-service";
 
 export const dynamic = "force-dynamic";
@@ -15,10 +15,10 @@ export default async function DashboardPage() {
   return (
     <AppShell>
       <PageHeading
-        title="Dashboard"
-        description="Interactive workbench for orders, deliveries, collections, and balances."
+        title={indiaGreeting()}
+        description={`${formatLongDay()} · Tap a card to see the matching orders.`}
         action={
-          <ButtonLink href="/orders/new">New Order</ButtonLink>
+          <ButtonLink href="/orders/new" className="hidden lg:inline-flex">New Order</ButtonLink>
         }
       />
       <InteractiveDashboard model={model} />

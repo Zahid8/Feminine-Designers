@@ -7,8 +7,10 @@ import { useRouter } from "next/navigation";
 import type { ComponentType } from "react";
 import { reversePaymentAction, setOrderCompletedAction, settleOrderBalanceAction } from "@/app/orders/actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PaymentBadge, PriorityBadge, StatusBadge } from "@/components/ui/status-badge";
+import { DeliveryUrgencyBadge, PaymentBadge, PriorityBadge, StatusBadge } from "@/components/ui/status-badge";
+import { summarizeGarments } from "@/lib/orders/garment-summary";
 import { cn } from "@/lib/utils/cn";
+import { cardNavigationHandler } from "@/lib/ui/card-navigation";
 import { formatDate, formatDateTime } from "@/lib/utils/date";
 import { formatINR } from "@/lib/utils/money";
 import { orderSortOptions, sortOrders, type OrderSortKey } from "@/lib/orders/order-sort";
@@ -38,7 +40,7 @@ function cardValue(card: DashboardCardModel) {
 }
 
 function garmentSummary(order: OrderWithCustomer) {
-  return order.items.map((item) => item.garmentType).join(", ");
+  return summarizeGarments(order.items);
 }
 
 function paidAmount(order: OrderWithCustomer) {
@@ -61,7 +63,7 @@ function MetricCard({
       onClick={onSelect}
       aria-pressed={selected}
       className={cn(
-        "min-h-32 rounded-2xl border p-4 text-left transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold",
+        "min-h-28 min-w-0 rounded-2xl border p-3 text-left transition duration-200 sm:min-h-32 sm:p-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold",
         selected
           ? "border-wine/30 bg-surface-sunken shadow-pressed"
           : "border-white/70 bg-surface shadow-raised hover:-translate-y-0.5 hover:shadow-raised-lg"
@@ -69,20 +71,21 @@ function MetricCard({
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">{card.label}</p>
-          <p className="mt-2 text-3xl font-bold text-wine-ink">{cardValue(card)}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted sm:text-xs">{card.label}</p>
+          <p className="mt-2 truncate text-2xl font-bold tabular-nums text-wine-ink sm:text-3xl">{cardValue(card)}</p>
         </div>
-        <span className={cn("rounded-xl p-2.5 shadow-raised-sm", toneClasses[card.tone])}>
+        <span className={cn("hidden rounded-xl p-2.5 shadow-raised-sm sm:inline-flex", toneClasses[card.tone])}>
           <Icon className="h-5 w-5" />
         </span>
       </div>
-      <p className="mt-3 text-sm font-medium text-muted-strong">{card.description}</p>
+      <p className="mt-2 text-xs font-medium text-muted-strong sm:mt-3 sm:text-sm">{card.description}</p>
     </button>
   );
 }
 
 function OrderQueue({
   orders,
+  today,
   emptyText,
   pendingOrderIds,
   pendingPaidOrderIds,
@@ -90,12 +93,14 @@ function OrderQueue({
   onSetPaid
 }: {
   orders: DashboardModel["views"][DashboardViewId]["orders"];
+  today: string;
   emptyText: string;
   pendingOrderIds: string[];
   pendingPaidOrderIds: string[];
   onSetComplete: (orderId: string, completed: boolean) => void;
   onSetPaid: (orderId: string) => void;
 }) {
+  const router = useRouter();
   if (orders.length === 0) {
     return <div className="rounded-xl border border-dashed border-line-strong bg-surface p-8 text-center text-sm text-muted shadow-raised-sm">{emptyText}</div>;
   }
@@ -103,7 +108,12 @@ function OrderQueue({
   return (
     <div className="grid gap-3">
       {orders.map((order) => (
-        <div key={order.id} className="rounded-xl border border-line bg-surface p-4 shadow-raised-sm transition hover:border-gold hover:shadow-raised">
+        <div
+          key={order.id}
+          className="cursor-pointer rounded-xl border border-line bg-surface p-4 shadow-raised-sm transition hover:border-gold hover:shadow-raised active:shadow-pressed"
+          onClick={cardNavigationHandler(router.push, `/orders/${order.id}`)}
+          onAuxClick={cardNavigationHandler(router.push, `/orders/${order.id}`)}
+        >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">{order.receiptNumber ?? "Draft"}</p>
@@ -152,6 +162,9 @@ function OrderQueue({
             <p>
               <span className="block text-xs uppercase text-muted">Delivery</span>
               <strong className={order.overdue ? "text-danger" : ""}>{formatDate(order.deliveryDate)}</strong>
+              <span className="mt-1 block">
+                <DeliveryUrgencyBadge deliveryDate={order.deliveryDate} status={order.status} today={today} />
+              </span>
             </p>
             <p>
               <span className="block text-xs uppercase text-muted">Paid</span>
@@ -188,6 +201,7 @@ function PaymentQueue({
   pendingPaymentIds: string[];
   onSetNotPaid: (payment: DashboardPaymentRow) => void;
 }) {
+  const router = useRouter();
   const visiblePayments = payments.filter((payment) => !hiddenPaymentIds.includes(payment.id));
 
   if (visiblePayments.length === 0) {
@@ -197,7 +211,12 @@ function PaymentQueue({
   return (
     <div className="grid gap-3">
       {visiblePayments.map((payment) => (
-        <div key={payment.id} className="rounded-xl border border-line bg-surface p-4 shadow-raised-sm transition hover:border-gold hover:shadow-raised">
+        <div
+          key={payment.id}
+          className="cursor-pointer rounded-xl border border-line bg-surface p-4 shadow-raised-sm transition hover:border-gold hover:shadow-raised active:shadow-pressed"
+          onClick={cardNavigationHandler(router.push, `/orders/${payment.orderId}`)}
+          onAuxClick={cardNavigationHandler(router.push, `/orders/${payment.orderId}`)}
+        >
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">{payment.receiptNumber}</p>
@@ -403,7 +422,7 @@ export function InteractiveDashboard({ model }: { model: DashboardModel }) {
 
   return (
     <div className="grid gap-5">
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         {model.cards.map((card) => (
           <MetricCard key={card.id} card={card} selected={card.id === selectedViewId} onSelect={() => setSelectedViewId(card.id)} />
         ))}
@@ -453,6 +472,7 @@ export function InteractiveDashboard({ model }: { model: DashboardModel }) {
             ) : (
               <OrderQueue
                 orders={visibleSelectedOrders}
+                today={model.today}
                 emptyText={selectedView.emptyText}
                 pendingOrderIds={pendingOrderIds}
                 pendingPaidOrderIds={pendingPaidOrderIds}

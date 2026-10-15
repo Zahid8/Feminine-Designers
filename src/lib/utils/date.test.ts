@@ -16,3 +16,12 @@ describe("India date utilities", () => {
     expect(normalizeDateInput("2026-07-05")).toBe("2026-07-05");
   });
 });
+
+describe("indiaGreeting", () => {
+  it("greets by India time of day", async () => {
+    const { indiaGreeting } = await import("./date");
+    expect(indiaGreeting(new Date("2026-10-15T03:00:00Z"))).toBe("Good morning");
+    expect(indiaGreeting(new Date("2026-10-15T08:00:00Z"))).toBe("Good afternoon");
+    expect(indiaGreeting(new Date("2026-10-15T14:00:00Z"))).toBe("Good evening");
+  });
+});

@@ -139,6 +139,18 @@
     cursor: pointer;
   }
 
+  /* Steppers have their own +/- buttons; hide the tiny native spinners. */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
   ::selection {
     background: rgba(217, 154, 98, 0.35);
   }
@@ -157,6 +169,21 @@
 @utility neu-pressed {
   background-color: var(--surface-sunken);
   box-shadow: var(--shadow-pressed);
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@utility page-enter {
+  animation: page-enter 220ms ease-out both;
 }
 
 @media (prefers-reduced-motion: reduce) {

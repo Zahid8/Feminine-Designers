@@ -6,13 +6,17 @@ import { useRouter } from "next/navigation";
 import { archiveCustomerAction } from "@/app/customers/actions";
 import type { Customer } from "@/types/domain";
 import { formatINR } from "@/lib/utils/money";
+import { formatDate } from "@/lib/utils/date";
+import { initialsFor } from "@/lib/utils/initials";
+import { cn } from "@/lib/utils/cn";
+import { cardNavigationHandler } from "@/lib/ui/card-navigation";
 
 export function CustomerTable({
   customers,
   orderStats = {}
 }: {
   customers: Customer[];
-  orderStats?: Record<string, { orderCount: number; outstandingPaise: number }>;
+  orderStats?: Record<string, { orderCount: number; outstandingPaise: number; lastOrderDate?: string }>;
 }) {
   const router = useRouter();
   const [deleteMode, setDeleteMode] = useState(false);
@@ -54,25 +58,29 @@ export function CustomerTable({
     });
   }
 
+  const visibleCustomers = customers.filter((customer) => !hiddenCustomerIds.includes(customer.id));
+  const visibleCustomerCount = visibleCustomers.length;
+
   return (
     <div className="grid gap-3">
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/70 bg-surface p-3 shadow-raised">
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href="/customers/new"
-            className="inline-flex min-h-10 items-center justify-center rounded-xl bg-wine px-4 py-2 text-sm font-semibold text-white transition hover:bg-wine-hover"
-          >
-            Add New Customer
-          </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="px-1 text-sm font-semibold text-muted-strong">
+            {visibleCustomerCount} {visibleCustomerCount === 1 ? "customer" : "customers"}
+          </p>
           <button
             type="button"
+            aria-pressed={deleteMode}
             onClick={() => setDeleteMode((current) => !current)}
-            className="inline-flex min-h-10 items-center justify-center rounded-xl border border-danger bg-surface px-4 py-2 text-sm font-semibold text-danger shadow-raised-sm transition hover:bg-red-50"
+            className={cn(
+              "inline-flex min-h-10 items-center justify-center rounded-xl border px-4 py-2 text-sm font-semibold transition",
+              deleteMode ? "border-danger bg-danger text-white shadow-danger" : "border-danger/40 bg-surface text-danger shadow-raised-sm hover:bg-red-50"
+            )}
           >
-            Remove Customer Record
+            {deleteMode ? "Done removing" : "Remove customers"}
           </button>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="hidden flex-wrap gap-2 md:flex">
           {columns.map(([key, label]) => (
             <label key={key} className="flex items-center gap-2 rounded-xl border border-line-strong bg-surface px-2 py-1 text-xs font-semibold shadow-raised-sm">
               <input type="checkbox" checked={visibleColumns[key]} onChange={() => toggleColumn(key)} />
@@ -81,22 +89,49 @@ export function CustomerTable({
           ))}
         </div>
       </div>
-      {customers.filter((customer) => !hiddenCustomerIds.includes(customer.id)).map((customer) => {
+      {visibleCustomers.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-line-strong bg-surface p-8 text-center text-sm text-muted">
+          No customers match this search.
+        </div>
+      ) : null}
+      {visibleCustomers.map((customer) => {
         const stats = orderStats[customer.id] ?? { orderCount: 0, outstandingPaise: 0 };
         return (
           <div
             key={customer.id}
-            className="grid gap-3 rounded-2xl border border-line bg-surface p-4 shadow-raised-sm transition hover:border-gold hover:bg-paper-warm hover:shadow-raised md:grid-cols-[1.4fr_1fr_1fr_1fr_auto]"
+            className="grid cursor-pointer grid-cols-2 items-center gap-x-4 gap-y-3 rounded-2xl border border-white/70 bg-surface p-4 shadow-raised-sm transition hover:shadow-raised active:shadow-pressed md:grid-cols-[1.6fr_1fr_.8fr_1fr_auto]"
+            onClick={cardNavigationHandler(router.push, `/customers/${customer.id}`)}
+            onAuxClick={cardNavigationHandler(router.push, `/customers/${customer.id}`)}
           >
-            {visibleColumns.customer ? <div>
-              <p className="font-semibold text-wine-ink">{customer.fullName}</p>
-              <p className="text-sm text-muted">{customer.customerCode}</p>
-            </div> : null}
-            {visibleColumns.phone ? <p className="text-sm">{customer.phonePrimary}</p> : null}
-            {visibleColumns.orders ? <p className="text-sm">{stats.orderCount} orders</p> : null}
-            {visibleColumns.outstanding ? <p className="text-sm font-semibold">{formatINR(stats.outstandingPaise)}</p> : null}
+            {visibleColumns.customer ? (
+              <Link href={`/customers/${customer.id}`} className="col-span-2 flex min-w-0 items-center gap-3 md:col-span-1">
+                <span
+                  aria-hidden
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-peach to-gold-soft text-sm font-bold text-wine shadow-raised-sm"
+                >
+                  {initialsFor(customer.fullName)}
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate font-semibold text-wine-ink">{customer.fullName}</span>
+                  <span className="block text-xs text-muted">
+                    {stats.lastOrderDate ? `Last order ${formatDate(stats.lastOrderDate)}` : "No orders yet"}
+                  </span>
+                </span>
+              </Link>
+            ) : null}
+            {visibleColumns.phone ? <p className="text-sm tabular-nums">{customer.phonePrimary}</p> : null}
+            {visibleColumns.orders ? (
+              <p className="text-sm text-muted-strong">
+                {stats.orderCount} {stats.orderCount === 1 ? "order" : "orders"}
+              </p>
+            ) : null}
+            {visibleColumns.outstanding ? (
+              <p className={cn("text-sm font-semibold tabular-nums", stats.outstandingPaise > 0 ? "text-wine" : "text-success")}>
+                {stats.outstandingPaise > 0 ? `${formatINR(stats.outstandingPaise)} due` : "Settled"}
+              </p>
+            ) : null}
             {visibleColumns.action ? (
-              <div className="flex flex-wrap gap-2">
+              <div className="col-span-2 flex flex-wrap gap-2 md:col-span-1 md:justify-end">
                 <Link
                   href={`/customers/${customer.id}`}
                   className="inline-flex min-h-9 items-center justify-center rounded-xl border border-line-strong bg-surface px-3 py-1.5 text-sm font-semibold text-wine-ink shadow-raised-sm transition hover:border-gold hover:bg-blush"

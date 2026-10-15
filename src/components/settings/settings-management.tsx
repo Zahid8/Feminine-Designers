@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, Input, Textarea } from "@/components/ui/input";
@@ -116,7 +116,12 @@ export function SettingsManagement({
                   ) : null}
                 </div>
                 <p className="text-xs text-muted">{template.garmentCategories.join(", ")}</p>
-                <div className="mt-3 grid gap-2">
+                <details className="group mt-3">
+                  <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between rounded-xl bg-surface-sunken px-3 text-sm font-semibold text-wine-ink shadow-pressed [&::-webkit-details-marker]:hidden">
+                    <span>{template.fields.filter((field) => field.active).length} active fields</span>
+                    <ChevronDown aria-hidden className="h-4 w-4 transition group-open:rotate-180" />
+                  </summary>
+                  <div className="mt-2 grid gap-2">
                   {template.fields.map((field) => (
                     <div key={field.id} className="flex items-center justify-between gap-2 rounded-xl border border-line bg-cream px-2 py-1 text-xs">
                       <span>
@@ -134,7 +139,8 @@ export function SettingsManagement({
                       ) : null}
                     </div>
                   ))}
-                </div>
+                  </div>
+                </details>
               </div>
             ))}
           </div>

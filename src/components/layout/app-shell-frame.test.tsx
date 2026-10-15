@@ -30,4 +30,16 @@ describe("AppShellFrame", () => {
     expect(screen.getByRole("button", { name: /hide sidebar/i }).getAttribute("aria-expanded")).toBe("true");
     expect(sidebar.className).not.toContain("w-0");
   });
+
+  it("offers a bottom tab bar with the current page marked for phones and tablets", () => {
+    render(
+      <AppShellFrame logoutAction={vi.fn()}>
+        <p>Page content</p>
+      </AppShellFrame>
+    );
+
+    const mobileNav = screen.getByRole("navigation", { name: /mobile navigation/i });
+    expect(mobileNav.className).toContain("lg:hidden");
+    expect(mobileNav.querySelectorAll("a")).toHaveLength(5);
+  });
 });

@@ -1,19 +1,20 @@
-import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeading } from "@/components/shared/page-heading";
-import { Button } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button";
+import { FileText, Printer, Store } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MeasurementGrid } from "@/components/measurements/measurement-grid";
 import { OrderItemDeliveryTracker } from "@/components/orders/order-item-delivery-tracker";
 import { DeleteOrderButton } from "@/components/orders/delete-order-button";
 import { EditOrderForm } from "@/components/orders/edit-order-form";
 import { OrderStatusCheckboxEditor } from "@/components/orders/order-status-checkbox-editor";
-import { PaymentBadge, PriorityBadge, StatusBadge } from "@/components/ui/status-badge";
+import { DeliveryUrgencyBadge, PaymentBadge, PriorityBadge, StatusBadge } from "@/components/ui/status-badge";
+import { OrderProgress } from "@/components/orders/order-progress";
 import { getOrderById } from "@/services/orders/order-service";
 import { getMeasurementTemplateForGarment } from "@/services/measurements/measurement-service";
-import { formatDate, formatDateTime } from "@/lib/utils/date";
+import { formatDate, formatDateTime, todayISO } from "@/lib/utils/date";
 import { formatINR } from "@/lib/utils/money";
 import { formatExtraCostLine } from "@/lib/utils/extra-cost-display";
 import { updateOrderAction } from "@/app/orders/[id]/actions";
@@ -38,15 +39,18 @@ export default async function OrderDetailPage({
         description={`${order.customer.fullName} · ${order.customer.phonePrimary} · Delivery ${formatDate(order.deliveryDate)}`}
         action={
           <div className="flex flex-wrap gap-2">
-            <Link href={`/receipts/${order.id}/customer`}>
-              <Button variant="secondary">Customer Copy</Button>
-            </Link>
-            <Link href={`/receipts/${order.id}/store`}>
-              <Button variant="secondary">Store Copy</Button>
-            </Link>
-            <Link href={`/receipts/${order.id}/combined`}>
-              <Button>Combined Print</Button>
-            </Link>
+            <ButtonLink href={`/receipts/${order.id}/customer`} variant="secondary">
+              <FileText className="h-4 w-4" aria-hidden />
+              Customer Copy
+            </ButtonLink>
+            <ButtonLink href={`/receipts/${order.id}/store`} variant="secondary">
+              <Store className="h-4 w-4" aria-hidden />
+              Store Copy
+            </ButtonLink>
+            <ButtonLink href={`/receipts/${order.id}/combined`}>
+              <Printer className="h-4 w-4" aria-hidden />
+              Combined Print
+            </ButtonLink>
             <DeleteOrderButton orderId={order.id} receiptNumber={order.receiptNumber} />
           </div>
         }
@@ -62,8 +66,10 @@ export default async function OrderDetailPage({
             <CardTitle>Order Summary</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4">
+            <OrderProgress status={order.status} />
             <div className="flex flex-wrap gap-2">
               <StatusBadge status={order.status} />
+              <DeliveryUrgencyBadge deliveryDate={order.deliveryDate} status={order.status} today={todayISO()} />
               <PriorityBadge priority={order.priority} />
               <PaymentBadge status={order.totals.paymentStatus} />
             </div>
@@ -163,15 +169,9 @@ export default async function OrderDetailPage({
           <CardTitle>{editing ? "Edit Saved Bill" : "Order Details Editing"}</CardTitle>
           <div className="flex flex-wrap gap-2">
             {editing ? (
-              <Link href={`/orders/${order.id}`}>
-                <Button type="button" variant="secondary">
-                  Cancel Edit
-                </Button>
-              </Link>
+              <ButtonLink href={`/orders/${order.id}`} variant="secondary">Cancel Edit</ButtonLink>
             ) : (
-              <Link href={`/orders/${order.id}?edit=1`}>
-                <Button type="button">Edit Order Details</Button>
-              </Link>
+              <ButtonLink href={`/orders/${order.id}?edit=1`}>Edit Order Details</ButtonLink>
             )}
           </div>
         </CardHeader>

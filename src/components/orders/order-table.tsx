@@ -4,13 +4,21 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { startTransition, useState } from "react";
 import type { OrderWithCustomer } from "@/types/domain";
-import { StatusBadge, PaymentBadge, PriorityBadge } from "@/components/ui/status-badge";
-import { formatDate } from "@/lib/utils/date";
+import { DeliveryUrgencyBadge, StatusBadge, PaymentBadge, PriorityBadge } from "@/components/ui/status-badge";
+import { formatDate, todayISO } from "@/lib/utils/date";
 import { formatINR } from "@/lib/utils/money";
+import { summarizeGarments } from "@/lib/orders/garment-summary";
 import { orderSortOptions, sortOrders, type OrderSortKey } from "@/lib/orders/order-sort";
 import { setOrderCompletedAction } from "@/app/orders/actions";
+import { cardNavigationHandler } from "@/lib/ui/card-navigation";
 
-export function OrderTable({ orders }: { orders: (OrderWithCustomer & { overdue?: boolean; daysOverdue?: number })[] }) {
+export function OrderTable({
+  orders,
+  today = todayISO()
+}: {
+  orders: (OrderWithCustomer & { overdue?: boolean; daysOverdue?: number })[];
+  today?: string;
+}) {
   const router = useRouter();
   const [pendingOrderIds, setPendingOrderIds] = useState<string[]>([]);
   const [sortKey, setSortKey] = useState<OrderSortKey>("deliveryDate");
@@ -80,7 +88,7 @@ export function OrderTable({ orders }: { orders: (OrderWithCustomer & { overdue?
           </select>
         </label>
         {columns.map(([key, label]) => (
-          <label key={key} className="flex items-center gap-2 rounded-xl border border-line-strong bg-surface px-2 py-1 text-xs font-semibold shadow-raised-sm">
+          <label key={key} className="hidden items-center gap-2 rounded-xl border border-line-strong bg-surface px-2 py-1 text-xs font-semibold shadow-raised-sm lg:flex">
             <input type="checkbox" checked={visibleColumns[key]} onChange={() => toggleColumn(key)} />
             {label}
           </label>
@@ -101,10 +109,15 @@ export function OrderTable({ orders }: { orders: (OrderWithCustomer & { overdue?
           </thead>
           <tbody className="divide-y divide-line-soft">
             {sortedOrders.map((order) => (
-              <tr key={order.id} className="align-top transition hover:bg-paper-warm">
+              <tr
+                key={order.id}
+                className="cursor-pointer align-top transition hover:bg-paper-warm"
+                onClick={cardNavigationHandler(router.push, `/orders/${order.id}`)}
+                onAuxClick={cardNavigationHandler(router.push, `/orders/${order.id}`)}
+              >
                 {visibleColumns.complete ? (
-                  <td className="px-4 py-4">
-                    <label className="inline-flex items-center gap-2 text-xs font-semibold text-wine-ink">
+                  <td className="px-4 py-3">
+                    <label className="inline-flex min-h-8 items-center gap-2 text-xs font-semibold text-wine-ink">
                       <input
                         type="checkbox"
                         className="h-5 w-5"
@@ -116,26 +129,55 @@ export function OrderTable({ orders }: { orders: (OrderWithCustomer & { overdue?
                     </label>
                   </td>
                 ) : null}
-                {visibleColumns.receipt ? <td className="px-4 py-4 font-semibold text-wine-ink">{order.receiptNumber}</td> : null}
-                {visibleColumns.customer ? <td className="px-4 py-4">
-                  <p className="font-semibold">{order.customer.fullName}</p>
-                  <p className="text-xs text-muted">{order.customer.phonePrimary}</p>
-                </td> : null}
-                {visibleColumns.garments ? <td className="px-4 py-4">{order.items.map((item) => item.garmentType).join(", ")}</td> : null}
-                {visibleColumns.dates ? <td className="px-4 py-4">
-                  <p>Order: {formatDate(order.orderDate)}</p>
-                  <p className={order.overdue ? "font-semibold text-danger" : ""}>
-                    Delivery: {formatDate(order.deliveryDate)}
-                  </p>
-                </td> : null}
-                {visibleColumns.status ? <td className="space-y-2 px-4 py-4">
-                  <StatusBadge status={order.status} />
-                  <PriorityBadge priority={order.priority} />
-                  <PaymentBadge status={order.totals.paymentStatus} />
-                </td> : null}
-                {visibleColumns.total ? <td className="px-4 py-4">{formatINR(order.totals.grandTotalPaise)}</td> : null}
-                {visibleColumns.balance ? <td className="px-4 py-4 font-semibold">{formatINR(order.totals.balanceDuePaise)}</td> : null}
-                {visibleColumns.action ? <td className="px-4 py-4">
+                {visibleColumns.receipt ? (
+                  <td className="whitespace-nowrap px-4 py-3 font-semibold text-wine-ink">
+                    <Link href={`/orders/${order.id}`} className="hover:text-rose hover:underline">
+                      {order.receiptNumber}
+                    </Link>
+                  </td>
+                ) : null}
+                {visibleColumns.customer ? (
+                  <td className="px-4 py-3">
+                    <Link href={`/orders/${order.id}`} className="font-semibold hover:text-wine">
+                      {order.customer.fullName}
+                    </Link>
+                    <p className="whitespace-nowrap text-xs text-muted">{order.customer.phonePrimary}</p>
+                  </td>
+                ) : null}
+                {visibleColumns.garments ? (
+                  <td className="max-w-56 px-4 py-3">
+                    <p className="line-clamp-2" title={order.items.map((item) => item.garmentType).join(", ")}>
+                      {summarizeGarments(order.items)}
+                    </p>
+                  </td>
+                ) : null}
+                {visibleColumns.dates ? (
+                  <td className="px-4 py-3">
+                    <p className={order.overdue ? "whitespace-nowrap font-semibold text-danger" : "whitespace-nowrap font-semibold"}>
+                      {formatDate(order.deliveryDate)}
+                    </p>
+                    <p className="whitespace-nowrap text-xs text-muted">Ordered {formatDate(order.orderDate)}</p>
+                    <div className="mt-1">
+                      <DeliveryUrgencyBadge deliveryDate={order.deliveryDate} status={order.status} today={today} />
+                    </div>
+                  </td>
+                ) : null}
+                {visibleColumns.status ? (
+                  <td className="px-4 py-3">
+                    <div className="flex max-w-48 flex-wrap gap-1.5">
+                      <StatusBadge status={order.status} />
+                      {order.priority !== "Normal" ? <PriorityBadge priority={order.priority} /> : null}
+                      <PaymentBadge status={order.totals.paymentStatus} />
+                    </div>
+                  </td>
+                ) : null}
+                {visibleColumns.total ? <td className="whitespace-nowrap px-4 py-3 tabular-nums">{formatINR(order.totals.grandTotalPaise)}</td> : null}
+                {visibleColumns.balance ? (
+                  <td className={order.totals.balanceDuePaise > 0 ? "whitespace-nowrap px-4 py-3 font-semibold tabular-nums text-wine" : "whitespace-nowrap px-4 py-3 tabular-nums text-success"}>
+                    {formatINR(order.totals.balanceDuePaise)}
+                  </td>
+                ) : null}
+                {visibleColumns.action ? <td className="px-4 py-3">
                   <Link
                     className="inline-flex min-h-9 items-center justify-center rounded-xl border border-line-strong bg-surface px-3 py-1.5 text-sm font-semibold text-wine-ink shadow-raised-sm transition hover:border-gold hover:bg-blush focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
                     href={`/orders/${order.id}`}
@@ -150,18 +192,26 @@ export function OrderTable({ orders }: { orders: (OrderWithCustomer & { overdue?
       </div>
       <div className="grid gap-3 p-3 lg:hidden">
         {sortedOrders.map((order) => (
-          <div key={order.id} className="rounded-xl border border-line bg-surface p-4 shadow-raised-sm">
+          <div
+            key={order.id}
+            className="cursor-pointer rounded-xl border border-line bg-surface p-4 shadow-raised-sm transition active:shadow-pressed"
+            onClick={cardNavigationHandler(router.push, `/orders/${order.id}`)}
+          >
             <div className="flex items-start justify-between gap-3">
-              <Link href={`/orders/${order.id}`}>
+              <Link href={`/orders/${order.id}`} className="min-w-0">
                 <p className="font-semibold text-wine-ink">{order.receiptNumber}</p>
-                <p className="text-sm">{order.customer.fullName}</p>
+                <p className="text-sm font-semibold">{order.customer.fullName}</p>
                 <p className="text-xs text-muted">{order.customer.phonePrimary}</p>
               </Link>
-              <StatusBadge status={order.status} />
+              <div className="flex flex-col items-end gap-1.5">
+                <StatusBadge status={order.status} />
+                <DeliveryUrgencyBadge deliveryDate={order.deliveryDate} status={order.status} today={today} />
+              </div>
             </div>
+            <p className="mt-2 line-clamp-1 text-sm text-muted-strong">{summarizeGarments(order.items)}</p>
             <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
               <span>Delivery {formatDate(order.deliveryDate)}</span>
-              <span className="text-right font-semibold">{formatINR(order.totals.balanceDuePaise)}</span>
+              <span className="text-right font-semibold tabular-nums">Balance {formatINR(order.totals.balanceDuePaise)}</span>
             </div>
             <label className="mt-3 flex items-center justify-between rounded-xl border border-line-strong bg-cream px-3 py-2 text-sm font-semibold shadow-pressed">
               <span>Order complete</span>

@@ -90,3 +90,16 @@ export function formatDateTime(value: string | Date): string {
   const { day, month, year } = indiaDateParts(date);
   return `${day}/${month}/${year}, ${timeFormatter.format(date)}`;
 }
+
+/** "Good morning/afternoon/evening" for the current time in India. */
+export function indiaGreeting(date = new Date()): string {
+  const hour = Number(new Intl.DateTimeFormat("en-IN", { hour: "numeric", hourCycle: "h23", timeZone: "Asia/Kolkata" }).format(date));
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+/** e.g. "Thursday, 15 October" in India time. */
+export function formatLongDay(date = new Date()): string {
+  return new Intl.DateTimeFormat("en-IN", { weekday: "long", day: "numeric", month: "long", timeZone: "Asia/Kolkata" }).format(date);
+}

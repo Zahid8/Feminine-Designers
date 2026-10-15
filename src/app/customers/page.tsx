@@ -10,10 +10,11 @@ import { listOrders } from "@/services/orders/order-service";
 export default async function CustomersPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const params = await searchParams;
   const [customers, orders] = await Promise.all([listCustomers(params.q), listOrders()]);
-  const orderStats = orders.reduce<Record<string, { orderCount: number; outstandingPaise: number }>>((stats, order) => {
+  const orderStats = orders.reduce<Record<string, { orderCount: number; outstandingPaise: number; lastOrderDate?: string }>>((stats, order) => {
     const current = stats[order.customerId] ?? { orderCount: 0, outstandingPaise: 0 };
     current.orderCount += 1;
     current.outstandingPaise += Math.max(0, order.totals.balanceDuePaise);
+    if (!current.lastOrderDate || order.orderDate > current.lastOrderDate) current.lastOrderDate = order.orderDate;
     stats[order.customerId] = current;
     return stats;
   }, {});
@@ -22,7 +23,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
     <AppShell>
       <PageHeading
         title="Customers"
-        description="Customer profiles preserve contact information, order history, balances, notes, and reusable measurement snapshots."
+        description="Contact details, order history, balances, and saved measurements for every customer."
         action={
           <ButtonLink href="/customers/new">Add Customer</ButtonLink>
         }
@@ -31,7 +32,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
         <CardContent>
           <form className="grid gap-3 md:grid-cols-[1fr_auto]">
             <Field label="Search customers">
-              <Input name="q" placeholder="Name, phone, or customer code" defaultValue={params.q ?? ""} />
+              <Input name="q" type="search" placeholder="Name or phone number" defaultValue={params.q ?? ""} />
             </Field>
             <div className="flex items-end">
               <Button type="submit">Search</Button>

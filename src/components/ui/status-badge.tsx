@@ -1,4 +1,5 @@
 import type { OrderStatus, PaymentStatus, Priority } from "@/types/domain";
+import { deliveryUrgency, type DeliveryUrgencyTone } from "@/lib/calculations/status";
 import { cn } from "@/lib/utils/cn";
 
 const statusClasses: Record<OrderStatus, string> = {
@@ -42,4 +43,17 @@ function Badge({ className, children }: { className: string; children: React.Rea
       {children}
     </span>
   );
+}
+
+const urgencyClasses: Record<DeliveryUrgencyTone, string> = {
+  overdue: "bg-red-100 text-red-800",
+  today: "bg-amber-100 text-amber-800",
+  soon: "bg-orange-50 text-orange-800",
+  later: "bg-stone-100 text-stone-600"
+};
+
+export function DeliveryUrgencyBadge({ deliveryDate, status, today }: { deliveryDate: string; status: OrderStatus; today: string }) {
+  const urgency = deliveryUrgency(deliveryDate, status, today);
+  if (!urgency) return null;
+  return <Badge className={urgencyClasses[urgency.tone]}>{urgency.label}</Badge>;
 }

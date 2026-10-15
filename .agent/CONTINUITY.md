@@ -84,6 +84,7 @@
 - 2026-10-15T16:49Z [CODE] Perf: order list queries exclude `cloth_sample_image_url`; `getOrderById` filters by id; customer lookups filter by `customer_id` and run in parallel; added per-route `loading.tsx` skeletons; `vercel.json` pins `sin1`.
 - 2026-10-15T16:49Z [CODE] Fixed IndiaClock hydration mismatch by rendering time only after mount.
 - 2026-10-15T17:01Z [CODE] Added `cloth-sample-storage.ts`, bucket migration `202610150001_cloth_sample_storage_bucket.sql` (also in setup_full_database.sql), `scripts/migrate-cloth-samples.mjs` (dry-run default, `--apply` with backups), lean list relations (no measurements/status history), batched `getCustomerMeasurementProfiles` for `/api/customers/search`; removed dead `searchReturningCustomerMatches`.
+- 2026-10-15T17:34Z [CODE] UI pass 1: responsive shell (laptop sidebar, phone/tablet bottom tab bar with raised New Order button, compact header), whole-card/row click-to-open via `cardNavigationHandler` (controls inside cards excluded; ctrl/middle-click opens new tab), delivery urgency badges (`deliveryUrgency`), grouped garment summaries, customer avatars/last-order/plural fixes, customer profile stats card, compact read-only measurement grid, order progress stepper, settings template disclosures, wider steppers, IST greeting, page-enter animation.
 
 ## [DISCOVERIES]
 - 2026-07-01T06:24Z [TOOL] `IMG_1174.JPG` is a 5712x4284 JPEG, likely the bill reference image, but no `public/Logo.PNG` logo file exists.

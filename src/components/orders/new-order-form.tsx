@@ -319,7 +319,7 @@ export function NewOrderForm({
         <CardHeader>
           <CardTitle>Customer</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-3">
+        <CardContent className="grid items-start gap-4 md:grid-cols-3">
           <Field label="Search or customer name">
             <Input
               name="customerName"
@@ -414,11 +414,11 @@ export function NewOrderForm({
         <CardContent className="grid gap-5">
           <div className="grid gap-1.5 text-sm font-medium text-ink-soft">
             <label htmlFor="cloth-count" className="text-xs font-bold uppercase tracking-[0.08em] text-label">Number of cloth / garments</label>
-            <div className="grid grid-cols-[40px_1fr_40px] gap-2">
+            <div className="grid w-40 grid-cols-[44px_1fr_44px] gap-2">
               <Button
                 type="button"
                 variant="secondary"
-                className="min-h-10 px-0"
+                className="min-h-11 px-0"
                 onClick={() => updateClothCount(clothCount - 1)}
                 aria-label="Decrease number of cloth"
               >
@@ -426,6 +426,7 @@ export function NewOrderForm({
               </Button>
               <Input
                 id="cloth-count"
+                className="px-1 text-center"
                 name="clothCount"
                 type="number"
                 min={1}
@@ -436,7 +437,7 @@ export function NewOrderForm({
               <Button
                 type="button"
                 variant="secondary"
-                className="min-h-10 px-0"
+                className="min-h-11 px-0"
                 onClick={() => updateClothCount(clothCount + 1)}
                 aria-label="Increase number of cloth"
               >
@@ -454,7 +455,7 @@ export function NewOrderForm({
                 <summary className="cursor-pointer text-sm font-bold text-wine-deep">
                   Dress {index + 1}: {item.garmentType}
                 </summary>
-                <div className="mt-4 grid gap-4 lg:grid-cols-[1.2fr_.6fr_.7fr_.7fr_.7fr_.7fr]">
+                <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-[1.2fr_auto_.7fr_.7fr_.7fr_.7fr]">
                   <Field label="Garment type">
                     <select
                       name={`items.${index}.garmentType`}
@@ -469,11 +470,11 @@ export function NewOrderForm({
                   </Field>
                   <div className="grid gap-1.5 text-sm font-medium text-ink-soft">
                     <label htmlFor={`items-${index}-quantity`} className="text-xs font-bold uppercase tracking-[0.08em] text-label">Quantity</label>
-                    <div className="grid grid-cols-[40px_1fr_40px] gap-2">
+                    <div className="grid w-40 grid-cols-[44px_1fr_44px] gap-2">
                       <Button
                         type="button"
                         variant="secondary"
-                        className="min-h-10 px-0"
+                        className="min-h-11 px-0"
                         onClick={() => updateItem(index, { quantity: Math.max(1, item.quantity - 1) })}
                         aria-label={`Decrease quantity for dress ${index + 1}`}
                       >
@@ -481,6 +482,7 @@ export function NewOrderForm({
                       </Button>
                       <Input
                         id={`items-${index}-quantity`}
+                        className="px-1 text-center"
                         name={`items.${index}.quantity`}
                         type="number"
                         min={1}
@@ -490,7 +492,7 @@ export function NewOrderForm({
                       <Button
                         type="button"
                         variant="secondary"
-                        className="min-h-10 px-0"
+                        className="min-h-11 px-0"
                         onClick={() => updateItem(index, { quantity: item.quantity + 1 })}
                         aria-label={`Increase quantity for dress ${index + 1}`}
                       >
@@ -754,7 +756,7 @@ export function NewOrderForm({
         </CardContent>
       </Card>
 
-      <div className="sticky bottom-0 flex flex-wrap justify-end gap-2 border-t border-line bg-cream/92 py-4 backdrop-blur">
+      <div className="sticky bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-20 -mx-3 flex flex-wrap justify-end gap-2 rounded-2xl border border-white/70 bg-surface/95 px-3 py-3 shadow-raised backdrop-blur sm:mx-0 lg:bottom-3">
         <Button type="submit" name="intent" value="draft" variant="secondary" disabled={isPending}>
           <Save className="h-4 w-4" />
           {isPending ? "Saving..." : "Save Draft"}

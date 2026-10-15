@@ -41,7 +41,7 @@ export default async function OrdersPage({
         title="Orders"
         description="Search by receipt number, customer name, or phone number, and filter by order stage."
         action={
-          <ButtonLink href="/orders/new">New Order</ButtonLink>
+          <ButtonLink href="/orders/new" className="hidden lg:inline-flex">New Order</ButtonLink>
         }
       />
       <Card className="mb-5">
@@ -82,7 +82,7 @@ export default async function OrdersPage({
           </Link>
         ))}
       </nav>
-      <OrderTable orders={visibleOrders} />
+      <OrderTable orders={visibleOrders} today={today} />
     </AppShell>
   );
 }

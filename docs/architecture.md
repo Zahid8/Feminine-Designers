@@ -18,6 +18,8 @@ The app is organized around typed domain services:
 
 `src/app/globals.css` defines the palette as Tailwind v4 theme tokens (`text-wine`, `bg-surface`, `border-line`, `text-muted`, and so on) plus a soft neumorphic elevation scale: `shadow-raised-sm`, `shadow-raised`, `shadow-raised-lg` for lifted surfaces, `shadow-pressed` for inputs and selected states, and `shadow-brand`/`shadow-danger` for Material-style primary actions. Use tokens instead of raw hex classes. Shared primitives live in `src/components/ui/*` (`Button`, `ButtonLink`, `Card`, `Input`, `Select`, `Textarea`, badges). Element defaults sit in `@layer base` so utilities can override them. Receipt components keep their own print styling.
 
+Layout is responsive: laptops (`lg`+) get the collapsible sidebar; phones and tablets get a fixed bottom tab bar (`Mobile navigation`) with a raised New Order action, and sticky page action bars sit above it. List cards and table rows open their record when clicked anywhere (`src/lib/ui/card-navigation.ts`); checkboxes, buttons, and links inside them keep their own behaviour.
+
 ## Performance
 
 - Cloth-sample photos are uploaded to the public `cloth-samples` Storage bucket (`src/services/orders/cloth-sample-storage.ts`) and the order row stores the public URL. If the upload fails the data URL is kept inline, so saving never breaks; legacy inline rows are moved with `scripts/migrate-cloth-samples.mjs`.

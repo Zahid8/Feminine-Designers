@@ -23,6 +23,7 @@ export function MeasurementGrid({
 }) {
   const fields = template ? template.fields.filter((field) => field.active) : values ?? [];
   const defaultValueByField = new Map(defaultValues?.map((value) => [value.fieldKey, value.value]));
+  if (!editable) return <ReadOnlyMeasurementGrid fields={fields} defaultValueByField={defaultValueByField} />;
   return (
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
       {fields.map((field) => {
@@ -77,6 +78,63 @@ export function MeasurementGrid({
           <Textarea name={`${valuePrefix}Notes`} placeholder="Fitting notes" />
         </label>
       ) : null}
+    </div>
+  );
+}
+
+type GridField = NonNullable<Parameters<typeof MeasurementGrid>[0]["values"]>[number] | MeasurementTemplate["fields"][number];
+
+function fieldLabel(field: GridField) {
+  const label = "longLabel" in field && field.longLabel ? field.longLabel : field.displayLabel;
+  return label && label.trim().toLowerCase() !== field.displayCode.trim().toLowerCase() ? label : undefined;
+}
+
+function ReadOnlyMeasurementGrid({ fields, defaultValueByField }: { fields: GridField[]; defaultValueByField: Map<string, string> }) {
+  const valueOf = (field: GridField) => {
+    const raw = "value" in field ? field.value : defaultValueByField.get(field.fieldKey) ?? "";
+    return raw === "NA" ? "" : raw.trim();
+  };
+  const recorded = fields.filter((field) => valueOf(field)).length;
+
+  if (fields.length === 0) {
+    return <p className="rounded-xl bg-surface-sunken p-4 text-sm text-muted shadow-pressed">No measurements recorded yet.</p>;
+  }
+
+  return (
+    <div className="grid gap-3">
+      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">
+        {recorded} of {fields.length} recorded
+      </p>
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 xl:grid-cols-5">
+        {fields.map((field) => {
+          const value = valueOf(field);
+          const label = fieldLabel(field);
+          return (
+            <div key={field.id} className="contents">
+              <div
+                className={
+                  value
+                    ? "rounded-xl border border-white/70 bg-surface px-3 py-2 shadow-raised-sm"
+                    : "rounded-xl bg-surface-sunken px-3 py-2 opacity-60 shadow-pressed"
+                }
+                title={label ?? field.displayCode}
+              >
+                <p className="flex items-baseline justify-between gap-1">
+                  <span className="text-xs font-bold text-wine">{field.displayCode}</span>
+                  {label ? <span className="truncate text-[10px] text-muted">{label}</span> : null}
+                </p>
+                <p className={value ? "text-lg font-bold tabular-nums text-wine-ink" : "text-lg text-muted-soft"}>
+                  {value || "—"}
+                  {value && field.unit && !["text", "boolean"].includes(field.unit) && /^[\d.\s/]+$/.test(value) ? <span className="ml-0.5 text-xs font-medium text-muted">{field.unit}</span> : null}
+                </p>
+              </div>
+              {shouldBreakAfterMeasurement(field) ? (
+                <div className="col-span-full h-px bg-gradient-to-r from-transparent via-gold to-transparent" data-testid="measurement-section-break" aria-hidden="true" />
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
