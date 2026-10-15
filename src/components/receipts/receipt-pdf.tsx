@@ -17,6 +17,25 @@ const customerReceiptFooter = [
 ];
 const storeLogoSource = getPublicPngDataUri("Logo.PNG");
 
+const colors = {
+  wine: "#7d1f36",
+  wineDeep: "#3f0f20",
+  wineInk: "#4c1525",
+  rose: "#b84862",
+  gold: "#d99a62",
+  goldSoft: "#f1d0aa",
+  cream: "#fff7ec",
+  paper: "#fffdfa",
+  peach: "#fff1df",
+  line: "#ead8c3",
+  lineSoft: "#f2e6d8",
+  ink: "#2c2522",
+  muted: "#7c6d66",
+  success: "#12633d",
+  successSoft: "#e3f4ea",
+  onWine: "#f8dccb"
+};
+
 function formatPdfINR(paise: number) {
   return `Rs. ${new Intl.NumberFormat("en-IN", {
     minimumFractionDigits: 2,
@@ -25,333 +44,143 @@ function formatPdfINR(paise: number) {
 }
 
 const styles = StyleSheet.create({
-  page: {
-    padding: 24,
-    fontSize: 9.5,
-    fontFamily: "Helvetica",
-    color: "#2c2522"
-  },
-  combinedPage: {
-    padding: 16,
-    fontSize: 7.5
-  },
-  panel: {},
-  panelCompact: {
-    fontSize: 7.5
-  },
-  title: {
-    fontSize: 18,
-    color: "#5d1428",
-    marginBottom: 5
-  },
-  titleCompact: {
-    fontSize: 13
-  },
-  muted: {
-    color: "#6f625d"
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#d8c7b4"
-  },
-  customerHeader: {
-    padding: 10,
-    borderWidth: 1,
-    borderColor: "#ead7c1",
-    backgroundColor: "#fff8f0",
-    borderRadius: 5
-  },
-  customerPill: {
-    alignSelf: "flex-start",
-    backgroundColor: "#7d1f36",
-    color: "#ffffff",
-    fontSize: 6.5,
+  page: { paddingTop: 26, paddingBottom: 34, paddingHorizontal: 28, fontSize: 9, fontFamily: "Helvetica", color: colors.ink, backgroundColor: "#ffffff" },
+  combinedPage: { paddingTop: 16, paddingBottom: 22, paddingHorizontal: 16, fontSize: 7.4 },
+  panes: { flexDirection: "row" },
+  storePane: { width: "60%", paddingRight: 12 },
+  customerPane: { width: "40%", paddingLeft: 12, borderLeftWidth: 1, borderLeftColor: colors.muted, borderStyle: "dashed" },
+  cutLabel: { position: "absolute", top: -2, left: -14, fontSize: 5.5, color: colors.muted, letterSpacing: 1 },
+
+  // Header band
+  band: { flexDirection: "row", alignItems: "center", backgroundColor: colors.wine, borderRadius: 8, padding: 12 },
+  bandCompact: { padding: 8, borderRadius: 6 },
+  logoFrame: { backgroundColor: "#ffffff", borderRadius: 7, padding: 3, marginRight: 10 },
+  logo: { width: 46, height: 46, borderRadius: 5 },
+  logoCompact: { width: 32, height: 32 },
+  bandText: { flexGrow: 1, flexShrink: 1, paddingRight: 8 },
+  storeName: { fontFamily: "Times-Bold", fontSize: 20, color: "#ffffff" },
+  storeNameCompact: { fontSize: 13 },
+  bandMuted: { color: colors.onWine, fontSize: 7.6, marginTop: 2, lineHeight: 1.3 },
+  bandMutedCompact: { fontSize: 6.2 },
+  bandRight: { alignItems: "flex-end" },
+  bandCompactMeta: { flexDirection: "row", alignItems: "center", marginTop: 4 },
+  copyPill: {
+    backgroundColor: colors.cream,
+    color: colors.wine,
     fontFamily: "Helvetica-Bold",
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: 10,
-    marginBottom: 5,
-    textTransform: "uppercase"
-  },
-  headerText: {
-    flexGrow: 1,
-    flexShrink: 1,
-    paddingRight: 6
-  },
-  storeLogo: {
-    width: 44,
-    height: 44,
-    objectFit: "cover"
-  },
-  storeLogoCompact: {
-    width: 36,
-    height: 36
-  },
-  row: {
-    flexDirection: "row",
-    gap: 8
-  },
-  storePane: {
-    width: "66%",
-    paddingRight: 12
-  },
-  customerPane: {
-    width: "34%",
-    paddingLeft: 12,
-    borderLeftWidth: 1,
-    borderLeftColor: "#7c6d66",
-    borderStyle: "dashed"
-  },
-  infoGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eadfce"
-  },
-  infoGridCustomer: {
-    marginTop: 10,
-    padding: 8,
-    borderWidth: 1,
-    borderColor: "#eadfce",
-    backgroundColor: "#fffaf5",
-    borderRadius: 5
-  },
-  infoGridCompact: {
-    paddingVertical: 6
-  },
-  infoCell: {
-    width: "50%",
-    paddingRight: 8,
-    paddingBottom: 7
-  },
-  infoCellCompact: {
-    paddingBottom: 4
-  },
-  label: {
-    color: "#7c6d66",
-    fontSize: 7.5,
-    textTransform: "uppercase",
-    marginBottom: 2
-  },
-  value: {
-    fontSize: 9.5,
-    fontFamily: "Helvetica-Bold"
-  },
-  customerSummary: {
-    marginTop: 10
-  },
-  customerSummaryHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
-    paddingBottom: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eadfce"
-  },
-  customerSummaryTitle: {
-    color: "#4c1525",
-    fontSize: 13,
-    fontFamily: "Helvetica-Bold"
-  },
-  customerSummaryMeta: {
-    color: "#9a7055",
-    fontSize: 6.8,
-    textTransform: "uppercase",
-    marginTop: 2
-  },
-  customerSummaryBadge: {
-    backgroundColor: "#f8eadb",
-    color: "#7d1f36",
     fontSize: 6.6,
-    fontFamily: "Helvetica-Bold",
     paddingHorizontal: 7,
     paddingVertical: 3,
-    borderRadius: 10,
+    borderRadius: 9,
     textTransform: "uppercase"
   },
-  customerItemCard: {
-    marginTop: 7,
-    padding: 8,
-    borderWidth: 1,
-    borderColor: "#ead7c1",
-    backgroundColor: "#ffffff",
-    borderRadius: 5,
-    flexDirection: "row",
-    justifyContent: "space-between"
-  },
-  customerItemBody: {
-    flexGrow: 1,
-    flexShrink: 1,
-    paddingRight: 8
-  },
-  customerItemEyebrow: {
-    color: "#b06f47",
-    fontSize: 6.8,
+  receiptNumber: { color: "#ffffff", fontFamily: "Helvetica-Bold", fontSize: 12, marginTop: 6 },
+  receiptNumberCompact: { fontSize: 9, marginTop: 4 },
+  receiptCaption: { color: colors.onWine, fontSize: 6.6, marginTop: 1, textTransform: "uppercase", letterSpacing: 0.6 },
+
+  // Info strip
+  infoStrip: { flexDirection: "row", marginTop: 10, borderWidth: 1, borderColor: colors.line, borderRadius: 7, backgroundColor: colors.paper },
+  infoStripCompact: { flexWrap: "wrap", marginTop: 7 },
+  infoCell: { flexGrow: 1, flexBasis: 0, paddingVertical: 7, paddingHorizontal: 9, borderRightWidth: 1, borderRightColor: colors.lineSoft },
+  infoCellCompact: { flexBasis: "50%", paddingVertical: 4, paddingHorizontal: 6 },
+  infoCellLast: { borderRightWidth: 0 },
+  infoCellHighlight: { backgroundColor: colors.peach, borderTopRightRadius: 6, borderBottomRightRadius: 6 },
+  label: { color: colors.muted, fontSize: 6.6, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 2 },
+  value: { fontFamily: "Helvetica-Bold", fontSize: 9.5, color: colors.wineInk },
+  valueCompact: { fontSize: 7.8 },
+
+  // Section headings
+  sectionHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", marginTop: 14, marginBottom: 5 },
+  sectionHeadCompact: { marginTop: 8, marginBottom: 3 },
+  sectionTitle: { fontFamily: "Times-Bold", fontSize: 13, color: colors.wineInk },
+  sectionTitleCompact: { fontSize: 10 },
+  sectionMeta: { fontSize: 6.8, color: colors.muted, textTransform: "uppercase", letterSpacing: 0.6 },
+  rule: { height: 1.5, backgroundColor: colors.gold, borderRadius: 1, marginBottom: 2 },
+
+  // Item rows
+  itemRow: { flexDirection: "row", alignItems: "flex-start", paddingVertical: 4, paddingHorizontal: 6, borderBottomWidth: 0.6, borderBottomColor: colors.lineSoft },
+  itemRowCompact: { paddingVertical: 2, paddingHorizontal: 4 },
+  itemRowAlt: { backgroundColor: "#fffaf4" },
+  itemIndex: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: colors.peach,
+    color: colors.wine,
     fontFamily: "Helvetica-Bold",
-    textTransform: "uppercase",
-    marginBottom: 2
+    fontSize: 7,
+    textAlign: "center",
+    paddingTop: 3.5,
+    marginRight: 7
   },
-  customerItemName: {
-    color: "#4c1525",
-    fontSize: 10,
-    fontFamily: "Helvetica-Bold"
-  },
-  customerItemMetaLine: {
-    marginTop: 3,
-    color: "#6f625d",
-    fontSize: 8
-  },
-  customerAmountBox: {
-    width: 72,
-    backgroundColor: "#fff6eb",
-    borderRadius: 4,
-    padding: 5,
-    alignSelf: "flex-start"
-  },
-  customerAmountLabel: {
-    color: "#9a7055",
-    fontSize: 6.5,
-    textTransform: "uppercase",
-    textAlign: "right"
-  },
-  customerAmountValue: {
-    color: "#4c1525",
-    fontSize: 9,
-    fontFamily: "Helvetica-Bold",
-    textAlign: "right",
-    marginTop: 2
-  },
-  storeSection: {
-    marginTop: 14
-  },
-  storeSectionCompact: {
-    marginTop: 8
-  },
-  sectionTitle: {
-    color: "#4c1525",
-    fontSize: 14,
-    fontFamily: "Helvetica-Bold",
-    marginBottom: 6
-  },
-  sectionTitleCompact: {
-    fontSize: 10,
-    marginBottom: 4
-  },
-  totalsBox: {
-    width: 190,
-    alignSelf: "flex-end",
-    marginTop: 14
-  },
-  customerTotalsBox: {
-    padding: 8,
-    borderWidth: 1,
-    borderColor: "#ead7c1",
-    backgroundColor: "#fffaf5",
-    borderRadius: 5
-  },
-  totalsTitle: {
-    color: "#4c1525",
-    fontSize: 11,
-    fontFamily: "Helvetica-Bold",
-    marginBottom: 4
-  },
-  totalsBoxCompact: {
-    width: 145,
-    marginTop: 8
-  },
-  totalRow: {
+  itemIndexCompact: { width: 11, height: 11, borderRadius: 5.5, fontSize: 5.6, paddingTop: 2.6, marginRight: 5 },
+  itemBody: { flexGrow: 1, flexShrink: 1, paddingRight: 8 },
+  itemName: { fontFamily: "Helvetica-Bold", fontSize: 9.5, color: colors.wineInk },
+  itemNameCompact: { fontSize: 7.8 },
+  itemMeta: { fontSize: 7.6, color: colors.muted, marginTop: 1.5 },
+  itemMetaInline: { fontFamily: "Helvetica", fontSize: 7.6, color: colors.muted },
+  itemMetaInlineCompact: { fontSize: 6.4 },
+  itemMetaCompact: { fontSize: 6.4 },
+  itemNote: { fontFamily: "Helvetica-Oblique", fontSize: 7.6, color: colors.ink, marginTop: 1.5 },
+  itemAmount: { fontFamily: "Helvetica-Bold", fontSize: 9.5, color: colors.wineInk, textAlign: "right", minWidth: 70 },
+  itemAmountCompact: { fontSize: 7.8, minWidth: 56 },
+
+  // Lower area
+  lower: { flexDirection: "row", marginTop: 12 },
+  lowerLeft: { flexGrow: 1, flexShrink: 1, flexBasis: 0, paddingRight: 12 },
+  lowerRight: { width: 200 },
+  lowerRightCompact: { width: 150 },
+
+  measureGrid: { flexDirection: "row", flexWrap: "wrap" },
+  measureChip: {
+    width: "22.5%",
+    marginRight: "2.4%",
+    marginBottom: 4,
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingVertical: 2
+    borderWidth: 0.8,
+    borderColor: colors.line,
+    borderRadius: 4,
+    paddingVertical: 3,
+    paddingHorizontal: 5,
+    backgroundColor: colors.paper
   },
-  totalStrong: {
-    borderTopWidth: 1,
-    borderTopColor: "#d8c7b4",
-    paddingTop: 4,
-    fontFamily: "Helvetica-Bold"
-  },
-  measureGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 4
-  },
-  measure: {
-    width: "31%",
-    borderWidth: 1,
-    borderColor: "#e8dcca",
-    padding: 4,
-    flexDirection: "row",
-    justifyContent: "space-between"
-  },
-  measureCompact: {
-    padding: 3
-  },
-  measureCode: {
-    fontFamily: "Helvetica-Bold"
-  },
-  measureBreak: {
-    width: "100%",
-    borderTopWidth: 1,
-    borderTopColor: "#d8c7b4",
-    marginVertical: 2
-  },
-  clothSample: {
-    width: 160,
-    height: 110,
-    objectFit: "cover",
-    marginTop: 4,
-    borderWidth: 1,
-    borderColor: "#e8dcca"
-  },
-  internalNote: {
-    marginTop: 8,
-    borderWidth: 1,
-    borderColor: "#eadfce",
-    padding: 6
-  },
-  noteBox: {
-    marginTop: 8,
-    borderWidth: 1,
-    borderColor: "#eadfce",
-    padding: 6
-  },
-  footer: {
-    marginTop: 18,
-    paddingTop: 9,
-    borderTopWidth: 1,
-    borderTopColor: "#eadfce",
-    color: "#6f625d",
-    fontSize: 8
-  },
-  customerFooter: {
-    padding: 8,
-    borderWidth: 1,
-    borderColor: "#eadfce",
-    backgroundColor: "#fffaf5",
-    borderRadius: 5
-  },
-  footerCompact: {
-    marginTop: 8,
-    paddingTop: 6,
-    fontSize: 6.6
-  },
-  footerParagraph: {
-    marginBottom: 4,
-    lineHeight: 1.35
-  },
-  signatureRow: {
-    marginTop: 28,
-    flexDirection: "row",
-    justifyContent: "space-between"
-  },
-  signatureRowCompact: {
-    marginTop: 14
-  }
+  measureChipCompact: { width: "31%", paddingVertical: 2, paddingHorizontal: 3 },
+  measureCode: { fontFamily: "Helvetica-Bold", color: colors.wine },
+  measureBreak: { width: "100%", height: 0.8, backgroundColor: colors.goldSoft, marginBottom: 4 },
+  clothSample: { width: 130, height: 95, objectFit: "cover", borderRadius: 6, borderWidth: 1, borderColor: colors.line },
+  clothSampleCompact: { width: 100, height: 72 },
+  noteBox: { marginTop: 6, padding: 6, borderRadius: 5, backgroundColor: colors.cream, borderLeftWidth: 2, borderLeftColor: colors.gold },
+  internalNoteBox: { borderLeftColor: colors.rose },
+
+  totalsCard: { borderWidth: 1, borderColor: colors.line, borderRadius: 8, backgroundColor: colors.paper, padding: 9 },
+  totalsCardCompact: { padding: 6 },
+  totalsTitle: { fontFamily: "Times-Bold", fontSize: 11.5, color: colors.wineInk, marginBottom: 4 },
+  totalRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 1.6 },
+  totalLabel: { color: colors.muted },
+  totalStrong: { borderTopWidth: 1, borderTopColor: colors.line, marginTop: 3, paddingTop: 4 },
+  totalStrongText: { fontFamily: "Helvetica-Bold", color: colors.wineInk },
+  balanceBox: { marginTop: 7, borderRadius: 6, backgroundColor: colors.wine, paddingVertical: 7, paddingHorizontal: 9 },
+  balanceBoxPaid: { backgroundColor: colors.successSoft },
+  balanceLabel: { color: colors.onWine, fontSize: 6.8, textTransform: "uppercase", letterSpacing: 0.4 },
+  balanceLabelPaid: { color: colors.success },
+  balanceValue: { color: "#ffffff", fontFamily: "Helvetica-Bold", fontSize: 14, marginTop: 1 },
+  balanceValueCompact: { fontSize: 11 },
+  balanceValuePaid: { color: colors.success },
+
+  footer: { marginTop: 14, paddingTop: 8, borderTopWidth: 1.5, borderTopColor: colors.goldSoft, color: colors.muted, fontSize: 7.4 },
+  footerCompact: { marginTop: 6, paddingTop: 4, fontSize: 5.9 },
+  footerParagraph: { marginBottom: 2.5 },
+  terms: { color: colors.muted, fontSize: 7.2 },
+  termsCompact: { fontSize: 5.9 },
+  termsTitle: { fontFamily: "Helvetica-Bold", color: colors.wineInk, fontSize: 7.4, marginBottom: 3, textTransform: "uppercase" },
+  signatureRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 22 },
+  signatureRowCompact: { marginTop: 10 },
+  signature: { width: 130, borderTopWidth: 0.8, borderTopColor: colors.muted, paddingTop: 3, textAlign: "center", color: colors.muted },
+  signatureCompact: { width: 95 },
+  thanks: { marginTop: 8, textAlign: "center", fontFamily: "Times-Italic", fontSize: 9.5, color: colors.wine },
+  thanksCompact: { fontSize: 7.5, marginTop: 5 },
+  pageNumber: { position: "absolute", bottom: 14, right: 28, fontSize: 7, color: colors.muted }
 });
 
 export function ReceiptPdfDocument({
@@ -365,10 +194,10 @@ export function ReceiptPdfDocument({
 }) {
   const isCombined = type === "combined";
   return (
-    <Document title={`${type}-${order.receiptNumber}`}>
+    <Document title={`${type}-${order.receiptNumber}`} author={settings.storeName}>
       <Page size="A4" orientation={isCombined ? "landscape" : "portrait"} style={isCombined ? [styles.page, styles.combinedPage] : styles.page}>
         {isCombined ? (
-          <View style={styles.row}>
+          <View style={styles.panes}>
             <View style={styles.storePane}>
               <PdfPanel order={order} settings={settings} mode="store" compact />
             </View>
@@ -379,6 +208,7 @@ export function ReceiptPdfDocument({
         ) : (
           <PdfPanel order={order} settings={settings} mode={type} />
         )}
+        <Text style={styles.pageNumber} fixed render={({ pageNumber, totalPages }) => (totalPages > 1 ? `Page ${pageNumber} of ${totalPages}` : "")} />
       </Page>
     </Document>
   );
@@ -395,155 +225,168 @@ function PdfPanel({
   mode: "customer" | "store";
   compact?: boolean;
 }) {
+  const isCustomer = mode === "customer";
   const printableMeasurements = order.measurements.filter((measurement) => isPrintableMeasurementValue(measurement.value));
   const specialNotes = uniqueMeasurementNotes(order.measurements);
   const deliveryDateForPdf = mode === "store" ? addDaysISO(order.deliveryDate, -3) : order.deliveryDate;
-  const isCustomer = mode === "customer";
-  const infoGridStyle = compact
-    ? isCustomer
-      ? [styles.infoGrid, styles.infoGridCompact, styles.infoGridCustomer]
-      : [styles.infoGrid, styles.infoGridCompact]
-    : isCustomer
-      ? [styles.infoGrid, styles.infoGridCustomer]
-      : styles.infoGrid;
-  const footerStyle = compact
-    ? isCustomer
-      ? [styles.footer, styles.footerCompact, styles.customerFooter]
-      : [styles.footer, styles.footerCompact]
-    : isCustomer
-      ? [styles.footer, styles.customerFooter]
-      : styles.footer;
 
   return (
-    <View style={compact ? styles.panelCompact : styles.panel}>
-      <View style={isCustomer ? [styles.header, styles.customerHeader] : styles.header}>
-        <View style={styles.headerText}>
-          {isCustomer ? <Text style={styles.customerPill}>Customer Receipt</Text> : null}
-          <Text style={compact ? [styles.title, styles.titleCompact] : styles.title}>{settings.storeName}</Text>
-          <Text style={styles.muted}>{settings.addressLines.join("\n")}</Text>
-          <Text style={styles.muted}>
+    <View>
+      <View style={compact ? [styles.band, styles.bandCompact] : styles.band}>
+        <View style={styles.logoFrame}>
+          {/* eslint-disable-next-line jsx-a11y/alt-text -- React-PDF Image does not support alt text. */}
+          <Image src={storeLogoSource} style={compact ? [styles.logo, styles.logoCompact] : styles.logo} />
+        </View>
+        <View style={styles.bandText}>
+          <Text style={compact ? [styles.storeName, styles.storeNameCompact] : styles.storeName}>{settings.storeName}</Text>
+          <Text style={compact ? [styles.bandMuted, styles.bandMutedCompact] : styles.bandMuted}>{settings.addressLines.join(", ")}</Text>
+          <Text style={compact ? [styles.bandMuted, styles.bandMutedCompact] : styles.bandMuted}>
             GSTIN {settings.gstin} | {settings.phonePrimary} / {settings.phoneSecondary}
           </Text>
+          {compact ? (
+            <View style={styles.bandCompactMeta}>
+              <Text style={styles.copyPill}>{isCustomer ? "Customer Receipt" : "Store Copy"}</Text>
+              <Text style={[styles.receiptNumber, styles.receiptNumberCompact, { marginTop: 0, marginLeft: 6 }]}>{order.receiptNumber ?? "Draft"}</Text>
+            </View>
+          ) : null}
         </View>
-        {/* eslint-disable-next-line jsx-a11y/alt-text -- React-PDF Image does not support alt text. */}
-        <Image src={storeLogoSource} style={compact ? [styles.storeLogo, styles.storeLogoCompact] : styles.storeLogo} />
+        {compact ? null : (
+          <View style={styles.bandRight}>
+            <Text style={styles.copyPill}>{isCustomer ? "Customer Receipt" : "Store Copy"}</Text>
+            <Text style={styles.receiptNumber}>{order.receiptNumber ?? "Draft"}</Text>
+            <Text style={styles.receiptCaption}>Receipt no.</Text>
+          </View>
+        )}
       </View>
-      <View style={infoGridStyle}>
-        <Info label="Receipt" value={order.receiptNumber ?? "Draft"} compact={compact} />
-        {mode === "store" ? <Info label="Copy" value="Store Copy" compact={compact} /> : null}
+
+      <View style={compact ? [styles.infoStrip, styles.infoStripCompact] : styles.infoStrip}>
         <Info label="Customer" value={order.customer.fullName} compact={compact} />
         <Info label="Phone" value={order.customer.phonePrimary} compact={compact} />
         <Info label="Order date" value={formatDate(order.orderDate)} compact={compact} />
-        <Info label="Delivery" value={formatDate(deliveryDateForPdf)} compact={compact} />
+        <Info label={isCustomer ? "Delivery" : "Ready by"} value={formatDate(deliveryDateForPdf)} compact={compact} highlight last />
       </View>
-      <ReceiptPdfItemSummary order={order} mode={mode} />
-      {mode === "store" ? (
-        <View style={compact ? [styles.storeSection, styles.storeSectionCompact] : styles.storeSection}>
-          {order.clothSampleImageUrl ? (
-            <View style={compact ? [styles.storeSection, styles.storeSectionCompact] : styles.storeSection}>
-              <Text style={compact ? [styles.sectionTitle, styles.sectionTitleCompact] : styles.sectionTitle}>Cloth Sample</Text>
-              {/* eslint-disable-next-line jsx-a11y/alt-text -- React-PDF Image does not support alt text. */}
-              <Image src={order.clothSampleImageUrl} style={styles.clothSample} />
-            </View>
-          ) : null}
-          {printableMeasurements.length > 0 ? (
-            <View style={compact ? [styles.storeSection, styles.storeSectionCompact] : styles.storeSection}>
-              <Text style={compact ? [styles.sectionTitle, styles.sectionTitleCompact] : styles.sectionTitle}>Measurements</Text>
-              <View style={styles.measureGrid}>
-                {printableMeasurements.map((measurement) => (
-                  <Fragment key={measurement.id}>
-                    <View style={compact ? [styles.measure, styles.measureCompact] : styles.measure}>
-                      <Text style={styles.measureCode}>{measurement.displayCode}</Text>
-                      <Text>{formatMeasurementValue(measurement.value, measurement.unit)}</Text>
-                    </View>
-                    {shouldBreakAfterMeasurement(measurement) ? <View style={styles.measureBreak} /> : null}
-                  </Fragment>
-                ))}
-              </View>
-            </View>
-          ) : null}
-          {specialNotes.map((note) => (
-            <Text key={note} style={styles.noteBox}>
-              Special Notes: {note}
-            </Text>
-          ))}
-          {order.internalNotes ? <Text style={styles.internalNote}>Internal: {order.internalNotes}</Text> : null}
+
+      <ReceiptPdfItemSummary order={order} mode={mode} compact={compact} />
+
+      <View style={styles.lower}>
+        <View style={styles.lowerLeft}>
+          {mode === "store" ? (
+            <>
+              {printableMeasurements.length > 0 ? (
+                <View wrap={false}>
+                  <SectionHead title="Measurements" meta={`${printableMeasurements.length} recorded`} compact={compact} />
+                  <View style={styles.measureGrid}>
+                    {printableMeasurements.map((measurement) => (
+                      <Fragment key={measurement.id}>
+                        <View style={compact ? [styles.measureChip, styles.measureChipCompact] : styles.measureChip}>
+                          <Text style={styles.measureCode}>{measurement.displayCode}</Text>
+                          <Text>{formatMeasurementValue(measurement.value, measurement.unit)}</Text>
+                        </View>
+                        {shouldBreakAfterMeasurement(measurement) ? <View style={styles.measureBreak} /> : null}
+                      </Fragment>
+                    ))}
+                  </View>
+                </View>
+              ) : null}
+              {order.clothSampleImageUrl ? (
+                <View wrap={false}>
+                  <SectionHead title="Cloth Sample" compact={compact} />
+                  {/* eslint-disable-next-line jsx-a11y/alt-text -- React-PDF Image does not support alt text. */}
+                  <Image src={order.clothSampleImageUrl} style={compact ? [styles.clothSample, styles.clothSampleCompact] : styles.clothSample} />
+                </View>
+              ) : null}
+              {specialNotes.map((note) => (
+                <Text key={note} style={styles.noteBox}>
+                  Special Notes: {note}
+                </Text>
+              ))}
+              {order.internalNotes ? <Text style={[styles.noteBox, styles.internalNoteBox]}>Internal: {order.internalNotes}</Text> : null}
+            </>
+          ) : (
+            <>
+              {order.customerNotes ? <Text style={[styles.noteBox, { marginTop: 0, marginBottom: 6 }]}>Customer Notes: {order.customerNotes}</Text> : null}
+              <Terms paragraphs={customerReceiptFooter} compact={compact} />
+            </>
+          )}
         </View>
-      ) : null}
-      <View style={compact ? [styles.totalsBox, styles.totalsBoxCompact, styles.customerTotalsBox] : [styles.totalsBox, styles.customerTotalsBox]}>
-        <Text style={styles.totalsTitle}>Payment summary</Text>
-        <Total label="Subtotal" value={order.totals.subtotalPaise} />
-        <Total label="Accessories" value={order.totals.accessoriesCostPaise} />
-        <Total label="Stitching" value={order.totals.stitchingCostPaise} />
-        <Total label="Fabric price" value={order.totals.fabricPricePaise} />
-        <Total label="Dye price" value={order.totals.dyePricePaise} />
-        <Total label="Extra costs" value={order.totals.extraCostPaise} />
-        <Total label="Discount" value={-order.totals.orderDiscountPaise} />
-        <Total label="CGST" value={order.totals.cgstAmountPaise} />
-        <Total label="SGST" value={order.totals.sgstAmountPaise} />
-        <Total label="Grand Total" value={order.totals.grandTotalPaise} strong />
-        <Total label="Advance" value={order.totals.totalPaidPaise} />
-        <Total label="Balance" value={order.totals.balanceDuePaise} strong />
+        <View style={compact ? [styles.lowerRight, styles.lowerRightCompact] : styles.lowerRight} wrap={false}>
+          <PaymentSummary order={order} compact={compact} />
+        </View>
       </View>
-      <View style={footerStyle}>
-        {mode === "customer" ? (
-          <>
-            {order.customerNotes ? <Text style={styles.noteBox}>Customer Notes: {order.customerNotes}</Text> : null}
-            {customerReceiptFooter.map((paragraph) => (
-              <Text key={paragraph} style={styles.footerParagraph}>
-                {paragraph}
-              </Text>
-            ))}
-          </>
-        ) : (
-          <>
-            <Text style={styles.footerParagraph}>{settings.termsAndConditions}</Text>
-            <View style={compact ? [styles.signatureRow, styles.signatureRowCompact] : styles.signatureRow}>
-              <Text>Thank you</Text>
-              <Text>Authorized Signatory</Text>
-            </View>
-          </>
-        )}
+
+      <View style={compact ? [styles.footer, styles.footerCompact] : styles.footer} wrap={false}>
+        {isCustomer ? null : <Text style={styles.footerParagraph}>{settings.termsAndConditions}</Text>}
+        <View style={compact ? [styles.signatureRow, styles.signatureRowCompact] : styles.signatureRow}>
+          <Text style={compact ? [styles.signature, styles.signatureCompact] : styles.signature}>{isCustomer ? "Customer" : "Thank you"}</Text>
+          <Text style={compact ? [styles.signature, styles.signatureCompact] : styles.signature}>Authorized Signatory</Text>
+        </View>
+        {isCustomer ? <Text style={compact ? [styles.thanks, styles.thanksCompact] : styles.thanks}>Thank you for choosing {settings.storeName}</Text> : null}
       </View>
     </View>
   );
 }
 
-function ReceiptPdfItemSummary({ order, mode }: { order: OrderWithCustomer; mode: "customer" | "store" }) {
+function Terms({ paragraphs, compact = false }: { paragraphs: string[]; compact?: boolean }) {
   return (
-    <View style={styles.customerSummary}>
-      <View style={styles.customerSummaryHeader}>
-        <View>
-          <Text style={styles.customerSummaryTitle}>Item summary</Text>
-          <Text style={styles.customerSummaryMeta}>
-            {order.items.length} {order.items.length === 1 ? "garment" : "garments"}
-          </Text>
-        </View>
-        {mode === "store" ? <Text style={styles.customerSummaryBadge}>Store Copy</Text> : null}
+    <View style={compact ? [styles.terms, styles.termsCompact] : styles.terms}>
+      <Text style={styles.termsTitle}>Terms</Text>
+      {paragraphs.map((paragraph) => (
+        <Text key={paragraph} style={styles.footerParagraph}>
+          {paragraph}
+        </Text>
+      ))}
+    </View>
+  );
+}
+
+function SectionHead({ title, meta, badge, compact = false }: { title: string; meta?: string; badge?: string; compact?: boolean }) {
+  return (
+    <View>
+      <View style={compact ? [styles.sectionHead, styles.sectionHeadCompact] : styles.sectionHead}>
+        <Text style={compact ? [styles.sectionTitle, styles.sectionTitleCompact] : styles.sectionTitle}>{title}</Text>
+        {meta || badge ? <Text style={styles.sectionMeta}>{[meta, badge].filter(Boolean).join(" | ")}</Text> : null}
       </View>
+      <View style={styles.rule} />
+    </View>
+  );
+}
+
+function ReceiptPdfItemSummary({ order, mode, compact }: { order: OrderWithCustomer; mode: "customer" | "store"; compact: boolean }) {
+  return (
+    <View>
+      <SectionHead
+        title="Item summary"
+        meta={`${order.items.length} ${order.items.length === 1 ? "garment" : "garments"}`}
+        badge={mode === "store" ? "Store Copy" : undefined}
+        compact={compact}
+      />
       {order.items.map((item, index) => {
         const fabricLength = formatFabricLengthDisplay(item.fabricLength);
+        const meta = [
+          `Qty ${item.quantity}`,
+          fabricLength ? `Fabric ${fabricLength}` : "",
+          item.fabricColor ? item.fabricColor : ""
+        ]
+          .filter(Boolean)
+          .join(" | ");
+        const rowStyle = [styles.itemRow, ...(compact ? [styles.itemRowCompact] : []), ...(index % 2 === 1 ? [styles.itemRowAlt] : [])];
 
         return (
-          <View key={item.id} style={styles.customerItemCard}>
-            <View style={styles.customerItemBody}>
-              <Text style={styles.customerItemEyebrow}>Dress {index + 1}</Text>
-              <Text style={styles.customerItemName}>{item.garmentType}</Text>
-              <Text style={styles.customerItemMetaLine}>
-                Qty {item.quantity}
-                {fabricLength ? ` | Fabric ${fabricLength}` : ""}
+          <View key={item.id} style={rowStyle} wrap={false}>
+            <Text style={compact ? [styles.itemIndex, styles.itemIndexCompact] : styles.itemIndex}>{index + 1}</Text>
+            <View style={styles.itemBody}>
+              <Text style={compact ? [styles.itemName, styles.itemNameCompact] : styles.itemName}>
+                {item.garmentType}
+                <Text style={compact ? [styles.itemMetaInline, styles.itemMetaInlineCompact] : styles.itemMetaInline}>{`   ${meta}`}</Text>
               </Text>
               {item.extraCosts.length ? (
-                <Text style={styles.customerItemMetaLine}>
+                <Text style={compact ? [styles.itemMeta, styles.itemMetaCompact] : styles.itemMeta}>
                   {item.extraCosts.map((cost) => formatExtraCostLine(cost.label, formatPdfINR(cost.amountPaise))).join(", ")}
                 </Text>
               ) : null}
-              {mode === "store" && item.stitchingInstructions ? <Text style={styles.customerItemMetaLine}>{item.stitchingInstructions}</Text> : null}
+              {mode === "store" && item.stitchingInstructions ? <Text style={styles.itemNote}>{item.stitchingInstructions}</Text> : null}
             </View>
-            <View style={styles.customerAmountBox}>
-              <Text style={styles.customerAmountLabel}>Amount</Text>
-              <Text style={styles.customerAmountValue}>{formatPdfINR(item.lineTotalPaise)}</Text>
-            </View>
+            <Text style={compact ? [styles.itemAmount, styles.itemAmountCompact] : styles.itemAmount}>{formatPdfINR(item.lineTotalPaise)}</Text>
           </View>
         );
       })}
@@ -551,11 +394,60 @@ function ReceiptPdfItemSummary({ order, mode }: { order: OrderWithCustomer; mode
   );
 }
 
-function Info({ label, value, compact = false }: { label: string; value: string; compact?: boolean }) {
+function PaymentSummary({ order, compact }: { order: OrderWithCustomer; compact: boolean }) {
+  const { totals } = order;
+  // Optional charges are listed only when they apply, so the summary stays short.
+  const optionalLines: [string, number][] = [
+    ["Accessories", totals.accessoriesCostPaise],
+    ["Stitching", totals.stitchingCostPaise],
+    ["Fabric price", totals.fabricPricePaise],
+    ["Dye price", totals.dyePricePaise],
+    ["Extra costs", totals.extraCostPaise],
+    ["Discount", -totals.orderDiscountPaise]
+  ];
+  const paidInFull = totals.balanceDuePaise <= 0;
+
   return (
-    <View style={compact ? [styles.infoCell, styles.infoCellCompact] : styles.infoCell}>
+    <View style={compact ? [styles.totalsCard, styles.totalsCardCompact] : styles.totalsCard}>
+      <Text style={styles.totalsTitle}>Payment summary</Text>
+      <Total label="Subtotal" value={totals.subtotalPaise} />
+      {optionalLines.filter(([, value]) => value !== 0).map(([label, value]) => (
+        <Total key={label} label={label} value={value} />
+      ))}
+      <Total label="CGST" value={totals.cgstAmountPaise} />
+      <Total label="SGST" value={totals.sgstAmountPaise} />
+      <Total label="Grand Total" value={totals.grandTotalPaise} strong />
+      <Total label="Advance" value={totals.totalPaidPaise} />
+      <View style={paidInFull ? [styles.balanceBox, styles.balanceBoxPaid] : styles.balanceBox}>
+        <Text style={paidInFull ? [styles.balanceLabel, styles.balanceLabelPaid] : styles.balanceLabel}>{paidInFull ? "Paid in full" : "Balance due"}</Text>
+        <Text
+          style={[styles.balanceValue, ...(compact ? [styles.balanceValueCompact] : []), ...(paidInFull ? [styles.balanceValuePaid] : [])]}
+        >
+          {formatPdfINR(totals.balanceDuePaise)}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+function Info({
+  label,
+  value,
+  compact = false,
+  highlight = false,
+  last = false
+}: {
+  label: string;
+  value: string;
+  compact?: boolean;
+  highlight?: boolean;
+  last?: boolean;
+}) {
+  const cellStyle = [styles.infoCell, ...(compact ? [styles.infoCellCompact] : []), ...(last ? [styles.infoCellLast] : []), ...(highlight && !compact ? [styles.infoCellHighlight] : [])];
+  return (
+    <View style={cellStyle}>
       <Text style={styles.label}>{label}</Text>
-      <Text style={styles.value}>{value}</Text>
+      <Text style={compact ? [styles.value, styles.valueCompact] : styles.value}>{value}</Text>
     </View>
   );
 }
@@ -563,8 +455,8 @@ function Info({ label, value, compact = false }: { label: string; value: string;
 function Total({ label, value, strong = false }: { label: string; value: number; strong?: boolean }) {
   return (
     <View style={strong ? [styles.totalRow, styles.totalStrong] : styles.totalRow}>
-      <Text>{label}</Text>
-      <Text>{formatPdfINR(value)}</Text>
+      <Text style={strong ? styles.totalStrongText : styles.totalLabel}>{label}</Text>
+      <Text style={strong ? styles.totalStrongText : undefined}>{formatPdfINR(value)}</Text>
     </View>
   );
 }

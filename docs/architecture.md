@@ -52,6 +52,8 @@ The default format is `SJD-YYYY-000001`. The migration includes `receipt_sequenc
 
 ## PDF and Print Design
 
+Receipts (`receipt-pdf.tsx` for downloads, `receipt-html.tsx` for the on-screen/print preview) share one layout: wine header band, info strip, compact item rows, payment card that lists optional charges only when non-zero, and a Balance due / Paid in full box. Keep the two in sync and keep receipts to one A4 page; the store copy shows the delivery date minus three days as "Ready by".
+
 Receipt previews are HTML pages with print CSS. PDF downloads are generated from stored order data with `@react-pdf/renderer`:
 
 - Customer copy excludes measurements and internal notes.
