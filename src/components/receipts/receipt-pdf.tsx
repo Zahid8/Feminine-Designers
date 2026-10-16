@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
   itemMetaInline: { fontFamily: "Helvetica", fontSize: 7.6, color: colors.muted },
   itemMetaInlineCompact: { fontSize: 6.4 },
   itemMetaCompact: { fontSize: 6.4 },
-  itemNote: { fontFamily: "Helvetica-Oblique", fontSize: 7.6, color: colors.ink, marginTop: 1.5 },
+  itemNote: { fontFamily: "Helvetica-Oblique", fontSize: 7.6, color: colors.ink, marginTop: 1.5, textAlign: "justify" },
   itemAmount: { fontFamily: "Helvetica-Bold", fontSize: 9.5, color: colors.wineInk, textAlign: "right", minWidth: 70 },
   itemAmountCompact: { fontSize: 7.8, minWidth: 56 },
 
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   measureBreak: { width: "100%", height: 0.8, backgroundColor: colors.goldSoft, marginBottom: 4 },
   clothSample: { width: 130, height: 95, objectFit: "cover", borderRadius: 6, borderWidth: 1, borderColor: colors.line },
   clothSampleCompact: { width: 100, height: 72 },
-  noteBox: { marginTop: 6, padding: 6, borderRadius: 5, backgroundColor: colors.cream, borderLeftWidth: 2, borderLeftColor: colors.gold },
+  noteBox: { marginTop: 6, padding: 6, borderRadius: 5, backgroundColor: colors.cream, borderLeftWidth: 2, borderLeftColor: colors.gold, textAlign: "justify" },
   internalNoteBox: { borderLeftColor: colors.rose },
 
   totalsCard: { borderWidth: 1, borderColor: colors.line, borderRadius: 8, backgroundColor: colors.paper, padding: 9 },
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
 
   footer: { marginTop: 14, paddingTop: 8, borderTopWidth: 1.5, borderTopColor: colors.goldSoft, color: colors.muted, fontSize: 7.4 },
   footerCompact: { marginTop: 6, paddingTop: 4, fontSize: 5.9 },
-  footerParagraph: { marginBottom: 2.5 },
+  footerParagraph: { marginBottom: 2.5, textAlign: "justify" },
   terms: { color: colors.muted, fontSize: 7.2 },
   termsCompact: { fontSize: 5.9 },
   termsTitle: { fontFamily: "Helvetica-Bold", color: colors.wineInk, fontSize: 7.4, marginBottom: 3, textTransform: "uppercase" },

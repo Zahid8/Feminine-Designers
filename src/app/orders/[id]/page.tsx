@@ -135,7 +135,7 @@ export default async function OrderDetailPage({
                   <p className="mt-1 text-xs font-semibold text-wine-ink">
                     {item.delivered ? "Delivered" : "Not delivered"}
                   </p>
-                  <p className="mt-2 text-sm">{item.stitchingInstructions}</p>
+                  <p className="mt-2 text-justify text-sm hyphens-auto">{item.stitchingInstructions}</p>
                 </div>
               ))}
             </div>

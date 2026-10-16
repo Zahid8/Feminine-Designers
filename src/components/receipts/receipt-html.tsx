@@ -327,13 +327,13 @@ function ReceiptPanel({
               {specialNotes.map((note) => (
                 <p
                   key={note}
-                  className="mt-2 rounded-md border-l-2 border-gold bg-cream p-2"
+                  className="mt-2 rounded-md border-l-2 border-gold bg-cream p-2 text-justify hyphens-auto"
                 >
                   Special Notes: {note}
                 </p>
               ))}
               {order.internalNotes ? (
-                <p className="mt-2 rounded-md border-l-2 border-rose bg-cream p-2">
+                <p className="mt-2 rounded-md border-l-2 border-rose bg-cream p-2 text-justify hyphens-auto">
                   Internal: {order.internalNotes}
                 </p>
               ) : null}
@@ -341,7 +341,7 @@ function ReceiptPanel({
           ) : (
             <>
               {order.customerNotes ? (
-                <p className="mb-2 rounded-md border-l-2 border-gold bg-cream p-2">
+                <p className="mb-2 rounded-md border-l-2 border-gold bg-cream p-2 text-justify hyphens-auto">
                   Customer Notes: {order.customerNotes}
                 </p>
               ) : null}
@@ -355,7 +355,9 @@ function ReceiptPanel({
               >
                 <p className="font-bold uppercase text-wine-ink">Terms</p>
                 {customerReceiptFooter.map((paragraph) => (
-                  <p key={paragraph}>{paragraph}</p>
+                  <p key={paragraph} className="text-justify hyphens-auto">
+                    {paragraph}
+                  </p>
                 ))}
               </div>
             </>
@@ -365,7 +367,7 @@ function ReceiptPanel({
       </div>
 
       <footer className="mt-4 border-t-2 border-gold-soft pt-3 text-xs text-muted">
-        {isCustomer ? null : <p>{settings.termsAndConditions}</p>}
+        {isCustomer ? null : <p className="text-justify hyphens-auto">{settings.termsAndConditions}</p>}
         <div
           className={cn("flex justify-between", isCustomer ? "mt-8" : "mt-6")}
         >
