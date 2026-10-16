@@ -34,7 +34,7 @@ import { uniqueMeasurementNotes } from "@/lib/utils/receipt-notes";
 import { formatExtraCostLine } from "@/lib/utils/extra-cost-display";
 import { formatFabricLengthDisplay } from "@/lib/utils/fabric-length-display";
 import { cn } from "@/lib/utils/cn";
-import { paymentSummaryLines, type SummaryLine } from "@/lib/calculations/payment-summary";
+import { billSummaryLines, type SummaryLine } from "@/lib/calculations/payment-summary";
 import { groupedExtraCosts } from "@/lib/utils/extra-cost-display";
 
 const customerReceiptFooter = [
@@ -498,30 +498,29 @@ function ReceiptItemSummary({
 }
 
 function PaymentSummary({ order, compact }: { order: OrderWithCustomer; compact: boolean }) {
-  const lines = paymentSummaryLines(order.totals, { namedExtras: groupedExtraCosts(order.items) });
-  const balance = lines.find((line) => line.kind === "balance")!;
-  const paidInFull = order.totals.balanceDuePaise <= 0;
+  const lines = billSummaryLines(order.totals, { namedExtras: groupedExtraCosts(order.items) });
   const sign = (line: SummaryLine, index: number) =>
     line.kind === "part" ? (index === 0 ? "" : "+ ") : line.kind === "tax" ? "+ " : line.kind === "discount" || line.kind === "paid" ? "− " : "";
 
   return (
     <div className={cn("h-fit break-inside-avoid rounded-xl border border-line bg-paper", compact ? "p-2.5 text-[11px]" : "p-3 text-sm")}>
       <p className="mb-1 font-serif text-base font-medium text-wine-ink">Payment summary</p>
-      {lines
-        .filter((line) => line.kind !== "balance")
-        .map((line, index) => (
+      {lines.map((line, index) =>
+        line.kind === "total" ? (
+          <p key={line.key} className="mt-2 flex items-baseline justify-between gap-4 border-t-2 border-wine pt-2 font-bold text-wine-ink">
+            <span>{line.label}</span>
+            <span className={cn("tabular-nums text-wine", compact ? "text-base" : "text-xl")}>{formatINR(line.amountPaise)}</span>
+          </p>
+        ) : (
           <Total
             key={line.key}
             label={`${sign(line, index)}${line.label}`}
             value={Math.abs(line.amountPaise)}
-            strong={line.kind === "subtotal" || line.kind === "total"}
+            strong={line.kind === "subtotal"}
             part={line.kind === "part"}
           />
-        ))}
-      <div className={cn("mt-2 rounded-lg px-3 py-2", paidInFull ? "bg-emerald-50 text-success" : "bg-wine text-white")}>
-        <p className={cn("text-[10px] uppercase tracking-wide", paidInFull ? "text-success" : "text-[#f8dccb]")}>{balance.label}</p>
-        <p className={cn("font-bold tabular-nums", compact ? "text-base" : "text-xl")}>{formatINR(order.totals.balanceDuePaise)}</p>
-      </div>
+        )
+      )}
     </div>
   );
 }

@@ -53,3 +53,29 @@ describe("paymentSummaryLines", () => {
     expect(mismatched.some((line) => line.label.startsWith("Extras"))).toBe(true);
   });
 });
+
+describe("billSummaryLines", () => {
+  it("takes the advance off before the bold grand total, with no balance line", async () => {
+    const { billSummaryLines } = await import("./payment-summary");
+    const lines = billSummaryLines({ ...base, totalPaidPaise: 500_000, balanceDuePaise: 2_154_926 });
+    expect(lines.slice(-3).map((line) => [line.label, line.amountPaise])).toEqual([
+      ["SGST 2.5%", 63_213],
+      ["Paid", -500_000],
+      ["Grand total", 2_154_926]
+    ]);
+    expect(lines.some((line) => line.kind === "balance")).toBe(false);
+  });
+
+  it("omits the advance line when nothing was paid", async () => {
+    const { billSummaryLines } = await import("./payment-summary");
+    const lines = billSummaryLines(base);
+    expect(lines.some((line) => line.key === "advance")).toBe(false);
+    expect(lines.at(-1)).toMatchObject({ label: "Grand total", amountPaise: base.grandTotalPaise });
+  });
+
+  it("shows an overpayment as a positive Overpaid amount", async () => {
+    const { billSummaryLines } = await import("./payment-summary");
+    const lines = billSummaryLines({ ...base, totalPaidPaise: 2_700_000, balanceDuePaise: -45_074 });
+    expect(lines.at(-1)).toMatchObject({ label: "Overpaid", amountPaise: 45_074 });
+  });
+});

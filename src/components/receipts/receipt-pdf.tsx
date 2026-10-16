@@ -9,7 +9,7 @@ import { getPublicPngDataUri } from "@/lib/utils/pdf-assets";
 import { uniqueMeasurementNotes } from "@/lib/utils/receipt-notes";
 import { formatExtraCostLine } from "@/lib/utils/extra-cost-display";
 import { formatFabricLengthDisplay } from "@/lib/utils/fabric-length-display";
-import { paymentSummaryLines, type SummaryLine } from "@/lib/calculations/payment-summary";
+import { billSummaryLines, type SummaryLine } from "@/lib/calculations/payment-summary";
 import { groupedExtraCosts } from "@/lib/utils/extra-cost-display";
 
 const customerReceiptFooter = [
@@ -163,16 +163,21 @@ const styles = StyleSheet.create({
   totalPart: { paddingLeft: 6, borderLeftWidth: 1.5, borderLeftColor: colors.goldSoft },
   totalPartText: { color: colors.muted, fontSize: 8 },
   totalsTitleCompact: { fontSize: 9.5, marginBottom: 2 },
-  balanceBoxCompact: { marginTop: 4, paddingVertical: 4 },
+  grandTotal: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "baseline",
+    marginTop: 6,
+    paddingTop: 6,
+    borderTopWidth: 1.5,
+    borderTopColor: colors.wine
+  },
+  grandTotalCompact: { marginTop: 4, paddingTop: 4 },
+  grandTotalLabel: { fontFamily: "Helvetica-Bold", fontSize: 11, color: colors.wineInk },
+  grandTotalValue: { fontFamily: "Helvetica-Bold", fontSize: 14, color: colors.wine },
+  grandTotalValueCompact: { fontSize: 11 },
   totalStrong: { borderTopWidth: 1, borderTopColor: colors.line, marginTop: 3, paddingTop: 4 },
   totalStrongText: { fontFamily: "Helvetica-Bold", color: colors.wineInk },
-  balanceBox: { marginTop: 7, borderRadius: 6, backgroundColor: colors.wine, paddingVertical: 7, paddingHorizontal: 9 },
-  balanceBoxPaid: { backgroundColor: colors.successSoft },
-  balanceLabel: { color: colors.onWine, fontSize: 6.8, textTransform: "uppercase", letterSpacing: 0.4 },
-  balanceLabelPaid: { color: colors.success },
-  balanceValue: { color: "#ffffff", fontFamily: "Helvetica-Bold", fontSize: 14, marginTop: 1 },
-  balanceValueCompact: { fontSize: 11 },
-  balanceValuePaid: { color: colors.success },
 
   footer: { marginTop: 14, paddingTop: 8, borderTopWidth: 1.5, borderTopColor: colors.goldSoft, color: colors.muted, fontSize: 7.4 },
   footerCompact: { marginTop: 6, paddingTop: 4, fontSize: 5.9 },
@@ -401,33 +406,30 @@ function ReceiptPdfItemSummary({ order, mode, compact }: { order: OrderWithCusto
 }
 
 function PaymentSummary({ order, compact }: { order: OrderWithCustomer; compact: boolean }) {
-  const lines = paymentSummaryLines(order.totals, { namedExtras: groupedExtraCosts(order.items) });
-  const balance = lines.find((line) => line.kind === "balance")!;
-  const paidInFull = order.totals.balanceDuePaise <= 0;
-  // Running calculation: parts add up to the subtotal, then taxes are added and payments taken off.
+  const lines = billSummaryLines(order.totals, { namedExtras: groupedExtraCosts(order.items) });
+  // Running calculation: parts add up to the subtotal, taxes are added, any advance is taken off.
   const sign = (line: SummaryLine, index: number) =>
     line.kind === "part" ? (index === 0 ? "" : "+ ") : line.kind === "tax" ? "+ " : line.kind === "discount" || line.kind === "paid" ? "- " : "";
 
   return (
     <View style={compact ? [styles.totalsCard, styles.totalsCardCompact] : styles.totalsCard}>
       <Text style={compact ? [styles.totalsTitle, styles.totalsTitleCompact] : styles.totalsTitle}>Payment summary</Text>
-      {lines
-        .filter((line) => line.kind !== "balance")
-        .map((line, index) => (
+      {lines.map((line, index) =>
+        line.kind === "total" ? (
+          <View key={line.key} style={compact ? [styles.grandTotal, styles.grandTotalCompact] : styles.grandTotal}>
+            <Text style={styles.grandTotalLabel}>{line.label}</Text>
+            <Text style={compact ? [styles.grandTotalValue, styles.grandTotalValueCompact] : styles.grandTotalValue}>{formatPdfINR(line.amountPaise)}</Text>
+          </View>
+        ) : (
           <Total
             key={line.key}
             label={`${sign(line, index)}${line.label}`}
             value={Math.abs(line.amountPaise)}
-            strong={line.kind === "subtotal" || line.kind === "total"}
+            strong={line.kind === "subtotal"}
             part={line.kind === "part"}
           />
-        ))}
-      <View style={[styles.balanceBox, ...(paidInFull ? [styles.balanceBoxPaid] : []), ...(compact ? [styles.balanceBoxCompact] : [])]}>
-        <Text style={paidInFull ? [styles.balanceLabel, styles.balanceLabelPaid] : styles.balanceLabel}>{balance.label}</Text>
-        <Text style={[styles.balanceValue, ...(compact ? [styles.balanceValueCompact] : []), ...(paidInFull ? [styles.balanceValuePaid] : [])]}>
-          {formatPdfINR(order.totals.balanceDuePaise)}
-        </Text>
-      </View>
+        )
+      )}
     </View>
   );
 }

@@ -83,3 +83,22 @@ function extrasParts(extraCostPaise: number, namedExtras: { label: string; amoun
 export function hasSubtotalBreakdown(lines: SummaryLine[]) {
   return lines.some((line) => line.kind === "part");
 }
+
+/**
+ * Customer bill version: same parts → subtotal → taxes, then any advance is taken off
+ * and the bold "Grand total" is what the customer still has to pay. No separate
+ * balance box. (Staff screens keep `paymentSummaryLines` with the full bill total.)
+ */
+export function billSummaryLines(totals: SummaryTotals, options: { namedExtras?: { label: string; amountPaise: number }[] } = {}): SummaryLine[] {
+  const lines = paymentSummaryLines(totals, options).filter((line) => line.kind !== "total" && line.kind !== "paid" && line.kind !== "balance");
+  if (totals.totalPaidPaise > 0) {
+    lines.push({ key: "advance", label: "Paid", amountPaise: -totals.totalPaidPaise, kind: "paid" });
+  }
+  // An overpaid order (status "Credit") would otherwise show a negative total.
+  lines.push(
+    totals.balanceDuePaise < 0
+      ? { key: "total", label: "Overpaid", amountPaise: -totals.balanceDuePaise, kind: "total" }
+      : { key: "total", label: "Grand total", amountPaise: totals.balanceDuePaise, kind: "total" }
+  );
+  return lines;
+}
