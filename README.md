@@ -494,7 +494,7 @@ Open:
 /customers
 ```
 
-Each customer shows initials, last order date, number of orders, and the amount due (or **Settled**). Use **Remove customers** to switch on delete buttons. A customer’s profile shows lifetime value, outstanding balance, contact details, Call/WhatsApp buttons, and **Create New Order** (prefilled).
+Each customer shows initials, last order date, number of orders, and the amount due (or **Settled**). Use **Remove customers** to switch on delete buttons. **Edit Customer** (button on the profile) changes name, phones, email, address, notes, and saved measurements on one page with a single Save. Measurements are only saved if you actually change one, so fixing a phone number never overrides the measurements from the latest order. Past orders and bills are never changed. A customer’s profile shows lifetime value, outstanding balance, contact details, Call/WhatsApp buttons, and **Create New Order** (prefilled).
 
 Use it for:
 

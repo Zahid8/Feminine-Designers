@@ -11,6 +11,11 @@ export interface NewCustomerRecord {
 
 export interface CustomerContactUpdate {
   phonePrimary: string;
+  fullName?: string;
+  phoneSecondary?: string;
+  email?: string;
+  address?: string;
+  notes?: string;
 }
 
 function ensureSupabaseCustomers() {
@@ -69,15 +74,23 @@ export async function updateCustomerContact(customerId: string, update: Customer
   if (!phonePrimary) {
     throw new Error("Phone number is required.");
   }
+  if (update.fullName !== undefined && update.fullName.trim().length < 1) {
+    throw new Error("Customer name is required.");
+  }
+
+  // Only the fields that were provided are changed; empty optional fields are cleared.
+  const patch: Record<string, string | null> = {
+    phone_primary: phonePrimary,
+    updated_at: new Date().toISOString()
+  };
+  if (update.fullName !== undefined) patch.full_name = update.fullName.trim();
+  if (update.phoneSecondary !== undefined) patch.phone_secondary = emptyToNull(update.phoneSecondary);
+  if (update.email !== undefined) patch.email = emptyToNull(update.email);
+  if (update.address !== undefined) patch.address = emptyToNull(update.address);
+  if (update.notes !== undefined) patch.notes = emptyToNull(update.notes);
 
   const admin = createSupabaseAdminClient();
-  const { error } = await admin
-    .from("customers")
-    .update({
-      phone_primary: phonePrimary,
-      updated_at: new Date().toISOString()
-    })
-    .eq("id", customerId);
+  const { error } = await admin.from("customers").update(patch).eq("id", customerId);
 
   if (error) throw new Error(error.message);
 }

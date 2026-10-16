@@ -67,4 +67,41 @@ describe("customer record service", () => {
     );
     expect(mockUpdateEq).toHaveBeenCalledWith("id", "customer-1");
   });
+
+  it("updates name, contact details, and notes together, clearing empty optional fields", async () => {
+    const { updateCustomerContact } = await import("./customer-record-service");
+
+    await updateCustomerContact("customer-1", {
+      fullName: "  Natasha Sharma ",
+      phonePrimary: "9717075751",
+      phoneSecondary: "",
+      email: "natasha@example.com",
+      address: "Sector 14, Gurugram",
+      notes: ""
+    });
+
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        full_name: "Natasha Sharma",
+        phone_primary: "9717075751",
+        phone_secondary: null,
+        email: "natasha@example.com",
+        address: "Sector 14, Gurugram",
+        notes: null
+      })
+    );
+  });
+
+  it("leaves fields that were not provided untouched", async () => {
+    const { updateCustomerContact } = await import("./customer-record-service");
+
+    await updateCustomerContact("customer-1", { phonePrimary: "9717075751" });
+
+    expect(mockUpdate).toHaveBeenCalledWith({ phone_primary: "9717075751", updated_at: expect.any(String) });
+  });
+
+  it("rejects an empty name", async () => {
+    const { updateCustomerContact } = await import("./customer-record-service");
+    await expect(updateCustomerContact("customer-1", { fullName: "  ", phonePrimary: "9717075751" })).rejects.toThrow(/name is required/i);
+  });
 });

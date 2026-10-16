@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeading } from "@/components/shared/page-heading";
+import { Pencil } from "lucide-react";
 import { ButtonLink } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MeasurementGrid } from "@/components/measurements/measurement-grid";
@@ -11,8 +12,8 @@ import { formatDate, todayISO } from "@/lib/utils/date";
 import { initialsFor } from "@/lib/utils/initials";
 import { ContactActions } from "@/components/shared/contact-actions";
 
-export default async function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export default async function CustomerDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ saved?: string }> }) {
+  const [{ id }, query] = await Promise.all([params, searchParams]);
   const profile = await getCustomerProfile(id);
   if (!profile) notFound();
   const orderDates = profile.orders.map((order) => order.orderDate).sort();
@@ -27,10 +28,19 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
         action={
           <div className="flex flex-wrap gap-2">
             <ButtonLink href={`/customers/${id}/measurements`} variant="secondary">Measurements</ButtonLink>
+            <ButtonLink href={`/customers/${id}/edit`} variant="secondary">
+              <Pencil className="h-4 w-4" aria-hidden />
+              Edit Customer
+            </ButtonLink>
             <ButtonLink href={`/orders/new?customer=${id}`}>Create New Order</ButtonLink>
           </div>
         }
       />
+      {query.saved ? (
+        <div role="status" className="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+          Customer saved.
+        </div>
+      ) : null}
       <div className="grid gap-5 xl:grid-cols-[.8fr_1.2fr]">
         <Card>
           <CardHeader className="flex items-center gap-4">
