@@ -312,10 +312,10 @@ function ReceiptPanel({
                   <Image
                     src={order.clothSampleImageUrl}
                     alt="Customer cloth sample"
-                    width={compact ? 150 : 200}
-                    height={compact ? 110 : 145}
+                    width={compact ? 220 : 320}
+                    height={compact ? 220 : 320}
                     unoptimized
-                    className="rounded-lg border border-line object-cover"
+                    className={cn("h-auto w-auto rounded-lg border border-line bg-white object-contain", compact ? "max-h-56 max-w-[14rem]" : "max-h-80 max-w-xs")}
                   />
                 </div>
               ) : null}

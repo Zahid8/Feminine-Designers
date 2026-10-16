@@ -135,14 +135,18 @@ export default async function OrderDetailPage({
             {order.clothSampleImageUrl ? (
               <div className="rounded-xl border border-line bg-gradient-to-br from-paper to-peach p-3 shadow-raised-sm">
                 <p className="mb-2 font-semibold text-wine-ink">Customer cloth sample</p>
-                <Image
-                  src={order.clothSampleImageUrl}
-                  alt="Customer cloth sample"
-                  width={360}
-                  height={240}
-                  unoptimized
-                  className="max-h-72 w-full rounded-xl object-cover"
-                />
+                <a href={order.clothSampleImageUrl} target="_blank" rel="noopener noreferrer" aria-label="Open cloth sample full size" title="Tap to view full size">
+                  {/* Whole photo, never cropped; taller photos are scaled down to fit. */}
+                  <Image
+                    src={order.clothSampleImageUrl}
+                    alt="Customer cloth sample"
+                    width={800}
+                    height={800}
+                    unoptimized
+                    className="mx-auto h-auto max-h-[32rem] w-auto max-w-full rounded-xl bg-white object-contain"
+                  />
+                </a>
+                <p className="mt-1.5 text-center text-xs text-muted">Tap the photo to view it full size</p>
               </div>
             ) : null}
             {order.measurements.length ? (

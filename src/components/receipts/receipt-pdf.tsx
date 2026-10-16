@@ -1,5 +1,6 @@
 import { Document, Image, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import { PDF_SANS, PDF_SERIF } from "@/lib/pdf/fonts";
+import { fitWithin } from "@/lib/pdf/image-size";
 import { Fragment } from "react";
 import type { OrderWithCustomer, ReceiptType, StoreSettings } from "@/types/domain";
 import { addDaysISO, formatDate } from "@/lib/utils/date";
@@ -147,8 +148,7 @@ const styles = StyleSheet.create({
   measureChipCompact: { width: "30.5%", marginRight: "2.4%", paddingVertical: 2, paddingHorizontal: 3 },
   measureCode: { fontFamily: PDF_SANS, fontWeight: 700, color: colors.wine },
   measureBreak: { width: "100%", height: 0.8, backgroundColor: colors.goldSoft, marginBottom: 4 },
-  clothSample: { width: 130, height: 95, objectFit: "cover", borderRadius: 6, borderWidth: 1, borderColor: colors.line },
-  clothSampleCompact: { width: 100, height: 72 },
+  clothSample: { objectFit: "contain", borderRadius: 6, borderWidth: 1, borderColor: colors.line, backgroundColor: "#ffffff" },
   noteBox: { marginTop: 6, padding: 6, borderRadius: 5, backgroundColor: colors.cream, borderLeftWidth: 2, borderLeftColor: colors.gold, textAlign: "justify" },
   internalNoteBox: { borderLeftColor: colors.rose },
 
@@ -194,11 +194,14 @@ const styles = StyleSheet.create({
 export function ReceiptPdfDocument({
   order,
   settings,
-  type
+  type,
+  clothSampleSize
 }: {
   order: OrderWithCustomer;
   settings: StoreSettings;
   type: ReceiptType;
+  /** Pixel size of the cloth photo, so its frame matches its shape. */
+  clothSampleSize?: { width: number; height: number };
 }) {
   const isCombined = type === "combined";
   return (
@@ -207,14 +210,14 @@ export function ReceiptPdfDocument({
         {isCombined ? (
           <View style={styles.panes}>
             <View style={styles.storePane}>
-              <PdfPanel order={order} settings={settings} mode="store" compact />
+              <PdfPanel order={order} settings={settings} mode="store" compact clothSampleSize={clothSampleSize} />
             </View>
             <View style={styles.customerPane}>
               <PdfPanel order={order} settings={settings} mode="customer" compact />
             </View>
           </View>
         ) : (
-          <PdfPanel order={order} settings={settings} mode={type} />
+          <PdfPanel order={order} settings={settings} mode={type} clothSampleSize={clothSampleSize} />
         )}
         <Text style={styles.pageNumber} fixed render={({ pageNumber, totalPages }) => (totalPages > 1 ? `Page ${pageNumber} of ${totalPages}` : "")} />
       </Page>
@@ -226,13 +229,16 @@ function PdfPanel({
   order,
   settings,
   mode,
-  compact = false
+  compact = false,
+  clothSampleSize
 }: {
   order: OrderWithCustomer;
   settings: StoreSettings;
   mode: "customer" | "store";
   compact?: boolean;
+  clothSampleSize?: { width: number; height: number };
 }) {
+  const clothFrame = fitWithin(clothSampleSize, compact ? 150 : 190, compact ? 112 : 150);
   const isCustomer = mode === "customer";
   const printableMeasurements = order.measurements.filter((measurement) => isPrintableMeasurementValue(measurement.value));
   const specialNotes = uniqueMeasurementNotes(order.measurements);
@@ -300,7 +306,7 @@ function PdfPanel({
                 <View wrap={false}>
                   <SectionHead title="Cloth Sample" compact={compact} />
                   {/* eslint-disable-next-line jsx-a11y/alt-text -- React-PDF Image does not support alt text. */}
-                  <Image src={order.clothSampleImageUrl} style={compact ? [styles.clothSample, styles.clothSampleCompact] : styles.clothSample} />
+                  <Image src={order.clothSampleImageUrl} style={[styles.clothSample, clothFrame]} />
                 </View>
               ) : null}
               {specialNotes.map((note) => (
