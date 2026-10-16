@@ -50,7 +50,7 @@ export function KeyboardShortcuts() {
         <Dialog.Overlay className="fixed inset-0 z-50 bg-wine-deep/30 backdrop-blur-sm" />
         <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[min(92vw,26rem)] -translate-x-1/2 -translate-y-1/2 rounded-3xl bg-surface p-5 shadow-raised-lg">
           <div className="mb-3 flex items-center justify-between">
-            <Dialog.Title className="font-serif text-2xl font-semibold text-wine-deep">Keyboard shortcuts</Dialog.Title>
+            <Dialog.Title className="font-serif text-2xl font-medium text-wine-deep">Keyboard shortcuts</Dialog.Title>
             <Dialog.Close aria-label="Close" className="rounded-lg p-1.5 text-muted hover:bg-surface-sunken hover:text-wine">
               <X className="h-4 w-4" />
             </Dialog.Close>

@@ -28,7 +28,7 @@ export function WeekStrip({ week, overdue = [] }: { week: DashboardDeliveryDay[]
   return (
     <section aria-labelledby="week-strip-title" className="rounded-2xl border border-white/70 bg-surface p-4 shadow-raised">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <h2 id="week-strip-title" className="flex items-center gap-2 font-serif text-2xl font-semibold text-wine-deep">
+        <h2 id="week-strip-title" className="flex items-center gap-2 font-serif text-2xl font-medium text-wine-deep">
           <CalendarRange className="h-5 w-5 text-wine" aria-hidden />
           Next 7 days
         </h2>

@@ -164,7 +164,6 @@ const styles = StyleSheet.create({
   totalPartText: { color: colors.muted, fontSize: 8 },
   totalsTitleCompact: { fontSize: 9.5, marginBottom: 2 },
   balanceBoxCompact: { marginTop: 4, paddingVertical: 4 },
-  totalsCaption: { color: colors.muted, fontSize: 6.8, marginBottom: 2, fontFamily: "Helvetica-Oblique" },
   totalStrong: { borderTopWidth: 1, borderTopColor: colors.line, marginTop: 3, paddingTop: 4 },
   totalStrongText: { fontFamily: "Helvetica-Bold", color: colors.wineInk },
   balanceBox: { marginTop: 7, borderRadius: 6, backgroundColor: colors.wine, paddingVertical: 7, paddingHorizontal: 9 },
@@ -403,7 +402,6 @@ function ReceiptPdfItemSummary({ order, mode, compact }: { order: OrderWithCusto
 
 function PaymentSummary({ order, compact }: { order: OrderWithCustomer; compact: boolean }) {
   const lines = paymentSummaryLines(order.totals, { namedExtras: groupedExtraCosts(order.items) });
-  const parts = lines.filter((line) => line.kind === "part");
   const balance = lines.find((line) => line.kind === "balance")!;
   const paidInFull = order.totals.balanceDuePaise <= 0;
   // Running calculation: parts add up to the subtotal, then taxes are added and payments taken off.
@@ -413,7 +411,6 @@ function PaymentSummary({ order, compact }: { order: OrderWithCustomer; compact:
   return (
     <View style={compact ? [styles.totalsCard, styles.totalsCardCompact] : styles.totalsCard}>
       <Text style={compact ? [styles.totalsTitle, styles.totalsTitleCompact] : styles.totalsTitle}>Payment summary</Text>
-      {parts.length && !compact ? <Text style={styles.totalsCaption}>Your item amounts are made up of:</Text> : null}
       {lines
         .filter((line) => line.kind !== "balance")
         .map((line, index) => (

@@ -183,7 +183,7 @@ export function WorkshopBoard({
                   <Icon className="h-5 w-5" aria-hidden />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <h2 className="font-serif text-xl font-semibold text-wine-deep">
+                  <h2 className="font-serif text-xl font-medium text-wine-deep">
                     {column.title}{" "}
                     <span className="ml-1 rounded-full bg-surface px-2 py-0.5 align-middle font-sans text-xs font-bold text-muted-strong shadow-raised-sm">
                       {cards.length}

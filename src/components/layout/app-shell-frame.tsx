@@ -14,12 +14,12 @@ import { ToastProvider } from "@/components/ui/toast";
 import { cn } from "@/lib/utils/cn";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: Home },
-  { href: "/orders", label: "Orders", icon: ReceiptText },
-  { href: "/orders/new", label: "New Order", icon: UserRoundPlus },
-  { href: "/customers", label: "Customers", icon: Users },
-  { href: "/reports", label: "Reports", icon: ChartColumn },
-  { href: "/settings", label: "Settings", icon: Settings }
+  { href: "/dashboard", label: "Dashboard", icon: Home, accent: "bg-section-dashboard", text: "text-section-dashboard" },
+  { href: "/orders", label: "Orders", icon: ReceiptText, accent: "bg-section-orders", text: "text-section-orders" },
+  { href: "/orders/new", label: "New Order", icon: UserRoundPlus, accent: "bg-section-new", text: "text-section-new" },
+  { href: "/customers", label: "Customers", icon: Users, accent: "bg-section-customers", text: "text-section-customers" },
+  { href: "/reports", label: "Reports", icon: ChartColumn, accent: "bg-section-reports", text: "text-section-reports" },
+  { href: "/settings", label: "Settings", icon: Settings, accent: "bg-section-settings", text: "text-section-settings" }
 ];
 
 // Phones and tablets: five tabs; Settings is the header gear button.
@@ -46,13 +46,13 @@ export function AppShellFrame({
         <aside
           aria-label="Primary navigation"
           className={cn(
-            "no-print hidden overflow-hidden bg-surface shadow-raised transition-all duration-200 lg:sticky lg:top-0 lg:block lg:h-screen lg:rounded-r-3xl",
+            "no-print hidden overflow-hidden bg-gradient-to-b from-wine-deep via-wine-ink to-wine shadow-raised transition-all duration-200 lg:sticky lg:top-0 lg:block lg:h-screen lg:rounded-r-3xl",
             sidebarExpanded ? "p-4 opacity-100 lg:w-[272px]" : "w-0 border-0 p-0 opacity-0"
           )}
         >
           <div className={cn("min-w-[240px] transition-opacity duration-150", sidebarExpanded ? "opacity-100" : "opacity-0")}>
             <div className="rounded-2xl p-2">
-              <LogoMark />
+              <LogoMark onDark />
             </div>
             <nav className="mt-6 grid gap-2">
               {navItems.map((item) => {
@@ -64,13 +64,15 @@ export function AppShellFrame({
                     aria-current={active ? "page" : undefined}
                     className={cn(
                       "group flex min-h-12 items-center gap-3 rounded-2xl px-3 py-2 text-sm font-semibold transition duration-150",
-                      active ? "bg-surface-sunken text-wine shadow-pressed" : "text-ink-soft hover:bg-surface-strong hover:text-wine hover:shadow-raised-sm"
+                      active ? "bg-white/15 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]" : "text-white/75 hover:bg-white/10 hover:text-white"
                     )}
                   >
                     <span
                       className={cn(
                         "flex h-9 w-9 items-center justify-center rounded-xl transition",
-                        active ? "bg-gradient-to-br from-wine to-rose text-white shadow-brand" : "bg-surface text-wine shadow-raised-sm group-hover:text-rose"
+                        item.accent,
+                        "text-white shadow-[0_4px_10px_rgba(0,0,0,0.25)]",
+                        active ? "ring-2 ring-gold-soft" : "opacity-85 group-hover:opacity-100"
                       )}
                     >
                       <item.icon className="h-4 w-4" />
@@ -149,7 +151,7 @@ export function AppShellFrame({
                     aria-current={active ? "page" : undefined}
                     className={cn(
                       "flex min-h-12 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-[11px] font-semibold transition",
-                      primary ? "text-wine" : active ? "text-wine" : "text-muted-strong"
+                      primary ? "text-wine" : active ? item.text : "text-muted-strong"
                     )}
                   >
                     <span

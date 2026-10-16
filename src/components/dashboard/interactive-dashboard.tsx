@@ -488,7 +488,7 @@ export function InteractiveDashboard({
       <WeekStrip week={model.week} overdue={model.overdue} />
 
       <div id="work-area" className="flex scroll-mt-24 flex-wrap items-center justify-between gap-3">
-        <h2 className="font-serif text-2xl font-semibold text-wine-deep">{workView === "board" ? "Workshop board" : "Order list"}</h2>
+        <h2 className="font-serif text-2xl font-medium text-wine-deep">{workView === "board" ? "Workshop board" : "Order list"}</h2>
         <div role="tablist" aria-label="Work view" className="inline-flex gap-1 rounded-2xl bg-surface-sunken p-1.5 shadow-pressed">
           {(
             [

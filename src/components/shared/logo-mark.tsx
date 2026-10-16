@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { Scissors } from "lucide-react";
 
-export function LogoMark({ compact = false, iconOnly = false }: { compact?: boolean; iconOnly?: boolean }) {
+export function LogoMark({ compact = false, iconOnly = false, onDark = false }: { compact?: boolean; iconOnly?: boolean; onDark?: boolean }) {
   const [imageFailed, setImageFailed] = useState(false);
   return (
     <div className={compact ? "flex items-center gap-2" : "flex items-center gap-3"}>
@@ -24,10 +24,10 @@ export function LogoMark({ compact = false, iconOnly = false }: { compact?: bool
         </div>
       )}
       <div className={iconOnly ? "sr-only" : undefined}>
-        <p className={compact ? "font-serif text-xl font-semibold leading-none text-wine-deep" : "font-serif text-2xl font-semibold leading-none text-wine-deep"}>
+        <p className={`font-serif font-medium leading-none ${compact ? "text-xl" : "text-2xl"} ${onDark ? "text-white" : "text-wine-deep"}`}>
           Feminine Designer
         </p>
-        <p className="mt-1 text-sm font-medium text-bronze">By Sajida</p>
+        <p className={`mt-1 text-sm font-medium ${onDark ? "text-gold-soft" : "text-bronze"}`}>By Sajida</p>
       </div>
     </div>
   );

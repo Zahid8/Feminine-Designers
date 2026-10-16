@@ -206,7 +206,7 @@ function ReceiptPanel({
         <div className="min-w-0 flex-1">
           <p
             className={cn(
-              "font-serif font-semibold leading-tight",
+              "font-serif font-medium leading-tight",
               compact ? "text-lg" : "text-2xl"
             )}
           >
@@ -401,7 +401,7 @@ function SectionHead({
     <div className="mb-1.5 flex items-end justify-between gap-3 border-b-2 border-gold pb-1">
       <p
         className={cn(
-          "font-serif font-semibold text-wine-ink",
+          "font-serif font-medium text-wine-ink",
           compact ? "text-sm" : "text-lg"
         )}
       >
@@ -499,7 +499,6 @@ function ReceiptItemSummary({
 
 function PaymentSummary({ order, compact }: { order: OrderWithCustomer; compact: boolean }) {
   const lines = paymentSummaryLines(order.totals, { namedExtras: groupedExtraCosts(order.items) });
-  const parts = lines.filter((line) => line.kind === "part");
   const balance = lines.find((line) => line.kind === "balance")!;
   const paidInFull = order.totals.balanceDuePaise <= 0;
   const sign = (line: SummaryLine, index: number) =>
@@ -507,8 +506,7 @@ function PaymentSummary({ order, compact }: { order: OrderWithCustomer; compact:
 
   return (
     <div className={cn("h-fit break-inside-avoid rounded-xl border border-line bg-paper", compact ? "p-2.5 text-[11px]" : "p-3 text-sm")}>
-      <p className="mb-1 font-serif text-base font-semibold text-wine-ink">Payment summary</p>
-      {parts.length ? <p className="mb-1 text-[11px] italic text-muted">Your item amounts are made up of:</p> : null}
+      <p className="mb-1 font-serif text-base font-medium text-wine-ink">Payment summary</p>
       {lines
         .filter((line) => line.kind !== "balance")
         .map((line, index) => (

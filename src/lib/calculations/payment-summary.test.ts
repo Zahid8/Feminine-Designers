@@ -24,7 +24,7 @@ describe("paymentSummaryLines", () => {
     const parts = lines.filter((line) => line.kind === "part");
     expect(lines.map((line) => line.key)).toEqual(["garments", "fabric", "subtotal", "cgst", "sgst", "total", "paid", "balance"]);
     expect(parts.reduce((sum, line) => sum + line.amountPaise, 0)).toBe(base.subtotalPaise);
-    expect(parts[0]).toMatchObject({ label: "Garments (rate × qty)", amountPaise: 2_450_000 });
+    expect(parts[0]).toMatchObject({ label: "Garments", amountPaise: 2_450_000 });
     expect(lines.find((line) => line.key === "cgst")?.label).toBe("CGST 2.5%");
   });
 
@@ -48,7 +48,7 @@ describe("paymentSummaryLines", () => {
   it("uses named extras when they account for the whole extras total", () => {
     const totals = { ...base, fabricPricePaise: 0, extraCostPaise: 85_000 };
     const named = paymentSummaryLines(totals, { namedExtras: [{ label: "Lace price", amountPaise: 25_000 }, { label: "Shantoon price", amountPaise: 60_000 }] });
-    expect(named.filter((line) => line.kind === "part").map((line) => line.label)).toEqual(["Garments (rate × qty)", "Lace price", "Shantoon price"]);
+    expect(named.filter((line) => line.kind === "part").map((line) => line.label)).toEqual(["Garments", "Lace price", "Shantoon price"]);
     const mismatched = paymentSummaryLines(totals, { namedExtras: [{ label: "Lace price", amountPaise: 1 }] });
     expect(mismatched.some((line) => line.label.startsWith("Extras"))).toBe(true);
   });

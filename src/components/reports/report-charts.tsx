@@ -34,7 +34,7 @@ export function CollectionsChart({ buckets, grouping }: { buckets: ReportBucket[
   return (
     <figure className="grid gap-3">
       <div className="flex items-baseline justify-between gap-2">
-        <figcaption className="font-serif text-xl font-semibold text-wine-deep">Money collected per {grouping}</figcaption>
+        <figcaption className="font-serif text-xl font-medium text-wine-deep">Money collected per {grouping}</figcaption>
         <button type="button" onClick={() => setShowTable((current) => !current)} className="text-sm font-semibold text-wine underline-offset-2 hover:underline">
           {showTable ? "Show chart" : "Show table"}
         </button>
@@ -117,7 +117,7 @@ export function GarmentMixChart({ buckets }: { buckets: ReportBucket[] }) {
   return (
     <figure className="grid gap-3">
       <div className="flex items-baseline justify-between gap-2">
-        <figcaption className="font-serif text-xl font-semibold text-wine-deep">Garments ordered</figcaption>
+        <figcaption className="font-serif text-xl font-medium text-wine-deep">Garments ordered</figcaption>
         <button type="button" onClick={() => setShowTable((current) => !current)} className="text-sm font-semibold text-wine underline-offset-2 hover:underline">
           {showTable ? "Show chart" : "Show table"}
         </button>

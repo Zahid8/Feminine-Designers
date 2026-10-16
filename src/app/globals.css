@@ -7,25 +7,25 @@
  * tonal elevation for primary actions and active navigation.
  */
 :root {
-  --background: #f6ece2;
+  --background: #f5edf0;
   --foreground: #271917;
-  --surface: #fbf5ee;
-  --surface-strong: #fffdfa;
-  --surface-sunken: #f1e4d6;
-  --card: #fbf5ee;
-  --muted: #7c6d66;
-  --border: #ead8c3;
+  --surface: #fcf7f8;
+  --surface-strong: #fffcfd;
+  --surface-sunken: #efe3e7;
+  --card: #fcf7f8;
+  --muted: #6f5f65;
+  --border: #ead7de;
   --accent: #7d1f36;
   --accent-strong: #3f0f20;
   --gold: #d99a62;
   --rose: #b84862;
-  --peach: #fff1df;
+  --peach: #fbe9ee;
   --success: #12633d;
   --warning: #9a5a00;
   --danger: #a83232;
 
-  --neu-dark: rgba(146, 104, 78, 0.2);
-  --neu-dark-strong: rgba(146, 104, 78, 0.28);
+  --neu-dark: rgba(125, 72, 95, 0.18);
+  --neu-dark-strong: rgba(125, 72, 95, 0.26);
   --neu-light: rgba(255, 255, 255, 0.92);
 }
 
@@ -37,11 +37,11 @@
 
   /* Text */
   --color-ink: #271917;
-  --color-ink-soft: #3b312d;
-  --color-muted: #7c6d66;
-  --color-muted-strong: #6f625d;
-  --color-muted-soft: #9b8f87;
-  --color-label: #6f352b;
+  --color-ink-soft: #3a2e33;
+  --color-muted: #6f5f65;
+  --color-muted-strong: #5f5056;
+  --color-muted-soft: #8a7a80;
+  --color-label: #6e2f45;
   --color-bronze: #9a5a34;
   --color-copper: #b06b47;
 
@@ -58,17 +58,25 @@
   --color-surface: var(--surface);
   --color-surface-strong: var(--surface-strong);
   --color-surface-sunken: var(--surface-sunken);
-  --color-paper: #fffdfa;
-  --color-paper-warm: #fffaf4;
-  --color-cream: #fff7ec;
-  --color-blush: #fff5ea;
-  --color-peach: #fff1df;
-  --color-sand: #f5e3cf;
+  --color-paper: #fffcfd;
+  --color-paper-warm: #fdf6f8;
+  --color-cream: #fcf3f5;
+  --color-blush: #fbeef2;
+  --color-peach: #fbe9ee;
+  --color-sand: #f2dfe5;
 
   /* Lines */
-  --color-line: #ead8c3;
-  --color-line-soft: #eadfce;
-  --color-line-strong: #dfc5a8;
+  --color-line: #ead7de;
+  --color-line-soft: #efe2e7;
+  --color-line-strong: #dcc3cc;
+
+  /* Section accents: each area of the app has its own colour so it is recognisable at a glance. */
+  --color-section-dashboard: #7d1f36;
+  --color-section-orders: #b45309;
+  --color-section-new: #b84862;
+  --color-section-customers: #0f766e;
+  --color-section-reports: #4f46e5;
+  --color-section-settings: #475569;
 
   /* Feedback */
   --color-success: #12633d;
@@ -100,8 +108,9 @@
     margin: 0;
     min-height: 100vh;
     background:
-      radial-gradient(circle at 0% 0%, rgba(217, 154, 98, 0.16), transparent 32rem),
-      radial-gradient(circle at 100% 0%, rgba(184, 72, 98, 0.08), transparent 28rem),
+      radial-gradient(circle at 0% 0%, rgba(184, 72, 98, 0.12), transparent 32rem),
+      radial-gradient(circle at 100% 0%, rgba(79, 70, 229, 0.06), transparent 30rem),
+      radial-gradient(circle at 100% 100%, rgba(217, 154, 98, 0.08), transparent 28rem),
       var(--background);
     background-attachment: fixed;
     color: var(--foreground);

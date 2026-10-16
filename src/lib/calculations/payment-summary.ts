@@ -53,7 +53,7 @@ export function paymentSummaryLines(totals: SummaryTotals, options: { namedExtra
   const showParts = garmentsPaise >= 0 && visibleOthers.length > 0;
 
   const lines: SummaryLine[] = showParts
-    ? [{ key: "garments", label: "Garments (rate × qty)", amountPaise: garmentsPaise, kind: "part" }, ...visibleOthers]
+    ? [{ key: "garments", label: "Garments", amountPaise: garmentsPaise, kind: "part" }, ...visibleOthers]
     : [];
 
   lines.push({ key: "subtotal", label: "Subtotal", amountPaise: totals.subtotalPaise, kind: "subtotal" });
@@ -76,7 +76,7 @@ function extrasParts(extraCostPaise: number, namedExtras: { label: string; amoun
   if (named.length && named.reduce((sum, extra) => sum + extra.amountPaise, 0) === extraCostPaise) {
     return named.map((extra, index) => ({ key: `extra-${index}`, label: extra.label, amountPaise: extra.amountPaise, kind: "part" }));
   }
-  return [{ key: "extras", label: "Extras (lace, buttons…)", amountPaise: extraCostPaise, kind: "part" }];
+  return [{ key: "extras", label: "Extras", amountPaise: extraCostPaise, kind: "part" }];
 }
 
 /** True when the summary shows a breakdown of what makes up the subtotal. */

@@ -1,14 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Inter } from "next/font/google";
+import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
-const serif = Cormorant_Garamond({
+// Headings: Fraunces, a soft boutique serif that stays readable at small sizes.
+const serif = Fraunces({
   subsets: ["latin"],
   variable: "--font-serif",
   display: "swap"
 });
 
-const sans = Inter({
+// Body and UI: Plus Jakarta Sans, warm and very legible, with tabular figures for money columns.
+const sans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-sans",
   display: "swap"

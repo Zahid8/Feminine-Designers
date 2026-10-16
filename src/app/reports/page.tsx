@@ -104,7 +104,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
 
       <Card>
         <CardContent>
-          <h2 className="mb-3 font-serif text-xl font-semibold text-wine-deep">Top customers this period</h2>
+          <h2 className="mb-3 font-serif text-xl font-medium text-wine-deep">Top customers this period</h2>
           {model.topCustomers.length === 0 ? (
             <p className="text-sm text-muted">No orders in this period.</p>
           ) : (
