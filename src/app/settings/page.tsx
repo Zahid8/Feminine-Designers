@@ -1,93 +1,102 @@
+import { Download, HardDriveDownload } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeading } from "@/components/shared/page-heading";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Field, Input, Textarea } from "@/components/ui/input";
-import { getStoreSettings } from "@/services/settings/settings-service";
-import { listGarmentTypes } from "@/services/settings/settings-service";
-import { listMeasurementTemplates } from "@/services/measurements/measurement-service";
+import { buttonBaseClass, buttonVariantClasses } from "@/components/ui/button";
+import { GarmentManager } from "@/components/settings/garment-manager";
 import { SettingsManagement } from "@/components/settings/settings-management";
+import { StoreSettingsForm } from "@/components/settings/store-settings-form";
+import { TailorManager } from "@/components/settings/tailor-manager";
+import { cn } from "@/lib/utils/cn";
+import { getStoreSettings, listGarmentTypes, listTailors } from "@/services/settings/settings-service";
+import { listMeasurementTemplates } from "@/services/measurements/measurement-service";
 import {
   addGarmentTypeAction,
   addMeasurementFieldAction,
   addMeasurementTemplateAction,
-  removeGarmentTypeAction,
-  removeMeasurementFieldAction,
-  removeMeasurementTemplateAction
+  addTailorAction,
+  moveGarmentAction,
+  moveMeasurementFieldAction,
+  removeMeasurementTemplateAction,
+  renameTailorAction,
+  setGarmentActiveAction,
+  setMeasurementFieldActiveAction,
+  setTailorActiveAction,
+  updateGarmentAction,
+  updateMeasurementFieldAction,
+  updateStoreSettingsAction
 } from "@/app/settings/actions";
 
 export const dynamic = "force-dynamic";
 
+const SECTIONS = [
+  ["store", "Store"],
+  ["bill", "Bill & GST"],
+  ["messages", "Messages"],
+  ["garments", "Garments"],
+  ["tailors", "Tailors"],
+  ["measurements", "Measurements"],
+  ["backup", "Backup"]
+] as const;
+
 export default async function SettingsPage() {
-  const [settings, garmentTypes, measurementTemplates] = await Promise.all([
+  const [settings, garmentTypes, measurementTemplates, tailors] = await Promise.all([
     getStoreSettings(),
     listGarmentTypes(),
-    listMeasurementTemplates()
+    listMeasurementTemplates(),
+    listTailors()
   ]);
+
   return (
     <AppShell>
-      <PageHeading
-        title="Settings"
-        description="Admin-only configuration for store profile, GST, receipt numbering, measurement labels, and garment presets."
-      />
-      <div className="grid gap-5">
-        <Card>
-          <CardHeader>
-            <CardTitle>Store Profile</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-2">
-            <Field label="Store name">
-              <Input defaultValue={settings.storeName} />
-            </Field>
-            <Field label="GSTIN">
-              <Input defaultValue={settings.gstin} />
-            </Field>
-            <Field label="Primary phone">
-              <Input defaultValue={settings.phonePrimary} />
-            </Field>
-            <Field label="Secondary phone">
-              <Input defaultValue={settings.phoneSecondary} />
-            </Field>
-            <Field label="Email">
-              <Input defaultValue={settings.email} />
-            </Field>
-            <Field label="Logo path" hint="The app looks for public/Logo.PNG and falls back to text if unavailable.">
-              <Input defaultValue={settings.logoPath} />
-            </Field>
-            <label className="grid gap-1 text-sm font-medium md:col-span-2">
-              <span>Address</span>
-              <Textarea defaultValue={settings.addressLines.join("\n")} />
-            </label>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Receipt Settings</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-4">
-            <Field label="Prefix">
-              <Input defaultValue={settings.receiptPrefix} />
-            </Field>
-            <Field label="CGST">
-              <Input defaultValue={settings.defaultCgstRate} />
-            </Field>
-            <Field label="SGST">
-              <Input defaultValue={settings.defaultSgstRate} />
-            </Field>
-            <Field label="Reset">
-              <Input defaultValue={settings.receiptResetFrequency} />
-            </Field>
-          </CardContent>
-        </Card>
-        <SettingsManagement
+      <PageHeading title="Settings" description="Your shop details, bills, WhatsApp wording, garment prices, tailors, and measurements." />
+      <nav
+        aria-label="Settings sections"
+        className="sticky top-[4.25rem] z-10 mb-5 flex gap-1 overflow-x-auto rounded-2xl bg-surface-sunken/95 p-1.5 shadow-pressed backdrop-blur md:top-[4.75rem]"
+      >
+        {SECTIONS.map(([id, label]) => (
+          <a key={id} href={`#${id}`} className="inline-flex min-h-10 shrink-0 items-center rounded-xl px-4 text-sm font-semibold text-ink-soft transition hover:bg-surface hover:text-wine">
+            {label}
+          </a>
+        ))}
+      </nav>
+
+      <div className="grid gap-5 [&>*]:scroll-mt-36">
+        <StoreSettingsForm settings={settings} action={updateStoreSettingsAction} />
+        <GarmentManager
           garmentTypes={garmentTypes}
+          addAction={addGarmentTypeAction}
+          updateAction={updateGarmentAction}
+          moveAction={moveGarmentAction}
+          setActiveAction={setGarmentActiveAction}
+        />
+        <TailorManager tailors={tailors} addAction={addTailorAction} renameAction={renameTailorAction} setActiveAction={setTailorActiveAction} />
+        <SettingsManagement
           measurementTemplates={measurementTemplates}
-          addGarmentTypeAction={addGarmentTypeAction}
           addMeasurementTemplateAction={addMeasurementTemplateAction}
           addMeasurementFieldAction={addMeasurementFieldAction}
-          removeGarmentTypeAction={removeGarmentTypeAction}
           removeMeasurementTemplateAction={removeMeasurementTemplateAction}
-          removeMeasurementFieldAction={removeMeasurementFieldAction}
+          fieldActions={{ update: updateMeasurementFieldAction, move: moveMeasurementFieldAction, setActive: setMeasurementFieldActiveAction }}
         />
+        <Card id="backup">
+          <CardHeader className="grid gap-1">
+            <div className="flex items-center gap-3">
+              <HardDriveDownload className="h-5 w-5 text-section-reports" aria-hidden />
+              <CardTitle>Backup</CardTitle>
+            </div>
+            <p className="text-sm text-muted">Download spreadsheets you can open in Excel or Google Sheets. Keep a copy somewhere safe now and then.</p>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-3">
+            <a href="/api/backup/customers" download className={cn(buttonBaseClass, buttonVariantClasses.secondary)}>
+              <Download className="h-4 w-4" aria-hidden />
+              All customers (CSV)
+            </a>
+            <a href="/api/reports/orders?range=all" download className={cn(buttonBaseClass, buttonVariantClasses.secondary)}>
+              <Download className="h-4 w-4" aria-hidden />
+              All orders (CSV)
+            </a>
+          </CardContent>
+        </Card>
       </div>
     </AppShell>
   );

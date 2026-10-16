@@ -505,51 +505,19 @@ Use it for:
 
 ### Settings
 
-Open:
+Open **Settings** (gear button on phones/tablets). A bar at the top jumps to each section:
 
-```text
-/settings
-```
+- **Store** – shop name, GSTIN, phones, email, address (one line per row). Printed on every bill.
+- **Bill & GST** – CGST/SGST rates (new orders only; saved bills keep their tax), the customer bill terms (one paragraph per line), and the short store-copy note. The receipt prefix (SJD) is fixed so numbering stays in one series.
+- **Messages** – the wording of the WhatsApp Order confirmation, Ready for pickup, and Balance reminder messages, with a live preview. Fill-ins: `{name} {store} {receipt} {items} {total} {paid} {balance} {delivery} {bill_link}`. An empty fill-in disappears together with its label.
+- **Garments** – rename, set a default price that pre-fills New Order, move popular garments up, remove or restore.
+- **Tailors** – the list behind the tailor dropdown on orders (choose **Other…** to type a one-off name). Hide or restore names; old orders keep theirs.
+- **Measurements** – templates and fields: edit a field's code and label, reorder with the arrows, remove or restore.
+- **Backup** – download all customers or all orders as CSV.
 
-Use it for:
+Store, Bill & GST, and Messages share one **Save settings** button. Garment, tailor, and measurement changes save per row.
 
-- Store name
-- GSTIN
-- Address
-- Phone numbers
-- Email
-- Logo path
-- Receipt settings
-- Garment types
-- Measurement templates
-- Measurement fields inside each template
-
-Garment types, templates, and measurement fields are database-driven. To add a new garment type, open `/settings`, enter the type name in **Add garment type**, and submit it. It will then appear in the new-order garment selector.
-
-To add a new measurement template, enter a template name and comma-separated garment categories, for example:
-
-```text
-Sharara measurements
-Sharara, Suit
-```
-
-To add a new measurement field, choose the template, then enter:
-
-- `Field key`: stable database key, for example `ankle_round`.
-- `Display code`: short code shown in the measurement grid, for example `AR`.
-- `Display label`: short label shown on forms and receipts.
-- `Long label`: readable internal name, for example `Ankle Round`.
-- `Input type`: number, text, multi-line note, or checkbox.
-- `Unit`: inches, text, or boolean.
-- `Required field`: enable only when the measurement must be filled for that template.
-
-After saving a new field, the new-order form reads the updated template from Supabase and saves the new measurement with the order without code changes.
-
-The required logo path is:
-
-```text
-public/Logo.PNG
-```
+**One-time database update:** bill terms, WhatsApp messages, garment prices, and tailors need `supabase/migrations/202610160001_settings_upgrades.sql` run once in the Supabase SQL Editor. Until then those sections explain that the update is needed; store details and GST save without it.
 
 ## Receipt And PDF Routes
 

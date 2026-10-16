@@ -1,7 +1,7 @@
 import { paiseToRupees } from "@/lib/utils/money";
 import type { OrderWithCustomer } from "@/types/domain";
 
-function cell(value: string | number) {
+export function csvCell(value: string | number) {
   const text = String(value);
   // Quote everything that could break a row; prefix formula-like text so spreadsheets don't execute it.
   const safe = /^[=+\-@]/.test(text) ? `'${text}` : text;
@@ -23,5 +23,5 @@ export function ordersToCsv(orders: OrderWithCustomer[]) {
     paiseToRupees(order.totals.balanceDuePaise).toFixed(2),
     order.totals.paymentStatus
   ]);
-  return [header, ...rows].map((row) => row.map(cell).join(",")).join("\r\n") + "\r\n";
+  return [header, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n") + "\r\n";
 }
