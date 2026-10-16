@@ -3,6 +3,7 @@ import { rupeesToPaise, paiseToRupees } from "@/lib/utils/money";
 import { createSupabaseAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
 import { isMissingSupabaseSchemaError } from "@/lib/supabase/errors";
 import { storeClothSample } from "@/services/orders/cloth-sample-storage";
+import { getStoreSettings } from "@/services/settings/settings-service";
 import type { ParsedOrderForm } from "@/services/orders/order-form-parser";
 import type { Json } from "@/types/supabase";
 
@@ -96,6 +97,7 @@ export async function saveParsedOrder(parsed: ParsedOrderForm): Promise<SavedOrd
   }
 
   const admin = createSupabaseAdminClient();
+  const settings = await getStoreSettings();
   const clothSampleImageUrl = parsed.clothSampleDataUrl ? await storeClothSample(admin, parsed.clothSampleDataUrl) : null;
   const itemDrafts = parsed.order.items.map((item) => ({
     quantity: item.quantity,
@@ -111,8 +113,8 @@ export async function saveParsedOrder(parsed: ParsedOrderForm): Promise<SavedOrd
     items: itemDrafts,
     orderDiscountPaise: rupeesToPaise(parsed.order.orderDiscountRupees),
     accessoriesCostPaise: rupeesToPaise(parsed.order.accessoriesCostRupees),
-    cgstRate: 2.5,
-    sgstRate: 2.5,
+    cgstRate: settings.defaultCgstRate,
+    sgstRate: settings.defaultSgstRate,
     payments: payment
   });
   const paymentPayload =

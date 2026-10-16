@@ -1,4 +1,4 @@
-import { STORE_SETTINGS } from "@/lib/constants/business";
+import { getStoreSettings } from "@/services/settings/settings-service";
 import { formatReceiptNumber } from "@/lib/calculations/receipt-number";
 import { createSupabaseAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
 import { isMissingSupabaseSchemaError } from "@/lib/supabase/errors";
@@ -8,13 +8,14 @@ export async function getNextReceiptPreview(orderDate = todayISO()) {
   const normalizedOrderDate = normalizeDateInput(orderDate);
   const year = Number(normalizedOrderDate.slice(0, 4));
   if (!Number.isFinite(year)) return undefined;
+  const { receiptPrefix } = await getStoreSettings();
 
   if (!hasSupabaseAdminEnv()) {
-    return formatReceiptNumber({ prefix: STORE_SETTINGS.receiptPrefix, year, sequence: 1 });
+    return formatReceiptNumber({ prefix: receiptPrefix, year, sequence: 1 });
   }
 
   const admin = createSupabaseAdminClient();
-  const sequenceKey = `${STORE_SETTINGS.receiptPrefix}-${year}`;
+  const sequenceKey = `${receiptPrefix}-${year}`;
   const { data, error } = await admin
     .from("receipt_sequence")
     .select("current_value")
@@ -27,5 +28,5 @@ export async function getNextReceiptPreview(orderDate = todayISO()) {
   }
 
   const currentValue = typeof data?.current_value === "number" ? data.current_value : 0;
-  return formatReceiptNumber({ prefix: STORE_SETTINGS.receiptPrefix, year, sequence: currentValue + 1 });
+  return formatReceiptNumber({ prefix: receiptPrefix, year, sequence: currentValue + 1 });
 }

@@ -22,7 +22,18 @@ export const STORE_SETTINGS: StoreSettings = {
   currencyCode: "INR",
   measurementUnitDefault: "in",
   termsAndConditions:
-    "Delivery date is approximate. Please bring this receipt at delivery. Alterations after delivery may be chargeable."
+    "Delivery date is approximate. Please bring this receipt at delivery. Alterations after delivery may be chargeable.",
+  customerTerms: [
+    "Delivery date is approximate. Please bring this receipt at the time of delivery.",
+    "Alterations requested after delivery may be chargeable. Cancellation charges: ₹500.",
+    "Conditions apply: Garments must be collected within 30 days of the delivery date. We will not be responsible for garments not collected within this period, and such garments may be sold to recover pending charges. Any required alterations will be completed by us within one week. Thank you. Authorized Signatory"
+  ],
+  messageTemplates: {
+    orderConfirmation:
+      "Hello {name}, thank you for your order at {store}.\nReceipt: {receipt}\nItems: {items}\nTotal: {total} | Paid: {paid} | Balance: {balance}\nExpected delivery: {delivery}\nYour bill: {bill_link}",
+    readyForPickup: "Hello {name}, your order {receipt} at {store} is ready for pickup. Balance due: {balance}. Bill: {bill_link} Thank you!",
+    balanceReminder: "Hello {name}, a gentle reminder that {balance} is pending for order {receipt} at {store}. Thank you!"
+  }
 };
 
 export const GARMENT_TYPES: GarmentType[] = [

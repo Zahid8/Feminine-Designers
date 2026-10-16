@@ -32,6 +32,23 @@ export interface StoreSettings {
   currencyCode: "INR";
   measurementUnitDefault: "in";
   termsAndConditions: string;
+  /** Paragraphs printed under "Terms" on the customer bill. */
+  customerTerms: string[];
+  /** WhatsApp message wording with {placeholders}; see lib/messages/render-template. */
+  messageTemplates: MessageTemplates;
+}
+
+export interface MessageTemplates {
+  orderConfirmation: string;
+  readyForPickup: string;
+  balanceReminder: string;
+}
+
+export interface Tailor {
+  id: string;
+  name: string;
+  active: boolean;
+  sortOrder: number;
 }
 
 export interface Customer {
@@ -54,6 +71,9 @@ export interface GarmentType {
   id: string;
   name: string;
   active: boolean;
+  sortOrder?: number;
+  /** Price that pre-fills the rate on New Order; undefined when not set. */
+  defaultRatePaise?: number;
 }
 
 export interface OrderItem {

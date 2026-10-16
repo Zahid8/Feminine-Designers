@@ -8,6 +8,7 @@ import { Field, Input, Textarea } from "@/components/ui/input";
 import { MeasurementGrid } from "@/components/measurements/measurement-grid";
 import { paymentSummaryLines } from "@/lib/calculations/payment-summary";
 import { cn } from "@/lib/utils/cn";
+import { TailorField } from "@/components/orders/tailor-field";
 import { useUnsavedChangesGuard } from "@/lib/ui/use-unsaved-changes-guard";
 import { GARMENT_TYPES, MEASUREMENT_TEMPLATES, STORE_SETTINGS } from "@/lib/constants/business";
 import { calculateOrderTotals } from "@/lib/calculations/order";
@@ -81,7 +82,10 @@ export function NewOrderForm({
   nextReceiptNumber,
   orderDate = todayISO(),
   deliveryDate = orderDate,
-  initialCustomer
+  initialCustomer,
+  cgstRate = STORE_SETTINGS.defaultCgstRate,
+  sgstRate = STORE_SETTINGS.defaultSgstRate,
+  tailors = []
 }: {
   action?: (state: OrderActionState, formData: FormData) => Promise<OrderActionState>;
   garmentTypes?: GarmentType[];
@@ -91,7 +95,18 @@ export function NewOrderForm({
   deliveryDate?: string;
   /** Prefills customer details and saved measurements, e.g. from a customer profile. */
   initialCustomer?: ReturningCustomerMatch;
+  /** GST rates from Settings, so live totals match what the server saves. */
+  cgstRate?: number;
+  sgstRate?: number;
+  /** Active tailor names from Settings for the tailor dropdown. */
+  tailors?: string[];
 }) {
+  // Rate pre-filled for a garment: its default price from Settings, else the old ₹1,500 default.
+  const defaultRateFor = (garmentType: string) => {
+    const paise = garmentTypes.find((type) => type.name === garmentType)?.defaultRatePaise;
+    return paise === undefined ? 1500 : paise / 100;
+  };
+  const firstGarment = garmentTypes.find((type) => type.active)?.name ?? "Blouse";
   const [state, formAction, isPending] = useActionState(action, initialOrderActionState);
   const unsavedGuard = useUnsavedChangesGuard();
   const [customerName, setCustomerName] = useState(initialCustomer?.fullName ?? "");
@@ -109,12 +124,12 @@ export function NewOrderForm({
   const [items, setItems] = useState([
     {
       quantity: 1,
-      rate: 1500,
+      rate: defaultRateFor(firstGarment),
       stitchingCost: 0,
       fabricPrice: 0,
       dyePrice: 0,
       extraCosts: [] as { label: string; amount: number }[],
-      garmentType: garmentTypes.find((type) => type.active)?.name ?? "Blouse"
+      garmentType: firstGarment
     }
   ]);
   const [orderDiscount, setOrderDiscount] = useState(0);
@@ -141,11 +156,11 @@ export function NewOrderForm({
         })),
         accessoriesCostPaise: rupeesToPaise(accessoriesCost),
         orderDiscountPaise: rupeesToPaise(orderDiscount),
-        cgstRate: STORE_SETTINGS.defaultCgstRate,
-        sgstRate: STORE_SETTINGS.defaultSgstRate,
+        cgstRate,
+        sgstRate,
         payments: advance > 0 ? [{ amountPaise: rupeesToPaise(advance) }] : []
       }),
-    [accessoriesCost, advance, orderDiscount, visibleItems]
+    [accessoriesCost, advance, orderDiscount, visibleItems, cgstRate, sgstRate]
   );
   const extraCostTotalRows = useMemo(() => {
     const groupedRows = new Map<string, number>();
@@ -226,7 +241,7 @@ export function NewOrderForm({
     setItems((current) =>
       Array.from({ length: boundedCount }, (_, index) => current[index] ?? {
         quantity: 1,
-        rate: 1500,
+        rate: defaultRateFor(activeGarmentTypes[0]?.name ?? "Blouse"),
         stitchingCost: 0,
         fabricPrice: 0,
         dyePrice: 0,
@@ -241,7 +256,14 @@ export function NewOrderForm({
     patch: Partial<{ quantity: number; rate: number; stitchingCost: number; fabricPrice: number; dyePrice: number; garmentType: string }>
   ) {
     setItems((current) =>
-      current.map((item, itemIndex) => (itemIndex === index ? { ...item, ...patch } : item))
+      current.map((item, itemIndex) => {
+        if (itemIndex !== index) return item;
+        // Switching garment updates the rate only if it is still the previous garment's default.
+        if (patch.garmentType && patch.rate === undefined && item.rate === defaultRateFor(item.garmentType)) {
+          return { ...item, ...patch, rate: defaultRateFor(patch.garmentType) };
+        }
+        return { ...item, ...patch };
+      })
     );
   }
 
@@ -411,7 +433,7 @@ export function NewOrderForm({
             </select>
           </Field>
           <Field label="Assigned tailor">
-            <Input name="assignedTailor" placeholder="Optional" />
+            <TailorField tailors={tailors} />
           </Field>
         </CardContent>
       </Card>

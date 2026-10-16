@@ -5,6 +5,11 @@ const mockEq = vi.fn(() => ({ maybeSingle: mockMaybeSingle }));
 const mockSelect = vi.fn(() => ({ eq: mockEq }));
 const mockFrom = vi.fn(() => ({ select: mockSelect }));
 
+vi.mock("@/services/settings/settings-service", async () => {
+  const { STORE_SETTINGS } = await import("@/lib/constants/business");
+  return { getStoreSettings: vi.fn(async () => STORE_SETTINGS), listTailors: vi.fn(async () => []) };
+});
+
 vi.mock("@/lib/supabase/admin", () => ({
   hasSupabaseAdminEnv: vi.fn(() => true),
   createSupabaseAdminClient: vi.fn(() => ({ from: mockFrom }))

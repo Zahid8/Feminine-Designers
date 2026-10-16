@@ -4,6 +4,11 @@ import OrderDetailPage from "@/app/orders/[id]/page";
 import { orders } from "@/lib/data/mock";
 import { getOrderById } from "@/services/orders/order-service";
 
+vi.mock("@/services/settings/settings-service", async () => {
+  const { STORE_SETTINGS } = await import("@/lib/constants/business");
+  return { getStoreSettings: vi.fn(async () => STORE_SETTINGS), listTailors: vi.fn(async () => []) };
+});
+
 vi.mock("@/components/layout/app-shell", () => ({
   AppShell: ({ children }: { children: React.ReactNode }) => <div>{children}</div>
 }));

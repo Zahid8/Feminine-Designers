@@ -37,11 +37,6 @@ import { cn } from "@/lib/utils/cn";
 import { advancePaidPaise, billSummaryLines, type SummaryLine } from "@/lib/calculations/payment-summary";
 import { groupedExtraCosts } from "@/lib/utils/extra-cost-display";
 
-const customerReceiptFooter = [
-  "Delivery date is approximate. Please bring this receipt at the time of delivery.",
-  "Alterations requested after delivery may be chargeable. Cancellation charges: ₹500.",
-  "Conditions apply: Garments must be collected within 30 days of the delivery date. We will not be responsible for garments not collected within this period, and such garments may be sold to recover pending charges. Any required alterations will be completed by us within one week. Thank you. Authorized Signatory"
-];
 
 const copyTabs: { type: ReceiptType; label: string }[] = [
   { type: "customer", label: "Customer" },
@@ -354,7 +349,7 @@ function ReceiptPanel({
                 )}
               >
                 <p className="font-bold uppercase text-wine-ink">Terms</p>
-                {customerReceiptFooter.map((paragraph) => (
+                {settings.customerTerms.map((paragraph) => (
                   <p key={paragraph} className="text-justify hyphens-auto">
                     {paragraph}
                   </p>

@@ -1,4 +1,5 @@
 import { Document, Image, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
+import { PDF_SANS, PDF_SERIF } from "@/lib/pdf/fonts";
 import { Fragment } from "react";
 import type { OrderWithCustomer, ReceiptType, StoreSettings } from "@/types/domain";
 import { addDaysISO, formatDate } from "@/lib/utils/date";
@@ -12,41 +13,37 @@ import { formatFabricLengthDisplay } from "@/lib/utils/fabric-length-display";
 import { advancePaidPaise, billSummaryLines, type SummaryLine } from "@/lib/calculations/payment-summary";
 import { groupedExtraCosts } from "@/lib/utils/extra-cost-display";
 
-const customerReceiptFooter = [
-  "Delivery date is approximate. Please bring this receipt at the time of delivery.",
-  "Alterations requested after delivery may be chargeable. Cancellation charges: Rs. 500.",
-  "Conditions apply: Garments must be collected within 30 days of the delivery date. We will not be responsible for garments not collected within this period, and such garments may be sold to recover pending charges. Any required alterations will be completed by us within one week. Thank you. Authorized Signatory"
-];
 const storeLogoSource = getPublicPngDataUri("Logo.PNG");
 
+// Matches the app's rose-blush palette (src/app/globals.css).
 const colors = {
   wine: "#7d1f36",
   wineDeep: "#3f0f20",
   wineInk: "#4c1525",
   rose: "#b84862",
   gold: "#d99a62",
-  goldSoft: "#f1d0aa",
-  cream: "#fff7ec",
-  paper: "#fffdfa",
-  peach: "#fff1df",
-  line: "#ead8c3",
-  lineSoft: "#f2e6d8",
-  ink: "#2c2522",
-  muted: "#7c6d66",
+  goldSoft: "#ecc7d2",
+  cream: "#fcf3f5",
+  paper: "#fffcfd",
+  peach: "#fbe9ee",
+  line: "#ead7de",
+  lineSoft: "#efe2e7",
+  ink: "#2a1f24",
+  muted: "#6f5f65",
   success: "#12633d",
   successSoft: "#e3f4ea",
   onWine: "#f8dccb"
 };
 
 function formatPdfINR(paise: number) {
-  return `Rs. ${new Intl.NumberFormat("en-IN", {
+  return `₹${new Intl.NumberFormat("en-IN", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   }).format(paiseToRupees(paise))}`;
 }
 
 const styles = StyleSheet.create({
-  page: { paddingTop: 26, paddingBottom: 34, paddingHorizontal: 28, fontSize: 9, fontFamily: "Helvetica", color: colors.ink, backgroundColor: "#ffffff" },
+  page: { paddingTop: 26, paddingBottom: 34, paddingHorizontal: 28, fontSize: 9, fontFamily: PDF_SANS, color: colors.ink, backgroundColor: "#ffffff" },
   combinedPage: { paddingTop: 16, paddingBottom: 22, paddingHorizontal: 16, fontSize: 7.4 },
   panes: { flexDirection: "row" },
   storePane: { width: "60%", paddingRight: 12 },
@@ -60,7 +57,7 @@ const styles = StyleSheet.create({
   logo: { width: 46, height: 46, borderRadius: 5 },
   logoCompact: { width: 32, height: 32 },
   bandText: { flexGrow: 1, flexShrink: 1, paddingRight: 8 },
-  storeName: { fontFamily: "Times-Bold", fontSize: 20, color: "#ffffff" },
+  storeName: { fontFamily: PDF_SERIF, fontWeight: 600, fontSize: 20, color: "#ffffff" },
   storeNameCompact: { fontSize: 13 },
   bandMuted: { color: colors.onWine, fontSize: 7.6, marginTop: 2, lineHeight: 1.3 },
   bandMutedCompact: { fontSize: 6.2 },
@@ -69,14 +66,14 @@ const styles = StyleSheet.create({
   copyPill: {
     backgroundColor: colors.cream,
     color: colors.wine,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: PDF_SANS, fontWeight: 700,
     fontSize: 6.6,
     paddingHorizontal: 7,
     paddingVertical: 3,
     borderRadius: 9,
     textTransform: "uppercase"
   },
-  receiptNumber: { color: "#ffffff", fontFamily: "Helvetica-Bold", fontSize: 12, marginTop: 6 },
+  receiptNumber: { color: "#ffffff", fontFamily: PDF_SANS, fontWeight: 700, fontSize: 12, marginTop: 6 },
   receiptNumberCompact: { fontSize: 9, marginTop: 4 },
   receiptCaption: { color: colors.onWine, fontSize: 6.6, marginTop: 1, textTransform: "uppercase", letterSpacing: 0.6 },
 
@@ -88,13 +85,13 @@ const styles = StyleSheet.create({
   infoCellLast: { borderRightWidth: 0 },
   infoCellHighlight: { backgroundColor: colors.peach, borderTopRightRadius: 6, borderBottomRightRadius: 6 },
   label: { color: colors.muted, fontSize: 6.6, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 2 },
-  value: { fontFamily: "Helvetica-Bold", fontSize: 9.5, color: colors.wineInk },
+  value: { fontFamily: PDF_SANS, fontWeight: 700, fontSize: 9.5, color: colors.wineInk },
   valueCompact: { fontSize: 7.8 },
 
   // Section headings
   sectionHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", marginTop: 14, marginBottom: 5 },
   sectionHeadCompact: { marginTop: 8, marginBottom: 3 },
-  sectionTitle: { fontFamily: "Times-Bold", fontSize: 13, color: colors.wineInk },
+  sectionTitle: { fontFamily: PDF_SERIF, fontWeight: 600, fontSize: 13, color: colors.wineInk },
   sectionTitleCompact: { fontSize: 10 },
   sectionMeta: { fontSize: 6.8, color: colors.muted, textTransform: "uppercase", letterSpacing: 0.6 },
   rule: { height: 1.5, backgroundColor: colors.gold, borderRadius: 1, marginBottom: 2 },
@@ -102,14 +99,14 @@ const styles = StyleSheet.create({
   // Item rows
   itemRow: { flexDirection: "row", alignItems: "flex-start", paddingVertical: 4, paddingHorizontal: 6, borderBottomWidth: 0.6, borderBottomColor: colors.lineSoft },
   itemRowCompact: { paddingVertical: 2, paddingHorizontal: 4 },
-  itemRowAlt: { backgroundColor: "#fffaf4" },
+  itemRowAlt: { backgroundColor: "#fdf6f8" },
   itemIndex: {
     width: 16,
     height: 16,
     borderRadius: 8,
     backgroundColor: colors.peach,
     color: colors.wine,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: PDF_SANS, fontWeight: 700,
     fontSize: 7,
     textAlign: "center",
     paddingTop: 3.5,
@@ -117,14 +114,14 @@ const styles = StyleSheet.create({
   },
   itemIndexCompact: { width: 11, height: 11, borderRadius: 5.5, fontSize: 5.6, paddingTop: 2.6, marginRight: 5 },
   itemBody: { flexGrow: 1, flexShrink: 1, paddingRight: 8 },
-  itemName: { fontFamily: "Helvetica-Bold", fontSize: 9.5, color: colors.wineInk },
+  itemName: { fontFamily: PDF_SANS, fontWeight: 700, fontSize: 9.5, color: colors.wineInk },
   itemNameCompact: { fontSize: 7.8 },
   itemMeta: { fontSize: 7.6, color: colors.muted, marginTop: 1.5 },
-  itemMetaInline: { fontFamily: "Helvetica", fontSize: 7.6, color: colors.muted },
+  itemMetaInline: { fontFamily: PDF_SANS, fontSize: 7.6, color: colors.muted },
   itemMetaInlineCompact: { fontSize: 6.4 },
   itemMetaCompact: { fontSize: 6.4 },
-  itemNote: { fontFamily: "Helvetica-Oblique", fontSize: 7.6, color: colors.ink, marginTop: 1.5, textAlign: "justify" },
-  itemAmount: { fontFamily: "Helvetica-Bold", fontSize: 9.5, color: colors.wineInk, textAlign: "right", minWidth: 70 },
+  itemNote: { fontFamily: PDF_SANS, fontStyle: "italic", fontSize: 7.6, color: colors.ink, marginTop: 1.5, textAlign: "justify" },
+  itemAmount: { fontFamily: PDF_SANS, fontWeight: 700, fontSize: 9.5, color: colors.wineInk, textAlign: "right", minWidth: 70 },
   itemAmountCompact: { fontSize: 7.8, minWidth: 56 },
 
   // Lower area
@@ -147,8 +144,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     backgroundColor: colors.paper
   },
-  measureChipCompact: { width: "31%", paddingVertical: 2, paddingHorizontal: 3 },
-  measureCode: { fontFamily: "Helvetica-Bold", color: colors.wine },
+  measureChipCompact: { width: "30.5%", marginRight: "2.4%", paddingVertical: 2, paddingHorizontal: 3 },
+  measureCode: { fontFamily: PDF_SANS, fontWeight: 700, color: colors.wine },
   measureBreak: { width: "100%", height: 0.8, backgroundColor: colors.goldSoft, marginBottom: 4 },
   clothSample: { width: 130, height: 95, objectFit: "cover", borderRadius: 6, borderWidth: 1, borderColor: colors.line },
   clothSampleCompact: { width: 100, height: 72 },
@@ -157,7 +154,7 @@ const styles = StyleSheet.create({
 
   totalsCard: { borderWidth: 1, borderColor: colors.line, borderRadius: 8, backgroundColor: colors.paper, padding: 9 },
   totalsCardCompact: { padding: 6 },
-  totalsTitle: { fontFamily: "Times-Bold", fontSize: 11.5, color: colors.wineInk, marginBottom: 4 },
+  totalsTitle: { fontFamily: PDF_SERIF, fontWeight: 600, fontSize: 11.5, color: colors.wineInk, marginBottom: 4 },
   totalRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 1.4 },
   totalLabel: { color: colors.muted },
   totalPart: { paddingLeft: 6, borderLeftWidth: 1.5, borderLeftColor: colors.goldSoft },
@@ -173,23 +170,23 @@ const styles = StyleSheet.create({
     borderTopColor: colors.wine
   },
   grandTotalCompact: { marginTop: 4, paddingTop: 4 },
-  grandTotalLabel: { fontFamily: "Helvetica-Bold", fontSize: 11, color: colors.wineInk },
-  grandTotalValue: { fontFamily: "Helvetica-Bold", fontSize: 14, color: colors.wine },
+  grandTotalLabel: { fontFamily: PDF_SANS, fontWeight: 700, fontSize: 11, color: colors.wineInk },
+  grandTotalValue: { fontFamily: PDF_SANS, fontWeight: 700, fontSize: 14, color: colors.wine },
   grandTotalValueCompact: { fontSize: 11 },
   totalStrong: { borderTopWidth: 1, borderTopColor: colors.line, marginTop: 3, paddingTop: 4 },
-  totalStrongText: { fontFamily: "Helvetica-Bold", color: colors.wineInk },
+  totalStrongText: { fontFamily: PDF_SANS, fontWeight: 700, color: colors.wineInk },
 
   footer: { marginTop: 14, paddingTop: 8, borderTopWidth: 1.5, borderTopColor: colors.goldSoft, color: colors.muted, fontSize: 7.4 },
   footerCompact: { marginTop: 6, paddingTop: 4, fontSize: 5.9 },
   footerParagraph: { marginBottom: 2.5, textAlign: "justify" },
   terms: { color: colors.muted, fontSize: 7.2 },
   termsCompact: { fontSize: 5.9 },
-  termsTitle: { fontFamily: "Helvetica-Bold", color: colors.wineInk, fontSize: 7.4, marginBottom: 3, textTransform: "uppercase" },
+  termsTitle: { fontFamily: PDF_SANS, fontWeight: 700, color: colors.wineInk, fontSize: 7.4, marginBottom: 3, textTransform: "uppercase" },
   signatureRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 22 },
   signatureRowCompact: { marginTop: 10 },
   signature: { width: 130, borderTopWidth: 0.8, borderTopColor: colors.muted, paddingTop: 3, textAlign: "center", color: colors.muted },
   signatureCompact: { width: 95 },
-  thanks: { marginTop: 8, textAlign: "center", fontFamily: "Times-Italic", fontSize: 9.5, color: colors.wine },
+  thanks: { marginTop: 8, textAlign: "center", fontFamily: PDF_SERIF, fontStyle: "italic", fontWeight: 500, fontSize: 9.5, color: colors.wine },
   thanksCompact: { fontSize: 7.5, marginTop: 5 },
   pageNumber: { position: "absolute", bottom: 14, right: 28, fontSize: 7, color: colors.muted }
 });
@@ -316,7 +313,7 @@ function PdfPanel({
           ) : (
             <>
               {order.customerNotes ? <Text style={[styles.noteBox, { marginTop: 0, marginBottom: 6 }]}>Customer Notes: {order.customerNotes}</Text> : null}
-              <Terms paragraphs={customerReceiptFooter} compact={compact} />
+              <Terms paragraphs={settings.customerTerms} compact={compact} />
             </>
           )}
         </View>
@@ -409,7 +406,7 @@ function PaymentSummary({ order, compact }: { order: OrderWithCustomer; compact:
   const lines = billSummaryLines(order.totals, { namedExtras: groupedExtraCosts(order.items), advancePaise: advancePaidPaise(order.payments) });
   // Running calculation: parts add up to the subtotal, taxes are added, any advance is taken off.
   const sign = (line: SummaryLine, index: number) =>
-    line.kind === "part" ? (index === 0 ? "" : "+ ") : line.kind === "tax" ? "+ " : line.kind === "discount" || line.kind === "paid" ? "- " : "";
+    line.kind === "part" ? (index === 0 ? "" : "+ ") : line.kind === "tax" ? "+ " : line.kind === "discount" || line.kind === "paid" ? "− " : "";
 
   return (
     <View style={compact ? [styles.totalsCard, styles.totalsCardCompact] : styles.totalsCard}>

@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { GuardedForm } from "@/components/shared/guarded-form";
+import { TailorField } from "@/components/orders/tailor-field";
 import { Field, Input, Textarea } from "@/components/ui/input";
 import { ClothSamplePhotoField } from "@/components/orders/cloth-sample-photo-field";
 import { EditOrderChoiceFields } from "@/components/orders/edit-order-choice-fields";
@@ -17,11 +18,14 @@ const paymentMethodChoices: PaymentMethod[] = ["Cash", "UPI"];
 export function EditOrderForm({
   order,
   measurementTemplate,
-  action
+  action,
+  tailors = []
 }: {
   order: OrderWithCustomer;
   measurementTemplate?: MeasurementTemplate;
   action: (formData: FormData) => void | Promise<void>;
+  /** Active tailor names from Settings. */
+  tailors?: string[];
 }) {
   const specialNotes = uniqueMeasurementNotes(order.measurements).join("\n");
   const latestPayment = order.payments.at(-1);
@@ -42,7 +46,7 @@ export function EditOrderForm({
           <Input name="deliveryDate" type="date" defaultValue={normalizeDateInput(order.deliveryDate)} />
         </Field>
         <Field label="Assigned tailor">
-          <Input name="assignedTailor" defaultValue={order.assignedTailor ?? ""} />
+          <TailorField tailors={tailors} defaultValue={order.assignedTailor ?? ""} />
         </Field>
         <Field label="Priority">
           <select

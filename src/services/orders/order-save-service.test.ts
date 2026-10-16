@@ -11,6 +11,11 @@ const mockDelete = vi.fn(() => ({ eq: mockDeleteEq }));
 const mockInsert = vi.fn();
 const mockFrom = vi.fn(() => ({ delete: mockDelete, insert: mockInsert, select: mockSelect }));
 
+vi.mock("@/services/settings/settings-service", async () => {
+  const { STORE_SETTINGS } = await import("@/lib/constants/business");
+  return { getStoreSettings: vi.fn(async () => STORE_SETTINGS), listTailors: vi.fn(async () => []) };
+});
+
 vi.mock("@/lib/supabase/admin", () => ({
   hasSupabaseAdminEnv: vi.fn(() => true),
   createSupabaseAdminClient: vi.fn(() => ({ from: mockFrom, rpc: mockRpc }))
@@ -64,6 +69,19 @@ describe("saveParsedOrder", () => {
     mockLimit.mockResolvedValue({ data: [{ id: "existing-measurement" }], error: null });
     mockDeleteEq.mockResolvedValue({ error: null });
     mockInsert.mockResolvedValue({ error: null });
+  });
+
+  it("uses the GST rates saved in Settings", async () => {
+    const { getStoreSettings } = await import("@/services/settings/settings-service");
+    const { STORE_SETTINGS } = await import("@/lib/constants/business");
+    vi.mocked(getStoreSettings).mockResolvedValueOnce({ ...STORE_SETTINGS, defaultCgstRate: 6, defaultSgstRate: 6 });
+    const { saveParsedOrder } = await import("./order-save-service");
+
+    await saveParsedOrder(makeParsedOrder(0));
+
+    const order = (mockRpc.mock.calls[0]?.[1]?.p_payload as { order: Record<string, unknown> }).order;
+    expect(order.cgst_rate).toBe(6);
+    expect(order.sgst_rate).toBe(6);
   });
 
   it("omits the payment payload when advance paid is zero", async () => {

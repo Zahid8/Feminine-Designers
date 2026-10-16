@@ -61,9 +61,9 @@ describe("ReceiptPdfDocument extra cost labels", () => {
 
     const text = await extractPdfText(type, order);
 
-    expect(text).toContain("Lace price Rs. 250.00");
-    expect(text).toMatch(/Shantoon price\s+Rs\. 600\.00/);
-    expect(text).not.toContain("Extra: Lace Rs. 250.00");
+    expect(text).toContain("Lace price ₹250.00");
+    expect(text).toMatch(/Shantoon price\s+₹600\.00/);
+    expect(text).not.toContain("Extra: Lace ₹250.00");
   });
 });
 

@@ -14,11 +14,12 @@ import { DeliveryUrgencyBadge, PaymentBadge, PriorityBadge, StatusBadge } from "
 import { OrderProgress } from "@/components/orders/order-progress";
 import { PaymentsPanel } from "@/components/orders/payments-panel";
 import { ContactActions } from "@/components/shared/contact-actions";
-import { STORE_SETTINGS } from "@/lib/constants/business";
 import { paymentSummaryLines } from "@/lib/calculations/payment-summary";
 import { groupedExtraCosts } from "@/lib/utils/extra-cost-display";
 import { cn } from "@/lib/utils/cn";
 import { summarizeGarments } from "@/lib/orders/garment-summary";
+import { renderTemplate } from "@/lib/messages/render-template";
+import { getStoreSettings, listTailors } from "@/services/settings/settings-service";
 import { billLinkPath } from "@/lib/receipts/bill-link";
 import { requestOrigin } from "@/lib/http/request-origin";
 import { getOrderById } from "@/services/orders/order-service";
@@ -41,32 +42,23 @@ export default async function OrderDetailPage({
   const editing = query.edit === "1";
   const billPath = billLinkPath(order.id);
   const billUrl = billPath ? `${await requestOrigin()}${billPath}` : undefined;
-  const receiptLabel = order.receiptNumber ?? "your order";
+  const [settings, tailors] = await Promise.all([getStoreSettings(), listTailors()]);
   const balanceDue = order.totals.balanceDuePaise;
+  const messageValues = {
+    name: order.customer.fullName,
+    store: settings.storeName,
+    receipt: order.receiptNumber ?? "your order",
+    items: summarizeGarments(order.items),
+    total: formatINR(order.totals.grandTotalPaise),
+    paid: formatINR(order.totals.totalPaidPaise),
+    balance: formatINR(balanceDue),
+    delivery: formatDate(order.deliveryDate),
+    bill_link: billUrl ?? ""
+  };
   const customerMessages = [
-    {
-      label: "Order confirmation",
-      text: [
-        `Hello ${order.customer.fullName}, thank you for your order at ${STORE_SETTINGS.storeName}.`,
-        `Receipt: ${receiptLabel}`,
-        `Items: ${summarizeGarments(order.items)}`,
-        `Total: ${formatINR(order.totals.grandTotalPaise)} | Paid: ${formatINR(order.totals.totalPaidPaise)} | Balance: ${formatINR(balanceDue)}`,
-        `Expected delivery: ${formatDate(order.deliveryDate)}`,
-        ...(billUrl ? [`Your bill: ${billUrl}`] : [])
-      ].join("\n")
-    },
-    {
-      label: "Ready for pickup",
-      text: `Hello ${order.customer.fullName}, your order ${receiptLabel} at ${STORE_SETTINGS.storeName} is ready for pickup.${balanceDue > 0 ? ` Balance due: ${formatINR(balanceDue)}.` : ""}${billUrl ? ` Bill: ${billUrl}` : ""} Thank you!`
-    },
-    ...(balanceDue > 0
-      ? [
-          {
-            label: "Balance reminder",
-            text: `Hello ${order.customer.fullName}, a gentle reminder that ${formatINR(balanceDue)} is pending for order ${receiptLabel} at ${STORE_SETTINGS.storeName}. Thank you!`
-          }
-        ]
-      : [])
+    { label: "Order confirmation", text: renderTemplate(settings.messageTemplates.orderConfirmation, messageValues) },
+    { label: "Ready for pickup", text: renderTemplate(settings.messageTemplates.readyForPickup, messageValues) },
+    ...(balanceDue > 0 ? [{ label: "Balance reminder", text: renderTemplate(settings.messageTemplates.balanceReminder, messageValues) }] : [])
   ];
   const measurementTemplate = order.measurements.length === 0 ? await getMeasurementTemplateForGarment(order.items[0]?.garmentType ?? "Custom") : undefined;
 
@@ -221,7 +213,12 @@ export default async function OrderDetailPage({
             </ButtonLink>
           </CardHeader>
           <CardContent>
-            <EditOrderForm order={order} measurementTemplate={measurementTemplate} action={updateOrderAction.bind(null, order.id)} />
+            <EditOrderForm
+              order={order}
+              measurementTemplate={measurementTemplate}
+              action={updateOrderAction.bind(null, order.id)}
+              tailors={tailors.filter((tailor) => tailor.active).map((tailor) => tailor.name)}
+            />
           </CardContent>
         </Card>
       ) : null}

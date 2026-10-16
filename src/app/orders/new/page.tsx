@@ -3,7 +3,7 @@ import { PageHeading } from "@/components/shared/page-heading";
 import { NewOrderForm } from "@/components/orders/new-order-form";
 import { saveOrderAction } from "@/app/orders/new/actions";
 import { todayISO } from "@/lib/utils/date";
-import { listGarmentTypes } from "@/services/settings/settings-service";
+import { getStoreSettings, listGarmentTypes, listTailors } from "@/services/settings/settings-service";
 import { listMeasurementTemplates } from "@/services/measurements/measurement-service";
 import { getNextReceiptPreview } from "@/services/orders/receipt-preview-service";
 import { getCustomerMeasurementProfile } from "@/services/customers/customer-measurement-service";
@@ -15,11 +15,13 @@ export default async function NewOrderPage({ searchParams }: { searchParams: Pro
   const { customer: customerId } = await searchParams;
   const orderDate = todayISO();
   const deliveryDate = orderDate;
-  const [garmentTypes, measurementTemplates, nextReceiptNumber, customerProfile] = await Promise.all([
+  const [garmentTypes, measurementTemplates, nextReceiptNumber, customerProfile, settings, tailors] = await Promise.all([
     listGarmentTypes(),
     listMeasurementTemplates(),
     getNextReceiptPreview(orderDate),
-    customerId ? getCustomerMeasurementProfile(customerId) : Promise.resolve(undefined)
+    customerId ? getCustomerMeasurementProfile(customerId) : Promise.resolve(undefined),
+    getStoreSettings(),
+    listTailors()
   ]);
   const initialCustomer: ReturningCustomerMatch | undefined = customerProfile
     ? {
@@ -48,6 +50,9 @@ export default async function NewOrderPage({ searchParams }: { searchParams: Pro
         orderDate={orderDate}
         deliveryDate={deliveryDate}
         initialCustomer={initialCustomer}
+        cgstRate={settings.defaultCgstRate}
+        sgstRate={settings.defaultSgstRate}
+        tailors={tailors.filter((tailor) => tailor.active).map((tailor) => tailor.name)}
       />
     </AppShell>
   );
