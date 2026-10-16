@@ -9,7 +9,7 @@ import { getPublicPngDataUri } from "@/lib/utils/pdf-assets";
 import { uniqueMeasurementNotes } from "@/lib/utils/receipt-notes";
 import { formatExtraCostLine } from "@/lib/utils/extra-cost-display";
 import { formatFabricLengthDisplay } from "@/lib/utils/fabric-length-display";
-import { billSummaryLines, type SummaryLine } from "@/lib/calculations/payment-summary";
+import { advancePaidPaise, billSummaryLines, type SummaryLine } from "@/lib/calculations/payment-summary";
 import { groupedExtraCosts } from "@/lib/utils/extra-cost-display";
 
 const customerReceiptFooter = [
@@ -406,7 +406,7 @@ function ReceiptPdfItemSummary({ order, mode, compact }: { order: OrderWithCusto
 }
 
 function PaymentSummary({ order, compact }: { order: OrderWithCustomer; compact: boolean }) {
-  const lines = billSummaryLines(order.totals, { namedExtras: groupedExtraCosts(order.items) });
+  const lines = billSummaryLines(order.totals, { namedExtras: groupedExtraCosts(order.items), advancePaise: advancePaidPaise(order.payments) });
   // Running calculation: parts add up to the subtotal, taxes are added, any advance is taken off.
   const sign = (line: SummaryLine, index: number) =>
     line.kind === "part" ? (index === 0 ? "" : "+ ") : line.kind === "tax" ? "+ " : line.kind === "discount" || line.kind === "paid" ? "- " : "";

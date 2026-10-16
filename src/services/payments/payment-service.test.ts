@@ -143,7 +143,7 @@ describe("payment service", () => {
     );
   });
 
-  it("marks an order paid by replacing payments with a full settlement payment", async () => {
+  it("marks an order paid by keeping the advance and recording only the remaining balance", async () => {
     mockSingle.mockResolvedValueOnce({
       data: {
         advance_paid: "500.00",
@@ -156,18 +156,17 @@ describe("payment service", () => {
 
     await setOrderPaymentStatus("order-1", "Paid");
 
+    expect(mockDelete).not.toHaveBeenCalled();
     expect(mockFrom).toHaveBeenNthCalledWith(2, "payments");
-    expect(mockDeleteEq).toHaveBeenCalledWith("order_id", "order-1");
-    expect(mockFrom).toHaveBeenNthCalledWith(3, "payments");
     expect(mockInsert).toHaveBeenCalledWith(
       expect.objectContaining({
         order_id: "order-1",
-        amount: "1700.00",
+        amount: "1200.00",
         payment_method: "Cash",
         notes: "Marked paid from order edit"
       })
     );
-    expect(mockFrom).toHaveBeenNthCalledWith(4, "orders");
+    expect(mockFrom).toHaveBeenNthCalledWith(3, "orders");
     expect(mockUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
         advance_paid: "1700.00",

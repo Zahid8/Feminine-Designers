@@ -55,27 +55,42 @@ describe("paymentSummaryLines", () => {
 });
 
 describe("billSummaryLines", () => {
-  it("takes the advance off before the bold grand total, with no balance line", async () => {
+  it("takes only the advance off the bill total for the bold grand total", async () => {
     const { billSummaryLines } = await import("./payment-summary");
-    const lines = billSummaryLines({ ...base, totalPaidPaise: 500_000, balanceDuePaise: 2_154_926 });
+    // Fully paid later, but the bill still shows total minus the booking advance.
+    const lines = billSummaryLines({ ...base, totalPaidPaise: base.grandTotalPaise, balanceDuePaise: 0 }, { advancePaise: 500_000 });
     expect(lines.slice(-3).map((line) => [line.label, line.amountPaise])).toEqual([
       ["SGST 2.5%", 63_213],
-      ["Paid", -500_000],
-      ["Grand total", 2_154_926]
+      ["Advance", -500_000],
+      ["Grand total", base.grandTotalPaise - 500_000]
     ]);
     expect(lines.some((line) => line.kind === "balance")).toBe(false);
   });
 
-  it("omits the advance line when nothing was paid", async () => {
+  it("shows the full bill total when there was no advance", async () => {
     const { billSummaryLines } = await import("./payment-summary");
-    const lines = billSummaryLines(base);
+    const lines = billSummaryLines({ ...base, totalPaidPaise: base.grandTotalPaise, balanceDuePaise: 0 });
     expect(lines.some((line) => line.key === "advance")).toBe(false);
     expect(lines.at(-1)).toMatchObject({ label: "Grand total", amountPaise: base.grandTotalPaise });
   });
 
-  it("shows an overpayment as a positive Overpaid amount", async () => {
+  it("never lets the advance push the total below zero", async () => {
     const { billSummaryLines } = await import("./payment-summary");
-    const lines = billSummaryLines({ ...base, totalPaidPaise: 2_700_000, balanceDuePaise: -45_074 });
-    expect(lines.at(-1)).toMatchObject({ label: "Overpaid", amountPaise: 45_074 });
+    expect(billSummaryLines(base, { advancePaise: 99_999_999 }).at(-1)?.amountPaise).toBe(0);
+  });
+});
+
+describe("advancePaidPaise", () => {
+  it("counts only payments recorded as an advance", async () => {
+    const { advancePaidPaise } = await import("./payment-summary");
+    expect(
+      advancePaidPaise([
+        { amountPaise: 50_000, notes: "Advance collected at order creation" },
+        { amountPaise: 300_000, notes: "Marked paid from order edit" },
+        { amountPaise: 20_000, notes: "Payment recorded on order page" }
+      ])
+    ).toBe(50_000);
+    expect(advancePaidPaise([{ amountPaise: 300_000, notes: "Marked paid from dashboard" }])).toBe(0);
+    expect(advancePaidPaise([])).toBe(0);
   });
 });

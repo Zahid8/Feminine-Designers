@@ -196,18 +196,22 @@ export async function setOrderPaymentStatus(orderId: string, nextStatus: Extract
   const grandTotalPaise = rupeesToPaise(Number(totals.grand_total));
   const updatedAt = new Date().toISOString();
 
-  const { error: deleteError } = await admin.from("payments").delete().eq("order_id", orderId);
-  if (deleteError) throw new Error(deleteError.message);
-
-  if (nextStatus === "Paid" && grandTotalPaise > 0) {
-    const { error: insertError } = await admin.from("payments").insert({
-      order_id: orderId,
-      amount: toRupeesDecimal(grandTotalPaise),
-      payment_method: "Cash",
-      paid_at: updatedAt,
-      notes: "Marked paid from order edit"
-    });
-    if (insertError) throw new Error(insertError.message);
+  if (nextStatus === "Unpaid") {
+    const { error: deleteError } = await admin.from("payments").delete().eq("order_id", orderId);
+    if (deleteError) throw new Error(deleteError.message);
+  } else {
+    // Keep earlier payments (including the booking advance) and record only what was still due.
+    const remainingPaise = grandTotalPaise - rupeesToPaise(Number(totals.advance_paid));
+    if (remainingPaise > 0) {
+      const { error: insertError } = await admin.from("payments").insert({
+        order_id: orderId,
+        amount: toRupeesDecimal(remainingPaise),
+        payment_method: "Cash",
+        paid_at: updatedAt,
+        notes: "Marked paid from order edit"
+      });
+      if (insertError) throw new Error(insertError.message);
+    }
   }
 
   const nextPaidPaise = nextStatus === "Paid" ? grandTotalPaise : 0;

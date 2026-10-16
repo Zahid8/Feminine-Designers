@@ -85,20 +85,31 @@ export function hasSubtotalBreakdown(lines: SummaryLine[]) {
 }
 
 /**
- * Customer bill version: same parts → subtotal → taxes, then any advance is taken off
- * and the bold "Grand total" is what the customer still has to pay. No separate
- * balance box. (Staff screens keep `paymentSummaryLines` with the full bill total.)
+ * Customer bill version: parts → subtotal → taxes, then only the advance (the first
+ * payment, usually taken at booking) is taken off; the bold "Grand total" is the bill
+ * total minus that advance. Later payments are deliberately ignored, so a bill doesn't
+ * change to ₹0 when the customer settles up. (Staff screens keep `paymentSummaryLines`.)
  */
-export function billSummaryLines(totals: SummaryTotals, options: { namedExtras?: { label: string; amountPaise: number }[] } = {}): SummaryLine[] {
+export function billSummaryLines(
+  totals: SummaryTotals,
+  options: { namedExtras?: { label: string; amountPaise: number }[]; advancePaise?: number } = {}
+): SummaryLine[] {
   const lines = paymentSummaryLines(totals, options).filter((line) => line.kind !== "total" && line.kind !== "paid" && line.kind !== "balance");
-  if (totals.totalPaidPaise > 0) {
-    lines.push({ key: "advance", label: "Paid", amountPaise: -totals.totalPaidPaise, kind: "paid" });
+  const advancePaise = Math.min(Math.max(0, options.advancePaise ?? 0), totals.grandTotalPaise);
+  if (advancePaise > 0) {
+    lines.push({ key: "advance", label: "Advance", amountPaise: -advancePaise, kind: "paid" });
   }
-  // An overpaid order (status "Credit") would otherwise show a negative total.
-  lines.push(
-    totals.balanceDuePaise < 0
-      ? { key: "total", label: "Overpaid", amountPaise: -totals.balanceDuePaise, kind: "total" }
-      : { key: "total", label: "Grand total", amountPaise: totals.balanceDuePaise, kind: "total" }
-  );
+  lines.push({ key: "total", label: "Grand total", amountPaise: totals.grandTotalPaise - advancePaise, kind: "total" });
   return lines;
+}
+
+/** Payment notes written when money is taken as an advance (at booking, or set in Edit Order). */
+export const ADVANCE_PAYMENT_NOTES = ["Advance collected at order creation", "Advance updated from saved bill edit"];
+
+/**
+ * The advance shown on the customer bill: payments recorded as an advance. Later
+ * payments (marked paid, counter payments) are not advances and never appear on the bill.
+ */
+export function advancePaidPaise(payments: { amountPaise: number; notes?: string }[]) {
+  return payments.filter((payment) => payment.notes && ADVANCE_PAYMENT_NOTES.includes(payment.notes)).reduce((sum, payment) => sum + payment.amountPaise, 0);
 }
