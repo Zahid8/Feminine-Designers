@@ -388,6 +388,12 @@ Customers pay at the counter in cash or UPI; the app only records what was recei
 
 Open **Reports** (sidebar on a laptop, bottom bar on phones/tablets). Pick a period (Today, Last 7 days, This month, Last month, This year, All time) to see money collected (split by Cash/UPI), orders taken, billed value, average order, outstanding balance, a collections chart, the garment mix, and top customers. **Export CSV** downloads the period's orders for Excel or Google Sheets.
 
+### Due-tomorrow reminders
+
+When open shop orders are due for delivery tomorrow, notification cards appear at the top right (top of the screen on phones), on every page, with a soft chime. Each card shows the receipt, customer, and garments; tap it to open the order, ✕ to dismiss it, or **Dismiss all**. Dismissed cards stay away on that device for that delivery date; new orders booked for tomorrow still pop up. The speaker icon mutes the chime (it's also silent when the device asks for reduced motion). Some browsers only play sound after the first tap on the page.
+
+**Also show these as device notifications** asks for permission to show them as system notifications too (macOS/Windows, Android, and the installed iPhone app on iOS 16.4+). These work while the app is open in a tab or installed, not when it is completely closed. Online (webstore) orders have no delivery date, so they don't trigger reminders.
+
 ### Install on a tablet or phone
 
 The app can be added to the home screen and opens full-screen like an app:

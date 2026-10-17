@@ -5,6 +5,8 @@ import { hasSupabaseAdminEnv, createSupabaseAdminClient } from "@/lib/supabase/a
 import { isMissingSupabaseSchemaError } from "@/lib/supabase/errors";
 import { todayISO } from "@/lib/utils/date";
 import { rupeesToPaise } from "@/lib/utils/money";
+import { isDueOn, type DueReminder } from "@/lib/reminders/due-reminders";
+import { summarizeGarments } from "@/lib/orders/garment-summary";
 import type {
   Customer,
   MeasurementValue,
@@ -407,4 +409,51 @@ export async function getOrdersDueToday(today = todayISO()) {
 export async function getUpcomingDeliveries(today = todayISO()) {
   const sourceOrders = (await fetchSupabaseOrders()) ?? orders;
   return sourceOrders.filter((order) => order.deliveryDate >= today && !["Delivered", "Cancelled"].includes(order.status));
+}
+
+/** Minimal rows for the "due tomorrow" reminder stack: open orders whose delivery date is `date`. */
+export async function listOrdersDueOn(date: string): Promise<DueReminder[]> {
+  if (!hasSupabaseAdminEnv()) {
+    return getOrdersWithOverdueMeta()
+      .filter((order) => isDueOn(order, date))
+      .map((order) => ({
+        id: order.id,
+        receiptNumber: order.receiptNumber ?? null,
+        customerName: order.customer.fullName,
+        phone: order.customer.phonePrimary,
+        garments: summarizeGarments(order.items),
+        status: order.status,
+        deliveryDate: order.deliveryDate
+      }));
+  }
+
+  const admin = createSupabaseAdminClient();
+  const { data, error } = await admin
+    .from("orders")
+    .select("id, receipt_number, status, delivery_date, customer:customers(full_name, phone_primary), items:order_items(garment_type, quantity)")
+    .eq("delivery_date", date)
+    .not("status", "in", "(Delivered,Cancelled)")
+    .order("created_at");
+  if (error) {
+    if (isMissingSupabaseSchemaError(error)) return [];
+    throw new Error(error.message);
+  }
+
+  type Row = {
+    id: string;
+    receipt_number: string | null;
+    status: string;
+    delivery_date: string;
+    customer: { full_name: string; phone_primary: string } | null;
+    items: { garment_type: string; quantity: number }[] | null;
+  };
+  return ((data ?? []) as unknown as Row[]).map((row) => ({
+    id: row.id,
+    receiptNumber: row.receipt_number,
+    customerName: row.customer?.full_name ?? "",
+    phone: row.customer?.phone_primary ?? "",
+    garments: summarizeGarments((row.items ?? []).map((item) => ({ garmentType: item.garment_type, quantity: item.quantity }))),
+    status: row.status,
+    deliveryDate: row.delivery_date
+  }));
 }

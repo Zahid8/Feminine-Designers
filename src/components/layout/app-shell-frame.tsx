@@ -9,6 +9,7 @@ import { LogoMark } from "@/components/shared/logo-mark";
 import { IndiaClock } from "@/components/shared/india-clock";
 import { PageTransition } from "@/components/shared/page-transition";
 import { GlobalSearch } from "@/components/layout/global-search";
+import { DueTomorrowNotifier } from "@/components/layout/due-tomorrow-notifier";
 import { KeyboardShortcuts } from "@/components/layout/keyboard-shortcuts";
 import { ToastProvider } from "@/components/ui/toast";
 import { cn } from "@/lib/utils/cn";
@@ -134,6 +135,7 @@ export function AppShellFrame({
               </div>
             </div>
           </header>
+          <DueTomorrowNotifier />
           <main className="px-3 pb-28 pt-4 sm:px-4 md:px-8 md:pt-6 lg:pb-10">
             <PageTransition>{children}</PageTransition>
           </main>
