@@ -5,7 +5,7 @@ import { startTransition, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Field, Select, Textarea } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
-import type { OnlineOrder, OnlineOrderStatus, OnlinePaymentStatus } from "@/services/online-orders/online-order-service";
+import { stageLabel, type OnlineOrder, type OnlineOrderStatus, type OnlinePaymentStatus } from "@/services/online-orders/online-order-service";
 import { updateOnlineOrderAction } from "@/app/online-orders/actions";
 
 export function OnlineOrderStatusForm({
@@ -51,7 +51,7 @@ export function OnlineOrderStatusForm({
         <Select value={status} onChange={(event) => setStatus(event.target.value as OnlineOrderStatus)} disabled={pending}>
           {statuses.map((item) => (
             <option key={item.value} value={item.value}>
-              {item.label}
+              {stageLabel(item.value, item.label)}
             </option>
           ))}
         </Select>

@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MadeToMeasureBadge, OnlinePaymentBadge, OnlineStatusBadge } from "@/components/online-orders/online-order-badges";
+import { OnlinePaymentBadge, OnlineStatusBadge, OrderTypeBadge } from "@/components/online-orders/online-order-badges";
+import { OnlineOrderNextStageButton } from "@/components/online-orders/online-order-stage-actions";
 import { cardNavigationHandler } from "@/lib/ui/card-navigation";
 import { formatDateTime } from "@/lib/utils/date";
 import { formatINR, rupeesToPaise } from "@/lib/utils/money";
-import type { OnlineOrder } from "@/services/online-orders/online-order-service";
+import { orderTypeOf, type OnlineOrder } from "@/services/online-orders/online-order-service";
 
 export function summarizeOnlineItems(order: OnlineOrder) {
   return order.items
@@ -35,7 +36,7 @@ export function OnlineOrderTable({ orders }: { orders: OnlineOrder[] }) {
         <table className="w-full text-left text-sm">
           <thead className="sticky top-0 z-10 bg-peach text-xs uppercase text-muted-strong shadow-[0_1px_0_var(--color-line)]">
             <tr>
-              {["Order", "Customer", "Items", "Placed", "Status", "Total", "Action"].map((label) => (
+              {["Order", "Customer", "Items", "Status", "Total", "Action"].map((label) => (
                 <th key={label} className="px-4 py-3 font-semibold">
                   {label}
                 </th>
@@ -56,6 +57,7 @@ export function OnlineOrderTable({ orders }: { orders: OnlineOrder[] }) {
                     <Link href={href} className="hover:text-rose hover:underline">
                       {order.order_number}
                     </Link>
+                    <p className="mt-0.5 text-xs font-normal text-muted">{formatDateTime(order.created_at)}</p>
                   </td>
                   <td className="px-4 py-3">
                     <Link href={href} className="font-semibold hover:text-wine">
@@ -67,13 +69,10 @@ export function OnlineOrderTable({ orders }: { orders: OnlineOrder[] }) {
                     <p className="line-clamp-2" title={summarizeOnlineItems(order)}>
                       {summarizeOnlineItems(order)}
                     </p>
-                    {order.has_made_to_measure ? (
-                      <div className="mt-1">
-                        <MadeToMeasureBadge />
-                      </div>
-                    ) : null}
+                    <div className="mt-1">
+                      <OrderTypeBadge type={orderTypeOf(order)} />
+                    </div>
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-xs text-muted">{formatDateTime(order.created_at)}</td>
                   <td className="px-4 py-3">
                     <div className="flex max-w-56 flex-wrap gap-1.5">
                       <OnlineStatusBadge status={order.status} label={order.status_label} />
@@ -83,12 +82,15 @@ export function OnlineOrderTable({ orders }: { orders: OnlineOrder[] }) {
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 font-semibold tabular-nums">{rupees(order.total)}</td>
                   <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                    <OnlineOrderNextStageButton orderNumber={order.order_number} status={order.status} />
                     <Link
                       className="inline-flex min-h-9 items-center justify-center rounded-xl border border-line-strong bg-surface px-3 py-1.5 text-sm font-semibold text-wine-ink shadow-raised-sm transition hover:border-gold hover:bg-blush focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
                       href={href}
                     >
                       Open
                     </Link>
+                    </div>
                   </td>
                 </tr>
               );
@@ -113,7 +115,7 @@ export function OnlineOrderTable({ orders }: { orders: OnlineOrder[] }) {
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   <OnlineStatusBadge status={order.status} label={order.status_label} />
                   <OnlinePaymentBadge status={order.payment_status} label={order.payment_status_label} />
-                  {order.has_made_to_measure ? <MadeToMeasureBadge /> : null}
+                  <OrderTypeBadge type={orderTypeOf(order)} />
                 </div>
                 <p className="mt-1 text-xs text-muted">{formatDateTime(order.created_at)}</p>
               </Link>

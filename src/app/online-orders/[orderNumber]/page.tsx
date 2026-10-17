@@ -5,12 +5,13 @@ import { AppShell } from "@/components/layout/app-shell";
 import { PageHeading } from "@/components/shared/page-heading";
 import { ButtonLink } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MadeToMeasureBadge, OnlinePaymentBadge, OnlineStatusBadge } from "@/components/online-orders/online-order-badges";
+import { ItemFitBadge, OnlinePaymentBadge, OnlineStatusBadge, OrderTypeBadge } from "@/components/online-orders/online-order-badges";
+import { OnlineOrderStageActions } from "@/components/online-orders/online-order-stage-actions";
 import { OnlineOrderStatusForm } from "@/components/online-orders/online-order-status-form";
 import { hasWebstoreEnv } from "@/lib/webstore/env";
 import { formatDateTime } from "@/lib/utils/date";
 import { formatINR, rupeesToPaise } from "@/lib/utils/money";
-import { getOnlineOrder, listOnlineOrders } from "@/services/online-orders/online-order-service";
+import { getOnlineOrder, listOnlineOrders, orderTypeOf } from "@/services/online-orders/online-order-service";
 
 export const dynamic = "force-dynamic";
 
@@ -50,6 +51,7 @@ export default async function OnlineOrderDetailPage({ params }: { params: Promis
             <CardHeader className="flex flex-wrap items-center justify-between gap-2">
               <CardTitle>Items</CardTitle>
               <div className="flex flex-wrap gap-1.5">
+                <OrderTypeBadge type={orderTypeOf(order)} />
                 <OnlineStatusBadge status={order.status} label={order.status_label} />
                 <OnlinePaymentBadge status={order.payment_status} label={order.payment_status_label} />
               </div>
@@ -64,14 +66,17 @@ export default async function OnlineOrderDetailPage({ params }: { params: Promis
                         {item.product_name}
                       </p>
                       <p className="text-xs text-muted">
-                        {[item.sku, item.color, item.size].filter(Boolean).join(" · ")}
+                        {[item.sku, item.color, item.made_to_measure ? null : item.size].filter(Boolean).join(" · ")}
                       </p>
+                      <div className="mt-1.5">
+                        <ItemFitBadge custom={item.made_to_measure} />
+                      </div>
                     </div>
                     <p className="font-semibold tabular-nums">{rupees(item.line_total)}</p>
                   </div>
                   {item.made_to_measure ? (
                     <div className="mt-3">
-                      <MadeToMeasureBadge />
+                      <p className="text-xs font-bold uppercase tracking-[0.08em] text-label">Measurements</p>
                       <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-3">
                         {item.customization_summary.map((row) => (
                           <div key={row.label} className="flex justify-between gap-2 border-b border-line-soft py-1">
@@ -101,6 +106,15 @@ export default async function OnlineOrderDetailPage({ params }: { params: Promis
                   <dd className="tabular-nums">{rupees(order.total)}</dd>
                 </div>
               </dl>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Order stage</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <OnlineOrderStageActions orderNumber={order.order_number} status={order.status} />
             </CardContent>
           </Card>
 

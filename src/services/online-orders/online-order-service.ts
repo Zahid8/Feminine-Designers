@@ -1,6 +1,8 @@
 import { webstoreEnv, hasWebstoreEnv } from "@/lib/webstore/env";
 
-export type OnlineOrderStatus = "pending" | "confirmed" | "processing" | "shipped" | "completed" | "cancelled";
+export type OnlineOrderStatus = "pending" | "confirmed" | "processing" | "shipped" | "delivered" | "completed" | "cancelled";
+/** ready_made: every piece off the rack; made_to_measure: every piece custom size; mixed: both. */
+export type OnlineOrderType = "ready_made" | "made_to_measure" | "mixed";
 export type OnlinePaymentStatus = "pending" | "awaiting_review" | "paid" | "failed" | "refunded";
 
 export interface OnlineOrderItem {
@@ -40,6 +42,9 @@ export interface OnlineOrder {
   total: string;
   item_count: number;
   has_made_to_measure: boolean;
+  /** Sent by newer webstore versions; use orderTypeOf() to read it safely. */
+  order_type?: OnlineOrderType;
+  order_type_label?: string;
   items: OnlineOrderItem[];
   links: { admin: string; staff: string };
 }
@@ -52,9 +57,13 @@ export interface OnlineOrderListResult {
   generatedAt: string;
 }
 
+export type OnlineOrderTypeFilter = "ready_made" | "made_to_measure" | "All";
+
 export interface OnlineOrderFilters {
   query?: string;
   status?: OnlineOrderStatus | "All";
+  /** made_to_measure includes mixed orders (anything with a custom-size piece). */
+  type?: OnlineOrderTypeFilter;
   limit?: number;
 }
 
@@ -91,6 +100,7 @@ export async function listOnlineOrders(filters: OnlineOrderFilters = {}): Promis
   const params = new URLSearchParams();
   if (filters.query) params.set("q", filters.query);
   if (filters.status && filters.status !== "All") params.set("status", filters.status);
+  if (filters.type && filters.type !== "All") params.set("type", filters.type);
   params.set("limit", String(filters.limit ?? 200));
   const data = await webstoreFetch<{
     orders: OnlineOrder[];
@@ -139,4 +149,34 @@ export function isOpenOnlineOrder(order: OnlineOrder) {
 
 export function needsPaymentCheck(order: OnlineOrder) {
   return order.payment_status === "awaiting_review" || (order.payment_status === "pending" && order.payment_method === "manual_upi");
+}
+
+// Fulfilment stages, in the order an order moves through them. The webstore
+// calls the last one "Completed"; staff know it as "Fulfilled".
+export const FULFILMENT_STAGES: OnlineOrderStatus[] = ["pending", "confirmed", "processing", "shipped", "delivered", "completed"];
+
+const STAGE_LABELS: Partial<Record<OnlineOrderStatus, string>> = { completed: "Fulfilled" };
+
+export function stageLabel(status: OnlineOrderStatus, fallback?: string) {
+  return STAGE_LABELS[status] ?? fallback ?? status.charAt(0).toUpperCase() + status.slice(1);
+}
+
+/** The next stage to move an order to, or null once it is fulfilled or cancelled. */
+export function nextStage(status: OnlineOrderStatus): OnlineOrderStatus | null {
+  const index = FULFILMENT_STAGES.indexOf(status);
+  if (index === -1 || index === FULFILMENT_STAGES.length - 1) return null;
+  return FULFILMENT_STAGES[index + 1];
+}
+
+export const ORDER_TYPE_LABELS: Record<OnlineOrderType, string> = {
+  ready_made: "Ready-made",
+  made_to_measure: "Custom size",
+  mixed: "Ready-made + custom size"
+};
+
+export function orderTypeOf(order: Pick<OnlineOrder, "order_type" | "items">): OnlineOrderType {
+  if (order.order_type) return order.order_type;
+  const custom = order.items.map((item) => item.made_to_measure);
+  if (custom.length > 0 && custom.every(Boolean)) return "made_to_measure";
+  return custom.some(Boolean) ? "mixed" : "ready_made";
 }
