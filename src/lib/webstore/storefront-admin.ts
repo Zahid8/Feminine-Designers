@@ -15,7 +15,7 @@ function b64url(buffer: Buffer) {
 
 export function storefrontAdminToken(
   secret: string,
-  { username = MANAGER_USERNAME, next = "/admin/", ttlSeconds = 120, nonce, now = Date.now() }: { username?: string; next?: string; ttlSeconds?: number; nonce?: string; now?: number } = {}
+  { username = MANAGER_USERNAME, next = "/admin/", ttlSeconds = 1800, nonce, now = Date.now() }: { username?: string; next?: string; ttlSeconds?: number; nonce?: string; now?: number } = {}
 ) {
   const payload = { exp: Math.floor(now / 1000) + ttlSeconds, n: nonce ?? b64url(randomBytes(12)), next, u: username };
   const body = b64url(Buffer.from(JSON.stringify(payload)));
