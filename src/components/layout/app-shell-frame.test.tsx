@@ -47,7 +47,7 @@ describe("AppShellFrame", () => {
     expect(mobileNav.className).toContain("lg:hidden");
     expect(mobileNav.querySelectorAll("a")).toHaveLength(5);
     expect(mobileNav.querySelector('[aria-current="page"]')?.textContent).toBe("Orders");
-    expect([...mobileNav.querySelectorAll("a")].map((link) => link.textContent)).toEqual(["Dashboard", "Orders", "New Order", "Customers", "Reports"]);
+    expect([...mobileNav.querySelectorAll("a")].map((link) => link.textContent)).toEqual(["Dashboard", "Orders", "New Order", "Customers", "Online"]);
     expect(screen.getAllByRole("link", { name: "Settings" }).every((link) => link.getAttribute("href") === "/settings")).toBe(true);
   });
 });

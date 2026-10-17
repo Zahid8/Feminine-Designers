@@ -374,7 +374,7 @@ Roles:
 
 - **Keyboard** (laptop): `?` shows all shortcuts, `N` new order, `B` workshop board, `D` dashboard.
 - Actions such as **Done**, **Paid**, and board moves show a small notification with **Undo** for a few seconds.
-- On phones and tablets, **Settings** is the gear button at the top right; the bottom bar is Dashboard, Orders, New Order, Customers, Reports.
+- On phones and tablets, **Settings** is the gear button at the top right; the bottom bar is Dashboard, Orders, New Order, Customers, Online (webstore orders). **Reports** is the button at the top of the Dashboard.
 
 ### Workshop Board (on the Dashboard)
 

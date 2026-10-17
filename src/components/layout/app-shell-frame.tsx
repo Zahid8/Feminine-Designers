@@ -18,15 +18,16 @@ const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home, accent: "bg-section-dashboard", text: "text-section-dashboard" },
   { href: "/orders", label: "Orders", icon: ReceiptText, accent: "bg-section-orders", text: "text-section-orders" },
   { href: "/orders/new", label: "New Order", icon: UserRoundPlus, accent: "bg-section-new", text: "text-section-new" },
-  { href: "/online-orders", label: "Online Orders", icon: Globe, accent: "bg-section-online", text: "text-section-online" },
+  { href: "/online-orders", label: "Online Orders", shortLabel: "Online", icon: Globe, accent: "bg-section-online", text: "text-section-online" },
   { href: "/customers", label: "Customers", icon: Users, accent: "bg-section-customers", text: "text-section-customers" },
   { href: "/reports", label: "Reports", icon: ChartColumn, accent: "bg-section-reports", text: "text-section-reports" },
   { href: "/settings", label: "Settings", icon: Settings, accent: "bg-section-settings", text: "text-section-settings" }
 ];
 
-// Phones and tablets: five tabs; Settings is the header gear button and
-// Online Orders is reached from the Orders page.
-const mobileNavItems = navItems.filter((item) => item.href !== "/settings" && item.href !== "/online-orders");
+// Phones and tablets: five tabs (Online Orders takes Reports' old slot). Settings is the
+// header gear button and Reports is the button on the dashboard.
+const MOBILE_TABS = ["/dashboard", "/orders", "/orders/new", "/customers", "/online-orders"];
+const mobileNavItems = MOBILE_TABS.map((href) => navItems.find((item) => item.href === href)!);
 
 function isActivePath(pathname: string, href: string) {
   if (href === "/orders") return pathname === "/orders" || (pathname.startsWith("/orders/") && !pathname.startsWith("/orders/new"));
@@ -170,7 +171,7 @@ export function AppShellFrame({
                     >
                       <item.icon className={primary ? "h-6 w-6" : "h-5 w-5"} aria-hidden />
                     </span>
-                    {item.label}
+                    {"shortLabel" in item ? item.shortLabel : item.label}
                   </Link>
                 </li>
               );
