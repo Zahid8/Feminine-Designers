@@ -1,5 +1,6 @@
 import { Document, Image, Link, Page, Text, View } from "@react-pdf/renderer";
 import { colors, formatPdfINR, Info, SectionHead, storeLogoSource, styles, Terms, Total } from "@/components/receipts/receipt-pdf";
+import { ONLINE_ORDER_TERMS } from "@/lib/constants/business";
 import { onlineBillAmounts } from "@/lib/online-orders/online-bill";
 import { formatDate } from "@/lib/utils/date";
 import { rupeesToPaise } from "@/lib/utils/money";
@@ -81,7 +82,7 @@ export function OnlineReceiptPdfDocument({ order, settings }: { order: OnlineOrd
             ) : null}
             {order.notes ? <Text style={styles.noteBox}>Customer Notes: {order.notes}</Text> : null}
             <View style={{ marginTop: 10 }}>
-              <Terms paragraphs={settings.customerTerms} />
+              <Terms paragraphs={ONLINE_ORDER_TERMS} />
             </View>
           </View>
           <View style={styles.lowerRight} wrap={false}>

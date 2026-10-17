@@ -50,4 +50,12 @@ describe("OnlineReceiptPdfDocument", () => {
     expect(text).toContain("Manual UPI · Paid");
     expect(text).toMatch(/Balance\s+₹0\.00/);
   });
+
+  it("prints online-order terms, not the in-store receipt terms", async () => {
+    const text = (await pdfText()).replace(/\s+/g, " ");
+    expect(text).toContain("This bill is for an order placed on our online store.");
+    expect(text).toContain("within 48 hours");
+    expect(text).not.toContain("Please bring this receipt");
+    expect(text).not.toContain("collected within 30 days");
+  });
 });
