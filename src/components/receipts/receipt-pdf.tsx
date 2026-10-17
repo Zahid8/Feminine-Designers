@@ -14,10 +14,10 @@ import { formatFabricLengthDisplay } from "@/lib/utils/fabric-length-display";
 import { advancePaidPaise, billSummaryLines, type SummaryLine } from "@/lib/calculations/payment-summary";
 import { groupedExtraCosts } from "@/lib/utils/extra-cost-display";
 
-const storeLogoSource = getPublicPngDataUri("Logo.PNG");
+export const storeLogoSource = getPublicPngDataUri("Logo.PNG");
 
-// Matches the app's rose-blush palette (src/app/globals.css).
-const colors = {
+// Matches the app's rose-blush palette (src/app/globals.css). Shared with the online-order bill.
+export const colors = {
   wine: "#7d1f36",
   wineDeep: "#3f0f20",
   wineInk: "#4c1525",
@@ -36,14 +36,14 @@ const colors = {
   onWine: "#f8dccb"
 };
 
-function formatPdfINR(paise: number) {
+export function formatPdfINR(paise: number) {
   return `₹${new Intl.NumberFormat("en-IN", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   }).format(paiseToRupees(paise))}`;
 }
 
-const styles = StyleSheet.create({
+export const styles = StyleSheet.create({
   page: { paddingTop: 26, paddingBottom: 34, paddingHorizontal: 28, fontSize: 9, fontFamily: PDF_SANS, color: colors.ink, backgroundColor: "#ffffff" },
   combinedPage: { paddingTop: 16, paddingBottom: 22, paddingHorizontal: 16, fontSize: 7.4 },
   panes: { flexDirection: "row" },
@@ -340,7 +340,7 @@ function PdfPanel({
   );
 }
 
-function Terms({ paragraphs, compact = false }: { paragraphs: string[]; compact?: boolean }) {
+export function Terms({ paragraphs, compact = false }: { paragraphs: string[]; compact?: boolean }) {
   return (
     <View style={compact ? [styles.terms, styles.termsCompact] : styles.terms}>
       <Text style={styles.termsTitle}>Terms</Text>
@@ -353,7 +353,7 @@ function Terms({ paragraphs, compact = false }: { paragraphs: string[]; compact?
   );
 }
 
-function SectionHead({ title, meta, badge, compact = false }: { title: string; meta?: string; badge?: string; compact?: boolean }) {
+export function SectionHead({ title, meta, badge, compact = false }: { title: string; meta?: string; badge?: string; compact?: boolean }) {
   return (
     <View>
       <View style={compact ? [styles.sectionHead, styles.sectionHeadCompact] : styles.sectionHead}>
@@ -437,7 +437,7 @@ function PaymentSummary({ order, compact }: { order: OrderWithCustomer; compact:
   );
 }
 
-function Info({
+export function Info({
   label,
   value,
   compact = false,
@@ -459,7 +459,7 @@ function Info({
   );
 }
 
-function Total({ label, value, strong = false, part = false }: { label: string; value: number; strong?: boolean; part?: boolean }) {
+export function Total({ label, value, strong = false, part = false }: { label: string; value: number; strong?: boolean; part?: boolean }) {
   return (
     <View style={strong ? [styles.totalRow, styles.totalStrong] : part ? [styles.totalRow, styles.totalPart] : styles.totalRow}>
       <Text style={strong ? styles.totalStrongText : part ? styles.totalPartText : styles.totalLabel}>{label}</Text>

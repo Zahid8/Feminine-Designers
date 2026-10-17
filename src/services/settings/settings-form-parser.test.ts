@@ -75,6 +75,9 @@ describe("parseStoreSettingsFormData", () => {
       "template.orderConfirmation": "Hi {name}",
       "template.readyForPickup": "Ready {name}",
       "template.balanceReminder": "Due {balance}",
+      "template.onlineOrderConfirmed": "Online {name}",
+      "template.onlineShipped": "Shipped {receipt}",
+      "template.onlineDelivered": "Delivered {receipt}",
       ...overrides
     };
     for (const [key, value] of Object.entries(values)) formData.set(key, value);

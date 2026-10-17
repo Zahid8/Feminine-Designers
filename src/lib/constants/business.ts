@@ -32,7 +32,11 @@ export const STORE_SETTINGS: StoreSettings = {
     orderConfirmation:
       "Hello {name}, thank you for your order at {store}.\nReceipt: {receipt}\nItems: {items}\nTotal: {total} | Paid: {paid} | Balance: {balance}\nExpected delivery: {delivery}\nYour bill: {bill_link}",
     readyForPickup: "Hello {name}, your order {receipt} at {store} is ready for pickup. Balance due: {balance}. Bill: {bill_link} Thank you!",
-    balanceReminder: "Hello {name}, a gentle reminder that {balance} is pending for order {receipt} at {store}. Thank you!"
+    balanceReminder: "Hello {name}, a gentle reminder that {balance} is pending for order {receipt} at {store}. Thank you!",
+    onlineOrderConfirmed:
+      "Hello {name}, thank you for shopping with {store}! Your online order {receipt} is confirmed.\nItems: {items}\nTotal: {total} | Paid: {paid} | Balance: {balance}\nYour bill: {bill_link}",
+    onlineShipped: "Hello {name}, your order {receipt} from {store} has been shipped and is on its way. Bill: {bill_link} Thank you!",
+    onlineDelivered: "Hello {name}, your order {receipt} from {store} has been delivered. We hope you love it! Bill: {bill_link}"
   }
 };
 

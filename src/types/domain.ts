@@ -42,6 +42,10 @@ export interface MessageTemplates {
   orderConfirmation: string;
   readyForPickup: string;
   balanceReminder: string;
+  /** Online (webstore) orders. */
+  onlineOrderConfirmed: string;
+  onlineShipped: string;
+  onlineDelivered: string;
 }
 
 export interface Tailor {

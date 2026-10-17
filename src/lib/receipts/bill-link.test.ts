@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { billLinkPath, billLinkSignature, verifyBillLink } from "./bill-link";
+import { billLinkPath, billLinkSignature, onlineBillLinkPath, onlineBillLinkSignature, verifyBillLink, verifyOnlineBillLink } from "./bill-link";
 
 const orderId = "a7963b0c-dd18-4f10-8627-f839dda96798";
 
@@ -32,5 +32,18 @@ describe("bill links", () => {
     vi.stubEnv("BILL_LINK_SECRET", "test-secret");
     expect(billLinkPath("order-1")).toBeUndefined();
     expect(verifyBillLink("../etc", "x".repeat(22))).toBe(false);
+  });
+
+  it("signs online order numbers separately from in-store order ids", () => {
+    vi.stubEnv("BILL_LINK_SECRET", "test-secret");
+    const path = onlineBillLinkPath("fd-20261017-abc123")!;
+    const signature = path.split("/").at(-1)!;
+    expect(path).toMatch(/^\/bill\/online\/FD-20261017-ABC123\/[A-Za-z0-9_-]{22}$/);
+    expect(verifyOnlineBillLink("FD-20261017-ABC123", signature)).toBe(true);
+    expect(verifyOnlineBillLink("fd-20261017-abc123", signature)).toBe(true);
+    expect(verifyOnlineBillLink("FD-20261017-ABC124", signature)).toBe(false);
+    expect(onlineBillLinkSignature("../etc/passwd")).toBeUndefined();
+    // A signature for one kind of id never opens the other.
+    expect(onlineBillLinkSignature(orderId)).not.toBe(billLinkSignature(orderId));
   });
 });

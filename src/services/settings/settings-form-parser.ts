@@ -108,7 +108,10 @@ const storeSettingsSchema = z.object({
   messageTemplates: z.object({
     orderConfirmation: z.string().trim().min(1, "Order confirmation message can't be empty.").max(1000),
     readyForPickup: z.string().trim().min(1, "Ready-for-pickup message can't be empty.").max(1000),
-    balanceReminder: z.string().trim().min(1, "Balance reminder message can't be empty.").max(1000)
+    balanceReminder: z.string().trim().min(1, "Balance reminder message can't be empty.").max(1000),
+    onlineOrderConfirmed: z.string().trim().min(1, "Online order confirmation message can't be empty.").max(1000),
+    onlineShipped: z.string().trim().min(1, "Online shipped message can't be empty.").max(1000),
+    onlineDelivered: z.string().trim().min(1, "Online delivered message can't be empty.").max(1000)
   })
 });
 
@@ -135,7 +138,10 @@ export function parseStoreSettingsFormData(formData: FormData): StoreSettingsFor
     messageTemplates: {
       orderConfirmation: readString(formData, "template.orderConfirmation"),
       readyForPickup: readString(formData, "template.readyForPickup"),
-      balanceReminder: readString(formData, "template.balanceReminder")
+      balanceReminder: readString(formData, "template.balanceReminder"),
+      onlineOrderConfirmed: readString(formData, "template.onlineOrderConfirmed"),
+      onlineShipped: readString(formData, "template.onlineShipped"),
+      onlineDelivered: readString(formData, "template.onlineDelivered")
     }
   });
   if (!result.success) throw new Error(result.error.issues[0]?.message ?? "Check the settings and try again.");

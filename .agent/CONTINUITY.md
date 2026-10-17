@@ -9,6 +9,8 @@
 - 2026-10-17T17:05Z [CODE] Online Orders pulls from the webstore's token API (`WEBSTORE_API_URL`, `WEBSTORE_API_TOKEN`); no Supabase tables or middleware changes. Phone bottom bar stays at five tabs; Online Orders is in the laptop sidebar and a button on the Orders page.
 - 2026-10-17T18:50Z [USER] Online Orders needs shipped / delivered / fulfilled stages and ready-made vs custom-size orders.
 - 2026-10-17T18:50Z [CODE] Stages come from the webstore (it added "delivered"); "completed" is shown as "Fulfilled" (stageLabel). Order type comes from the webstore's order_type (fallback: derived from items). Tabs Shipped/Delivered/Fulfilled, Type filter (passes ?type= to the webstore), one-tap next-stage buttons on rows and a stage tracker on the order page.
+- 2026-10-18T00:15Z [USER] Online orders need the same bill as in-store orders: a receipt PDF per order and a WhatsApp message with a link to open it.
+- 2026-10-18T00:15Z [CODE] Online bills: `OnlineReceiptPdfDocument` reuses the receipt PDF styles; public signed link `/bill/online/{orderNumber}/{sig}` (own HMAC context, same BILL_LINK_SECRET). Order page has View/Download/Copy bill and template WhatsApp messages (onlineOrderConfirmed / onlineShipped / onlineDelivered, balanceReminder when unpaid), editable in Settings.
 - 2026-07-01T06:24Z [TOOL] Current timestamp established with `date -Is`: `2026-07-01T01:23:02-05:00`.
 - 2026-07-01T06:24Z [TOOL] Context7 resolved official Next.js docs to `/vercel/next.js` with latest listed version `v16.2.9`; npm registry confirmed `next@16.2.9`.
 - 2026-07-01T06:24Z [TOOL] Context7 resolved Supabase SSR docs to `/supabase/ssr`; app will use `@supabase/ssr` and `@supabase/supabase-js`.

@@ -26,7 +26,10 @@ const SAMPLE_VALUES = {
 const TEMPLATE_FIELDS: { key: keyof MessageTemplates; label: string; hint: string }[] = [
   { key: "orderConfirmation", label: "Order confirmation", hint: "Sent after the order is booked." },
   { key: "readyForPickup", label: "Ready for pickup", hint: "Sent when the clothes are ready." },
-  { key: "balanceReminder", label: "Balance reminder", hint: "Only offered when money is still due." }
+  { key: "balanceReminder", label: "Balance reminder", hint: "Only offered when money is still due (also for online orders)." },
+  { key: "onlineOrderConfirmed", label: "Online order confirmation", hint: "Online Orders: sent once the webstore order is confirmed." },
+  { key: "onlineShipped", label: "Online order shipped", hint: "Online Orders: offered once the order is marked shipped." },
+  { key: "onlineDelivered", label: "Online order delivered", hint: "Online Orders: offered once the order is marked delivered." }
 ];
 
 /** Store profile, GST and bill terms, and WhatsApp wording: one form, one Save. */

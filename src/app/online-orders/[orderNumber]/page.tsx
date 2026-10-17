@@ -1,12 +1,17 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, FileText } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeading } from "@/components/shared/page-heading";
 import { ButtonLink } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ItemFitBadge, OnlinePaymentBadge, OnlineStatusBadge, OrderTypeBadge } from "@/components/online-orders/online-order-badges";
 import { OnlineOrderStageActions } from "@/components/online-orders/online-order-stage-actions";
+import { OnlineBillActions } from "@/components/online-orders/online-bill-actions";
+import { ContactActions } from "@/components/shared/contact-actions";
+import { requestOrigin } from "@/lib/http/request-origin";
+import { onlineBillFileName, onlineCustomerMessages } from "@/lib/online-orders/online-bill";
+import { onlineBillLinkPath } from "@/lib/receipts/bill-link";
+import { getStoreSettings } from "@/services/settings/settings-service";
 import { OnlineOrderStatusForm } from "@/components/online-orders/online-order-status-form";
 import { hasWebstoreEnv } from "@/lib/webstore/env";
 import { formatDateTime } from "@/lib/utils/date";
@@ -22,10 +27,11 @@ function rupees(value: string) {
 export default async function OnlineOrderDetailPage({ params }: { params: Promise<{ orderNumber: string }> }) {
   const { orderNumber } = await params;
   if (!hasWebstoreEnv()) notFound();
-  const [order, meta] = await Promise.all([getOnlineOrder(orderNumber), listOnlineOrders({ limit: 1 })]);
+  const [order, meta, settings] = await Promise.all([getOnlineOrder(orderNumber), listOnlineOrders({ limit: 1 }), getStoreSettings()]);
   if (!order) notFound();
-  const whatsappDigits = order.customer.phone.replace(/\D/g, "");
-  const whatsappHref = whatsappDigits ? `https://wa.me/${whatsappDigits.length === 10 ? `91${whatsappDigits}` : whatsappDigits}` : null;
+  const billPath = onlineBillLinkPath(order.order_number);
+  const billUrl = billPath ? `${await requestOrigin()}${billPath}` : undefined;
+  const customerMessages = onlineCustomerMessages(order, settings, billUrl);
 
   return (
     <AppShell>
@@ -34,6 +40,12 @@ export default async function OnlineOrderDetailPage({ params }: { params: Promis
         description={`${order.customer.name} · ${order.customer.phone || order.customer.email} · Placed ${formatDateTime(order.created_at)}`}
         action={
           <div className="flex flex-wrap gap-2">
+            {billUrl ? (
+              <ButtonLink href={billUrl} target="_blank" rel="noopener">
+                <FileText className="h-4 w-4" aria-hidden />
+                View Bill
+              </ButtonLink>
+            ) : null}
             <ButtonLink href="/online-orders" variant="secondary">
               Back to Online Orders
             </ButtonLink>
@@ -120,6 +132,19 @@ export default async function OnlineOrderDetailPage({ params }: { params: Promis
 
           <Card>
             <CardHeader>
+              <CardTitle>Bill</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {billUrl ? (
+                <OnlineBillActions billUrl={billUrl} fileName={onlineBillFileName(order.order_number)} />
+              ) : (
+                <p className="text-sm text-muted-strong">Bill links need BILL_LINK_SECRET (or the Supabase service key) on the server.</p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
               <CardTitle>Update order</CardTitle>
             </CardHeader>
             <CardContent>
@@ -150,16 +175,7 @@ export default async function OnlineOrderDetailPage({ params }: { params: Promis
                 </p>
               ) : null}
               <p className="whitespace-pre-line text-muted-strong">{order.shipping_address}</p>
-              {whatsappHref ? (
-                <Link
-                  href={`${whatsappHref}?text=${encodeURIComponent(`Hi ${order.customer.name}, this is about your online order ${order.order_number}.`)}`}
-                  target="_blank"
-                  rel="noopener"
-                  className="mt-2 inline-flex min-h-10 items-center justify-center rounded-xl border border-line-strong bg-surface px-3 text-sm font-semibold text-wine-ink shadow-raised-sm transition hover:border-gold hover:bg-blush"
-                >
-                  Message on WhatsApp
-                </Link>
-              ) : null}
+              <ContactActions phone={order.customer.phone} messages={customerMessages} className="mt-2" />
             </CardContent>
           </Card>
 
