@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { Globe } from "lucide-react";
+import { Globe, Store } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeading } from "@/components/shared/page-heading";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Field, Input, Select } from "@/components/ui/input";
 import { OnlineOrderTable } from "@/components/online-orders/online-order-table";
@@ -118,6 +118,19 @@ export default async function OnlineOrdersPage({
         <SetupNotice message={problem} />
       ) : (
         <>
+          <Card className="mb-5 border-section-online/20 bg-gradient-to-r from-[#e6f2f6] to-surface">
+            <CardContent className="flex flex-wrap items-center justify-between gap-4 py-4">
+              <div className="min-w-0">
+                <p className="text-xs font-bold uppercase tracking-[0.08em] text-section-online">Storefront</p>
+                <p className="mt-1 font-serif text-xl font-medium text-wine-deep">Edit the online store</p>
+                <p className="text-sm text-muted-strong">Products, photos, prices, banners, pages and settings. Opens the store&apos;s admin, already signed in as the manager.</p>
+              </div>
+              <ButtonLink href="/storefront-admin" target="_blank" rel="noopener" className="min-h-14 px-7 text-base">
+                <Store className="h-5 w-5" aria-hidden />
+                Edit storefront
+              </ButtonLink>
+            </CardContent>
+          </Card>
           <div className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
               ["Open orders", openOrders.length, formatINR(sumTotals(openOrders))],
