@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { ExternalLink, FileText } from "lucide-react";
+import { ExternalLink, FileText, MapPin, Package, UserRound } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeading } from "@/components/shared/page-heading";
 import { ButtonLink } from "@/components/ui/button";
@@ -7,21 +7,31 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ItemFitBadge, OnlinePaymentBadge, OnlineStatusBadge, OrderTypeBadge } from "@/components/online-orders/online-order-badges";
 import { OnlineOrderStageActions } from "@/components/online-orders/online-order-stage-actions";
 import { OnlineBillActions } from "@/components/online-orders/online-bill-actions";
+import { OnlineOrderStatusForm } from "@/components/online-orders/online-order-status-form";
+import { CopyTextButton } from "@/components/online-orders/copy-text-button";
 import { ContactActions } from "@/components/shared/contact-actions";
 import { requestOrigin } from "@/lib/http/request-origin";
-import { onlineBillFileName, onlineCustomerMessages } from "@/lib/online-orders/online-bill";
+import { onlineBillAmounts, onlineBillFileName, onlineCustomerMessages } from "@/lib/online-orders/online-bill";
 import { onlineBillLinkPath } from "@/lib/receipts/bill-link";
-import { getStoreSettings } from "@/services/settings/settings-service";
-import { OnlineOrderStatusForm } from "@/components/online-orders/online-order-status-form";
 import { hasWebstoreEnv } from "@/lib/webstore/env";
 import { formatDateTime } from "@/lib/utils/date";
 import { formatINR, rupeesToPaise } from "@/lib/utils/money";
-import { getOnlineOrder, listOnlineOrders, orderTypeOf } from "@/services/online-orders/online-order-service";
+import { getOnlineOrder, listOnlineOrders, orderTypeOf, stageLabel } from "@/services/online-orders/online-order-service";
+import { getStoreSettings } from "@/services/settings/settings-service";
 
 export const dynamic = "force-dynamic";
 
 function rupees(value: string) {
   return formatINR(rupeesToPaise(Number.parseFloat(value) || 0));
+}
+
+function Detail({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="grid grid-cols-[8.5rem_1fr] gap-3 border-b border-line-soft py-2 last:border-b-0">
+      <dt className="text-xs font-bold uppercase tracking-[0.08em] text-label">{label}</dt>
+      <dd className="min-w-0 break-words text-sm text-ink-soft">{children}</dd>
+    </div>
+  );
 }
 
 export default async function OnlineOrderDetailPage({ params }: { params: Promise<{ orderNumber: string }> }) {
@@ -32,6 +42,8 @@ export default async function OnlineOrderDetailPage({ params }: { params: Promis
   const billPath = onlineBillLinkPath(order.order_number);
   const billUrl = billPath ? `${await requestOrigin()}${billPath}` : undefined;
   const customerMessages = onlineCustomerMessages(order, settings, billUrl);
+  const amounts = onlineBillAmounts(order);
+  const ordersCount = order.customer.orders_count ?? 1;
 
   return (
     <AppShell>
@@ -58,7 +70,7 @@ export default async function OnlineOrderDetailPage({ params }: { params: Promis
       />
 
       <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
-        <div className="grid gap-5">
+        <div className="grid content-start gap-5">
           <Card>
             <CardHeader className="flex flex-wrap items-center justify-between gap-2">
               <CardTitle>Items</CardTitle>
@@ -71,23 +83,49 @@ export default async function OnlineOrderDetailPage({ params }: { params: Promis
             <CardContent className="grid gap-4">
               {order.items.map((item, index) => (
                 <div key={`${item.sku}-${index}`} className="rounded-2xl border border-line-soft bg-paper p-4">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                      <p className="font-semibold text-wine-ink">
-                        {item.quantity > 1 ? `${item.quantity} × ` : ""}
-                        {item.product_name}
-                      </p>
-                      <p className="text-xs text-muted">
-                        {[item.sku, item.color, item.made_to_measure ? null : item.size].filter(Boolean).join(" · ")}
-                      </p>
-                      <div className="mt-1.5">
+                  <div className="flex gap-4">
+                    <div className="flex h-24 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-peach">
+                      {item.image_url ? (
+                        // Product photos are served by the webstore; no remote optimisation configured.
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={item.image_url} alt={item.product_name} className="h-full w-full object-cover" loading="lazy" />
+                      ) : (
+                        <Package className="h-6 w-6 text-muted-soft" aria-hidden />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="font-semibold text-wine-ink">
+                            {item.quantity > 1 ? `${item.quantity} × ` : ""}
+                            {item.product_name}
+                          </p>
+                          <p className="text-xs text-muted">
+                            {[item.category, item.sku ? `SKU ${item.sku}` : "", item.color, item.made_to_measure ? null : item.size ? `Size ${item.size}` : ""]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold tabular-nums">{rupees(item.line_total)}</p>
+                          <p className="text-xs text-muted tabular-nums">
+                            {item.quantity} × {rupees(item.unit_price)}
+                            {Number.parseFloat(item.discount_amount) > 0 ? ` · −${rupees(item.discount_amount)} off` : ""}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
                         <ItemFitBadge custom={item.made_to_measure} />
+                        {item.product_url ? (
+                          <a href={item.product_url} target="_blank" rel="noopener" className="text-xs font-semibold text-wine hover:underline">
+                            View on store
+                          </a>
+                        ) : null}
                       </div>
                     </div>
-                    <p className="font-semibold tabular-nums">{rupees(item.line_total)}</p>
                   </div>
                   {item.made_to_measure ? (
-                    <div className="mt-3">
+                    <div className="mt-3 rounded-xl bg-blush/60 p-3">
                       <p className="text-xs font-bold uppercase tracking-[0.08em] text-label">Measurements</p>
                       <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-3">
                         {item.customization_summary.map((row) => (
@@ -97,25 +135,42 @@ export default async function OnlineOrderDetailPage({ params }: { params: Promis
                           </div>
                         ))}
                       </dl>
-                      {item.customization?.notes ? <p className="mt-2 text-sm italic text-muted-strong">“{item.customization.notes}”</p> : null}
+                      {item.tailor_notes || item.customization?.notes ? (
+                        <p className="mt-2 text-sm">
+                          <span className="font-semibold text-wine-ink">Notes for the tailor: </span>
+                          <span className="italic text-muted-strong">“{item.tailor_notes || item.customization?.notes}”</span>
+                        </p>
+                      ) : null}
                     </div>
                   ) : null}
                 </div>
               ))}
               <dl className="grid gap-1 border-t border-line pt-3 text-sm">
-                {[
-                  ["Subtotal", rupees(order.subtotal)],
-                  ...(Number.parseFloat(order.discount_total) > 0 ? [["Discount", `−${rupees(order.discount_total)}`]] : []),
-                  ...(Number.parseFloat(order.shipping_total) > 0 ? [["Shipping", rupees(order.shipping_total)]] : [])
-                ].map(([label, value]) => (
-                  <div key={label} className="flex justify-between text-muted-strong">
-                    <dt>{label}</dt>
-                    <dd className="tabular-nums">{value}</dd>
+                <div className="flex justify-between text-muted-strong">
+                  <dt>Items</dt>
+                  <dd className="tabular-nums">{rupees(order.subtotal)}</dd>
+                </div>
+                {amounts.discountPaise > 0 ? (
+                  <div className="flex justify-between text-success">
+                    <dt>Discount</dt>
+                    <dd className="tabular-nums">−{rupees(order.discount_total)}</dd>
                   </div>
-                ))}
+                ) : null}
+                <div className="flex justify-between text-muted-strong">
+                  <dt>Shipping</dt>
+                  <dd className="tabular-nums">{amounts.shippingPaise > 0 ? rupees(order.shipping_total) : "Free"}</dd>
+                </div>
                 <div className="flex justify-between border-t border-line pt-2 text-base font-semibold text-wine-deep">
                   <dt>Total</dt>
                   <dd className="tabular-nums">{rupees(order.total)}</dd>
+                </div>
+                <div className="flex justify-between text-muted-strong">
+                  <dt>Paid</dt>
+                  <dd className="tabular-nums">{formatINR(amounts.paidPaise)}</dd>
+                </div>
+                <div className="flex justify-between font-semibold text-wine-ink">
+                  <dt>Balance</dt>
+                  <dd className="tabular-nums">{formatINR(amounts.balancePaise)}</dd>
                 </div>
               </dl>
             </CardContent>
@@ -155,27 +210,77 @@ export default async function OnlineOrderDetailPage({ params }: { params: Promis
 
         <div className="grid content-start gap-5">
           <Card>
-            <CardHeader>
-              <CardTitle>Customer</CardTitle>
+            <CardHeader className="flex items-center justify-between gap-2">
+              <CardTitle>Delivery</CardTitle>
+              <MapPin className="h-5 w-5 text-section-online" aria-hidden />
             </CardHeader>
-            <CardContent className="grid gap-2 text-sm">
+            <CardContent className="grid gap-3 text-sm">
               <p className="font-semibold text-wine-ink">{order.customer.name}</p>
-              {order.customer.phone ? (
-                <p>
-                  <a className="hover:text-wine hover:underline" href={`tel:${order.customer.phone}`}>
-                    {order.customer.phone}
-                  </a>
-                </p>
+              <p className="whitespace-pre-line text-ink-soft">{order.shipping_address || "No address given."}</p>
+              {order.customer.phone ? <p className="text-muted-strong">Phone: {order.customer.phone}</p> : null}
+              <div className="flex flex-wrap gap-2">
+                {order.location_url ? (
+                  <ButtonLink href={order.location_url} target="_blank" rel="noopener noreferrer">
+                    <MapPin className="h-4 w-4" aria-hidden />
+                    Open in Google Maps
+                  </ButtonLink>
+                ) : null}
+                <CopyTextButton
+                  text={[order.customer.name, order.shipping_address, order.customer.phone ? `Phone: ${order.customer.phone}` : "", order.location_url ?? ""]
+                    .filter(Boolean)
+                    .join("\n")}
+                  label="Copy delivery details"
+                />
+              </div>
+              {!order.location_url ? <p className="text-xs text-muted">No map pin shared by the customer.</p> : null}
+              {order.notes ? (
+                <div className="rounded-xl border-l-4 border-gold bg-cream px-3 py-2">
+                  <p className="text-xs font-bold uppercase tracking-[0.08em] text-label">Note from customer</p>
+                  <p className="mt-1 whitespace-pre-line text-ink-soft">{order.notes}</p>
+                </div>
               ) : null}
-              {order.customer.email ? (
-                <p>
-                  <a className="hover:text-wine hover:underline" href={`mailto:${order.customer.email}`}>
-                    {order.customer.email}
-                  </a>
-                </p>
-              ) : null}
-              <p className="whitespace-pre-line text-muted-strong">{order.shipping_address}</p>
-              <ContactActions phone={order.customer.phone} messages={customerMessages} className="mt-2" />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex items-center justify-between gap-2">
+              <CardTitle>Customer</CardTitle>
+              <UserRound className="h-5 w-5 text-section-customers" aria-hidden />
+            </CardHeader>
+            <CardContent className="grid gap-3">
+              <dl>
+                <Detail label="Name">{order.customer.name}</Detail>
+                <Detail label="Phone">
+                  {order.customer.phone ? (
+                    <a className="hover:text-wine hover:underline" href={`tel:${order.customer.phone}`}>
+                      {order.customer.phone}
+                    </a>
+                  ) : (
+                    "—"
+                  )}
+                  {order.customer.verified_phone ? <span className="ml-2 text-xs font-semibold text-success">✓ verified {order.customer.verified_phone}</span> : null}
+                </Detail>
+                <Detail label="Email">
+                  {order.customer.email ? (
+                    <a className="hover:text-wine hover:underline" href={`mailto:${order.customer.email}`}>
+                      {order.customer.email}
+                    </a>
+                  ) : (
+                    "—"
+                  )}
+                </Detail>
+                <Detail label="Account">
+                  {order.customer.has_account ? `Store account${order.customer.account_username ? ` (${order.customer.account_username})` : ""}` : "Guest checkout"}
+                </Detail>
+                <Detail label="History">
+                  {ordersCount > 1 ? (
+                    <span className="font-semibold text-wine-ink">Returning customer · {ordersCount} orders</span>
+                  ) : (
+                    "First order"
+                  )}
+                </Detail>
+              </dl>
+              <ContactActions phone={order.customer.phone} messages={customerMessages} />
             </CardContent>
           </Card>
 
@@ -183,25 +288,43 @@ export default async function OnlineOrderDetailPage({ params }: { params: Promis
             <CardHeader>
               <CardTitle>Payment</CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-1 text-sm">
-              <p>
-                <span className="text-muted">Method:</span> {order.payment_method_label}
-              </p>
-              {order.payment_reference ? (
-                <p>
-                  <span className="text-muted">Reference:</span> {order.payment_reference}
-                </p>
-              ) : null}
-              {order.paid_at ? (
-                <p>
-                  <span className="text-muted">Paid at:</span> {formatDateTime(order.paid_at)}
-                </p>
-              ) : null}
-              {order.notes ? (
-                <p className="mt-2">
-                  <span className="text-muted">Customer notes:</span> {order.notes}
-                </p>
-              ) : null}
+            <CardContent>
+              <dl>
+                <Detail label="Status">
+                  <OnlinePaymentBadge status={order.payment_status} label={order.payment_status_label} />
+                </Detail>
+                <Detail label="Method">{order.payment_method_label}</Detail>
+                <Detail label="Amount">
+                  {rupees(order.total)} · Balance {formatINR(amounts.balancePaise)}
+                </Detail>
+                {order.payment_reference ? <Detail label="Reference">{order.payment_reference}</Detail> : null}
+                {order.paid_at ? <Detail label="Paid at">{formatDateTime(order.paid_at)}</Detail> : null}
+                {order.gateway?.order_id ? <Detail label="Razorpay order">{order.gateway.order_id}</Detail> : null}
+                {order.gateway?.payment_id ? <Detail label="Razorpay payment">{order.gateway.payment_id}</Detail> : null}
+                {order.payment_notes ? (
+                  <Detail label="Payment notes">
+                    <span className="whitespace-pre-line">{order.payment_notes}</span>
+                  </Detail>
+                ) : null}
+              </dl>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Order info</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <dl>
+                <Detail label="Order no.">{order.order_number}</Detail>
+                <Detail label="Placed">{formatDateTime(order.created_at)}</Detail>
+                <Detail label="Last updated">{formatDateTime(order.updated_at)}</Detail>
+                <Detail label="Stage">{stageLabel(order.status, order.status_label)}</Detail>
+                <Detail label="Type">
+                  <OrderTypeBadge type={orderTypeOf(order)} />
+                </Detail>
+                <Detail label="Pieces">{order.item_count}</Detail>
+              </dl>
             </CardContent>
           </Card>
         </div>

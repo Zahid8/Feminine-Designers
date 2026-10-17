@@ -36,6 +36,7 @@ describe("OnlineReceiptPdfDocument", () => {
       "Custom size",
       "Chest 36 in",
       "12 MG Road, Pune",
+      "Google Maps location: https://maps.app.goo.gl/AbC123",
       "₹4,700.00",
       "Balance"
     ]) {

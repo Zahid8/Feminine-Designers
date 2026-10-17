@@ -1,4 +1,4 @@
-import { Document, Image, Page, Text, View } from "@react-pdf/renderer";
+import { Document, Image, Link, Page, Text, View } from "@react-pdf/renderer";
 import { colors, formatPdfINR, Info, SectionHead, storeLogoSource, styles, Terms, Total } from "@/components/receipts/receipt-pdf";
 import { onlineBillAmounts } from "@/lib/online-orders/online-bill";
 import { formatDate } from "@/lib/utils/date";
@@ -74,6 +74,11 @@ export function OnlineReceiptPdfDocument({ order, settings }: { order: OnlineOrd
           <View style={styles.lowerLeft}>
             <SectionHead title="Delivery address" />
             <Text style={[styles.noteBox, { marginTop: 2 }]}>{order.shipping_address || "—"}</Text>
+            {order.location_url ? (
+              <Link src={order.location_url} style={{ marginTop: 4, fontSize: 8, color: colors.wine }}>
+                Google Maps location: {order.location_url}
+              </Link>
+            ) : null}
             {order.notes ? <Text style={styles.noteBox}>Customer Notes: {order.notes}</Text> : null}
             <View style={{ marginTop: 10 }}>
               <Terms paragraphs={settings.customerTerms} />

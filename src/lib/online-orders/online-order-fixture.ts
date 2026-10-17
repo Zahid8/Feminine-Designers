@@ -31,6 +31,7 @@ export const onlineOrder = (overrides: Partial<OnlineOrder> = {}): OnlineOrder =
   updated_at: "2026-10-17T10:00:00+05:30",
   customer: { name: "Asha Rao", email: "asha@example.com", phone: "9876543210", account_id: null },
   shipping_address: "12 MG Road, Pune",
+  location_url: "https://maps.app.goo.gl/AbC123",
   notes: "",
   currency: "INR",
   subtotal: "4800.00",

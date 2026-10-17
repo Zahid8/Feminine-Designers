@@ -18,6 +18,12 @@ export interface OnlineOrderItem {
   customization: { measurements: Record<string, string>; sleeve_style: string; notes: string } | null;
   customization_summary: { label: string; value: string }[];
   product_url: string | null;
+  // Sent by newer webstore versions.
+  sleeve_style?: string;
+  sleeve_style_label?: string;
+  tailor_notes?: string;
+  category?: string;
+  image_url?: string | null;
 }
 
 export interface OnlineOrder {
@@ -29,11 +35,24 @@ export interface OnlineOrder {
   payment_method: string;
   payment_method_label: string;
   payment_reference: string;
+  payment_notes?: string;
+  gateway?: { order_id: string; payment_id: string } | null;
   paid_at: string | null;
   created_at: string;
   updated_at: string;
-  customer: { name: string; email: string; phone: string; account_id: number | null };
+  customer: {
+    name: string;
+    email: string;
+    phone: string;
+    account_id: number | null;
+    has_account?: boolean;
+    account_username?: string;
+    verified_phone?: string;
+    orders_count?: number;
+  };
   shipping_address: string;
+  /** Optional Google Maps pin the customer added at checkout. */
+  location_url?: string | null;
   notes: string;
   currency: string;
   subtotal: string;

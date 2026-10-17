@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { MapPin } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { OnlinePaymentBadge, OnlineStatusBadge, OrderTypeBadge } from "@/components/online-orders/online-order-badges";
 import { OnlineOrderNextStageButton } from "@/components/online-orders/online-order-stage-actions";
@@ -64,6 +65,23 @@ export function OnlineOrderTable({ orders }: { orders: OnlineOrder[] }) {
                       {order.customer.name}
                     </Link>
                     <p className="whitespace-nowrap text-xs text-muted">{order.customer.phone || order.customer.email}</p>
+                    <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
+                      {order.location_url ? (
+                        <a
+                          href={order.location_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 font-semibold text-section-online hover:underline"
+                          title="Open the customer's Google Maps pin"
+                        >
+                          <MapPin className="h-3.5 w-3.5" aria-hidden />
+                          Map
+                        </a>
+                      ) : null}
+                      {(order.customer.orders_count ?? 1) > 1 ? (
+                        <span className="rounded-full bg-peach px-2 py-0.5 font-semibold text-wine-ink">Returning · {order.customer.orders_count}</span>
+                      ) : null}
+                    </div>
                   </td>
                   <td className="max-w-64 px-4 py-3">
                     <p className="line-clamp-2" title={summarizeOnlineItems(order)}>
