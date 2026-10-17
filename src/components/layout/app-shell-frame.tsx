@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChartColumn, Home, LogOut, Menu, Plus, ReceiptText, Settings, UserRoundPlus, Users } from "lucide-react";
+import { ChartColumn, Globe, Home, LogOut, Menu, Plus, ReceiptText, Settings, UserRoundPlus, Users } from "lucide-react";
 import { useState } from "react";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { LogoMark } from "@/components/shared/logo-mark";
@@ -17,13 +17,15 @@ const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home, accent: "bg-section-dashboard", text: "text-section-dashboard" },
   { href: "/orders", label: "Orders", icon: ReceiptText, accent: "bg-section-orders", text: "text-section-orders" },
   { href: "/orders/new", label: "New Order", icon: UserRoundPlus, accent: "bg-section-new", text: "text-section-new" },
+  { href: "/online-orders", label: "Online Orders", icon: Globe, accent: "bg-section-online", text: "text-section-online" },
   { href: "/customers", label: "Customers", icon: Users, accent: "bg-section-customers", text: "text-section-customers" },
   { href: "/reports", label: "Reports", icon: ChartColumn, accent: "bg-section-reports", text: "text-section-reports" },
   { href: "/settings", label: "Settings", icon: Settings, accent: "bg-section-settings", text: "text-section-settings" }
 ];
 
-// Phones and tablets: five tabs; Settings is the header gear button.
-const mobileNavItems = navItems.filter((item) => item.href !== "/settings");
+// Phones and tablets: five tabs; Settings is the header gear button and
+// Online Orders is reached from the Orders page.
+const mobileNavItems = navItems.filter((item) => item.href !== "/settings" && item.href !== "/online-orders");
 
 function isActivePath(pathname: string, href: string) {
   if (href === "/orders") return pathname === "/orders" || (pathname.startsWith("/orders/") && !pathname.startsWith("/orders/new"));

@@ -596,3 +596,10 @@ node --env-file=.env.local scripts/migrate-cloth-samples.mjs --apply  # uploads 
 ## Current Important Note
 
 The UI and receipt/PDF workflow are implemented and runnable. Order creation uses a Next.js server action and Supabase RPC when the Supabase environment variables are configured. Without Supabase variables, existing demo screens still load from local seed data, but new orders cannot be permanently saved.
+
+## Online Orders (webstore)
+
+The Online Orders page reads orders from the FemDes webstore. Set
+`WEBSTORE_API_URL` (the shop's origin) and `WEBSTORE_API_TOKEN` (the same value as
+the shop's `WEBSTORE_API_TOKEN`) in the environment; until then the page shows
+setup instructions.

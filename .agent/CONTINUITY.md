@@ -5,6 +5,8 @@
 - 2026-07-01T06:25Z [ASSUMPTION] Scaffold a current Next.js App Router app in place because the folder is not a git repository and contains no existing app code.
 
 ## [DECISIONS]
+- 2026-10-17T17:05Z [USER] Route FemDes webstore orders into this app as an "Online Orders" section, following this app's design principles.
+- 2026-10-17T17:05Z [CODE] Online Orders pulls from the webstore's token API (`WEBSTORE_API_URL`, `WEBSTORE_API_TOKEN`); no Supabase tables or middleware changes. Phone bottom bar stays at five tabs; Online Orders is in the laptop sidebar and a button on the Orders page.
 - 2026-07-01T06:24Z [TOOL] Current timestamp established with `date -Is`: `2026-07-01T01:23:02-05:00`.
 - 2026-07-01T06:24Z [TOOL] Context7 resolved official Next.js docs to `/vercel/next.js` with latest listed version `v16.2.9`; npm registry confirmed `next@16.2.9`.
 - 2026-07-01T06:24Z [TOOL] Context7 resolved Supabase SSR docs to `/supabase/ssr`; app will use `@supabase/ssr` and `@supabase/supabase-js`.
@@ -20,6 +22,7 @@
 - 2026-10-15T19:18Z [CODE] Bill links: HMAC-signed `/bill/<orderId>/<sig>` returns the customer-copy PDF inline (no DB change, no new env var required; key derived from service-role key unless BILL_LINK_SECRET set). Receipt page has Copy bill link + Send on WhatsApp; order WhatsApp templates include the link.
 
 ## [PROGRESS]
+- 2026-10-17T17:05Z [CODE] Added `/online-orders` (list with stat cards, search/stage filter, Open / Payments to Verify / Shipped / All tabs, table + phone cards) and `/online-orders/[orderNumber]` (items incl. made-to-measure measurements, customer, payment, stage/payment update via server action). Service in `src/services/online-orders/online-order-service.ts` with vitest coverage; setup notice when env is missing.
 - 2026-07-01T06:24Z [TOOL] Repository assessment found only `implementation_plan.md` and `IMG_1174.JPG`; no package manager metadata, framework, database files, env files, styles, or tests existed.
 - 2026-07-01T06:39Z [CODE] Implemented Next.js 16 App Router scaffold, typed domain model, calculation utilities, local seed services, Supabase schema/seed, operational pages, receipt previews, PDF endpoints, tests, and documentation.
 - 2026-07-01T06:41Z [CODE] Copied existing `Logo.png` to required `public/Logo.PNG` path and wired UI/receipt logo display with text fallback.

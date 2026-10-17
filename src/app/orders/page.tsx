@@ -41,7 +41,10 @@ export default async function OrdersPage({
         title="Orders"
         description="Search by receipt number, customer name, or phone number, and filter by order stage."
         action={
-          <ButtonLink href="/orders/new" className="hidden lg:inline-flex">New Order</ButtonLink>
+          <div className="flex flex-wrap gap-2">
+            <ButtonLink href="/online-orders" variant="secondary">Online Orders</ButtonLink>
+            <ButtonLink href="/orders/new" className="hidden lg:inline-flex">New Order</ButtonLink>
+          </div>
         }
       />
       <Card className="mb-5">
