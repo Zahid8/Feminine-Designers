@@ -176,7 +176,7 @@ export default async function OnlineOrderDetailPage({ params }: { params: Promis
                 </div>
                 {amounts.discountPaise > 0 ? (
                   <div className="flex justify-between text-success">
-                    <dt>Discount</dt>
+                    <dt>Discount{order.coupon ? ` (incl. coupon ${order.coupon.code} −${rupees(order.coupon.discount)})` : ""}</dt>
                     <dd className="tabular-nums">−{rupees(order.discount_total)}</dd>
                   </div>
                 ) : null}
@@ -279,6 +279,12 @@ export default async function OnlineOrderDetailPage({ params }: { params: Promis
                 />
               </div>
               {!order.location_url ? <p className="text-xs text-muted">No map pin shared by the customer.</p> : null}
+              {order.gift_message ? (
+                <div className="rounded-xl border-l-4 border-wine bg-blush/60 px-3 py-2">
+                  <p className="text-xs font-bold uppercase tracking-[0.08em] text-label">Gift · write this on a card, no prices in the parcel</p>
+                  <p className="mt-1 whitespace-pre-line font-semibold text-wine-ink">“{order.gift_message}”</p>
+                </div>
+              ) : null}
               {order.notes ? (
                 <div className="rounded-xl border-l-4 border-gold bg-cream px-3 py-2">
                   <p className="text-xs font-bold uppercase tracking-[0.08em] text-label">Note from customer</p>

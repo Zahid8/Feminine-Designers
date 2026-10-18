@@ -98,6 +98,8 @@ export interface OnlineOrder {
   items: OnlineOrderItem[];
   // Sent by newer webstore versions (courier tracking, history, customer requests).
   tracking?: OnlineOrderTracking;
+  coupon?: { code: string; discount: string } | null;
+  gift_message?: string;
   cancellation?: { at: string; by: "customer" | "staff" | "system" | ""; reason: string; refund_due: boolean } | null;
   timeline?: OnlineOrderEvent[];
   requests?: OnlineOrderRequest[];

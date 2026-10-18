@@ -156,6 +156,7 @@ function OrderFlags({ order }: { order: OnlineOrder }) {
       {requests.length ? (
         <span className="rounded-full bg-cream px-2.5 py-1 text-xs font-bold text-bronze ring-1 ring-gold">{requests[0].kind_label.split(" (")[0]} request</span>
       ) : null}
+      {order.gift_message ? <span className="rounded-full bg-blush px-2.5 py-1 text-xs font-bold text-wine">Gift</span> : null}
       {missingTracking(order) ? <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-800">Add tracking</span> : null}
     </>
   );
