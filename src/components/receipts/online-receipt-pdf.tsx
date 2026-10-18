@@ -82,7 +82,7 @@ export function OnlineReceiptPdfDocument({ order, settings }: { order: OnlineOrd
             ) : null}
             {order.notes ? <Text style={styles.noteBox}>Customer Notes: {order.notes}</Text> : null}
             <View style={{ marginTop: 10 }}>
-              <Terms paragraphs={ONLINE_ORDER_TERMS} />
+              <Terms paragraphs={order.bill_terms?.length ? order.bill_terms : ONLINE_ORDER_TERMS} />
             </View>
           </View>
           <View style={styles.lowerRight} wrap={false}>

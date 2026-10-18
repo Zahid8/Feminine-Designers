@@ -100,6 +100,8 @@ export interface OnlineOrder {
   tracking?: OnlineOrderTracking;
   coupon?: { code: string; discount: string } | null;
   gift_message?: string;
+  /** Online bill terms as edited in the webstore admin. */
+  bill_terms?: string[];
   cancellation?: { at: string; by: "customer" | "staff" | "system" | ""; reason: string; refund_due: boolean } | null;
   timeline?: OnlineOrderEvent[];
   requests?: OnlineOrderRequest[];
