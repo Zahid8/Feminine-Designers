@@ -45,9 +45,17 @@ export function onlineMessageValues(order: OnlineOrder, settings: StoreSettings,
     total: formatINR(amounts.totalPaise),
     paid: formatINR(amounts.paidPaise),
     balance: formatINR(amounts.balancePaise),
-    delivery: "",
+    delivery: order.tracking?.expected_delivery ?? "",
+    tracking: trackingLine(order),
     bill_link: billUrl ?? ""
   };
+}
+
+/** "Courier: Delhivery · AWB 123 · Track: https://…" once tracking is entered. */
+export function trackingLine(order: OnlineOrder) {
+  const t = order.tracking;
+  if (!t || !t.number) return "";
+  return [`Courier: ${t.courier || "—"}`, `AWB ${t.number}`, t.url ? `Track: ${t.url}` : ""].filter(Boolean).join(" · ");
 }
 
 const SHIPPED_OR_LATER = new Set(["shipped", "delivered", "completed"]);
@@ -60,10 +68,15 @@ export function onlineCustomerMessages(order: OnlineOrder, settings: StoreSettin
   const balanceDue = onlineBillAmounts(order).balancePaise > 0 && order.status !== "cancelled";
   return [
     { label: "Order confirmation", text: renderTemplate(templates.onlineOrderConfirmed, values) },
-    ...(SHIPPED_OR_LATER.has(order.status) ? [{ label: "Shipped", text: renderTemplate(templates.onlineShipped, values) }] : []),
+    ...(SHIPPED_OR_LATER.has(order.status) ? [{ label: "Shipped", text: withTracking(renderTemplate(templates.onlineShipped, values), templates.onlineShipped, values.tracking) }] : []),
     ...(DELIVERED_OR_LATER.has(order.status) ? [{ label: "Delivered", text: renderTemplate(templates.onlineDelivered, values) }] : []),
     ...(balanceDue ? [{ label: "Payment reminder", text: renderTemplate(templates.balanceReminder, values) }] : [])
   ];
+}
+
+// Older saved templates have no {tracking} placeholder: append it so customers still get the AWB.
+function withTracking(text: string, template: string, tracking: string) {
+  return tracking && !template.includes("{tracking}") ? `${text} ${tracking}` : text;
 }
 
 /** Short fit/stage line for the bill header area. */

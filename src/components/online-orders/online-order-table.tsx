@@ -8,7 +8,7 @@ import { OnlineOrderNextStageButton } from "@/components/online-orders/online-or
 import { cardNavigationHandler } from "@/lib/ui/card-navigation";
 import { formatDateTime } from "@/lib/utils/date";
 import { formatINR, rupeesToPaise } from "@/lib/utils/money";
-import { orderTypeOf, type OnlineOrder } from "@/services/online-orders/online-order-service";
+import { missingTracking, openRequests, refundDue, orderTypeOf, type OnlineOrder } from "@/services/online-orders/online-order-service";
 
 export function summarizeOnlineItems(order: OnlineOrder) {
   return order.items
@@ -95,6 +95,7 @@ export function OnlineOrderTable({ orders }: { orders: OnlineOrder[] }) {
                     <div className="flex max-w-56 flex-wrap gap-1.5">
                       <OnlineStatusBadge status={order.status} label={order.status_label} />
                       <OnlinePaymentBadge status={order.payment_status} label={order.payment_status_label} />
+                      <OrderFlags order={order} />
                     </div>
                     <p className="mt-1 text-xs text-muted">{order.payment_method_label}</p>
                   </td>
@@ -134,6 +135,7 @@ export function OnlineOrderTable({ orders }: { orders: OnlineOrder[] }) {
                   <OnlineStatusBadge status={order.status} label={order.status_label} />
                   <OnlinePaymentBadge status={order.payment_status} label={order.payment_status_label} />
                   <OrderTypeBadge type={orderTypeOf(order)} />
+                  <OrderFlags order={order} />
                 </div>
                 <p className="mt-1 text-xs text-muted">{formatDateTime(order.created_at)}</p>
               </Link>
@@ -142,5 +144,19 @@ export function OnlineOrderTable({ orders }: { orders: OnlineOrder[] }) {
         })}
       </ul>
     </div>
+  );
+}
+
+/** Things that need the manager's attention on this order. */
+function OrderFlags({ order }: { order: OnlineOrder }) {
+  const requests = openRequests(order);
+  return (
+    <>
+      {refundDue(order) ? <span className="rounded-full bg-[#fbe3e1] px-2.5 py-1 text-xs font-bold text-danger">Refund due</span> : null}
+      {requests.length ? (
+        <span className="rounded-full bg-cream px-2.5 py-1 text-xs font-bold text-bronze ring-1 ring-gold">{requests[0].kind_label.split(" (")[0]} request</span>
+      ) : null}
+      {missingTracking(order) ? <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-800">Add tracking</span> : null}
+    </>
   );
 }

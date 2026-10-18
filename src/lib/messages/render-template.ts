@@ -1,4 +1,4 @@
-export const MESSAGE_PLACEHOLDERS = ["name", "store", "receipt", "items", "total", "paid", "balance", "delivery", "bill_link"] as const;
+export const MESSAGE_PLACEHOLDERS = ["name", "store", "receipt", "items", "total", "paid", "balance", "delivery", "tracking", "bill_link"] as const;
 export type MessagePlaceholder = (typeof MESSAGE_PLACEHOLDERS)[number];
 
 /**

@@ -26,6 +26,37 @@ export interface OnlineOrderItem {
   image_url?: string | null;
 }
 
+export type OnlineRequestStatus = "requested" | "approved" | "pickup" | "completed" | "rejected";
+
+export interface OnlineOrderTracking {
+  courier: string;
+  number: string;
+  url: string | null;
+  expected_delivery: string | null;
+  shipped_at: string | null;
+  delivered_at: string | null;
+}
+
+export interface OnlineOrderEvent {
+  status: OnlineOrderStatus;
+  label: string;
+  note: string;
+  at: string;
+}
+
+export interface OnlineOrderRequest {
+  id: number;
+  kind: "exchange" | "alteration" | "problem";
+  kind_label: string;
+  reason: string;
+  details: string;
+  preferred_size: string;
+  status: OnlineRequestStatus;
+  status_label: string;
+  items: string[];
+  created_at: string;
+}
+
 export interface OnlineOrder {
   order_number: string;
   status: OnlineOrderStatus;
@@ -65,7 +96,23 @@ export interface OnlineOrder {
   order_type?: OnlineOrderType;
   order_type_label?: string;
   items: OnlineOrderItem[];
+  // Sent by newer webstore versions (courier tracking, history, customer requests).
+  tracking?: OnlineOrderTracking;
+  cancellation?: { at: string; by: "customer" | "staff" | "system" | ""; reason: string; refund_due: boolean } | null;
+  timeline?: OnlineOrderEvent[];
+  requests?: OnlineOrderRequest[];
   links: { admin: string; staff: string };
+}
+
+export interface OnlineOrderChanges {
+  status?: OnlineOrderStatus;
+  payment_status?: OnlinePaymentStatus;
+  payment_notes?: string;
+  courier?: string;
+  tracking_number?: string;
+  tracking_url?: string;
+  expected_delivery?: string | null;
+  cancel_reason?: string;
 }
 
 export interface OnlineOrderListResult {
@@ -73,6 +120,7 @@ export interface OnlineOrderListResult {
   hasMore: boolean;
   statuses: { value: OnlineOrderStatus; label: string }[];
   paymentStatuses: { value: OnlinePaymentStatus; label: string }[];
+  requestStatuses: { value: OnlineRequestStatus; label: string }[];
   generatedAt: string;
 }
 
@@ -126,6 +174,7 @@ export async function listOnlineOrders(filters: OnlineOrderFilters = {}): Promis
     has_more: boolean;
     statuses: OnlineOrderListResult["statuses"];
     payment_statuses: OnlineOrderListResult["paymentStatuses"];
+    request_statuses?: OnlineOrderListResult["requestStatuses"];
     generated_at: string;
   }>(`/api/online-orders/?${params.toString()}`);
   return {
@@ -133,6 +182,7 @@ export async function listOnlineOrders(filters: OnlineOrderFilters = {}): Promis
     hasMore: data.has_more,
     statuses: data.statuses,
     paymentStatuses: data.payment_statuses,
+    requestStatuses: data.request_statuses ?? DEFAULT_REQUEST_STATUSES,
     generatedAt: data.generated_at
   };
 }
@@ -147,16 +197,65 @@ export async function getOnlineOrder(orderNumber: string): Promise<OnlineOrder |
   }
 }
 
-export async function updateOnlineOrder(
-  orderNumber: string,
-  changes: { status?: OnlineOrderStatus; payment_status?: OnlinePaymentStatus; payment_notes?: string }
-): Promise<OnlineOrder> {
+export async function updateOnlineOrder(orderNumber: string, changes: OnlineOrderChanges): Promise<OnlineOrder> {
   const data = await webstoreFetch<{ order: OnlineOrder }>(`/api/online-orders/${encodeURIComponent(orderNumber)}/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(changes)
   });
   return data.order;
+}
+
+export async function updateOnlineOrderRequest(
+  orderNumber: string,
+  requestId: number,
+  changes: { status?: OnlineRequestStatus; staff_note?: string }
+): Promise<OnlineOrder> {
+  const data = await webstoreFetch<{ order: OnlineOrder }>(
+    `/api/online-orders/${encodeURIComponent(orderNumber)}/requests/${requestId}/`,
+    { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(changes) }
+  );
+  return data.order;
+}
+
+export const DEFAULT_REQUEST_STATUSES: { value: OnlineRequestStatus; label: string }[] = [
+  { value: "requested", label: "Requested" },
+  { value: "approved", label: "Approved" },
+  { value: "pickup", label: "Pickup arranged" },
+  { value: "completed", label: "Completed" },
+  { value: "rejected", label: "Not approved" }
+];
+
+/** Customer requests still waiting on the shop. */
+export function openRequests(order: Pick<OnlineOrder, "requests">) {
+  return (order.requests ?? []).filter((r) => r.status === "requested" || r.status === "approved" || r.status === "pickup");
+}
+
+/** Cancelled after an online payment: money has to go back. */
+export function refundDue(order: Pick<OnlineOrder, "status" | "payment_status" | "cancellation">) {
+  return order.status === "cancelled" && order.payment_status === "paid";
+}
+
+/** Shipped (or later) but nobody has entered the courier details yet. */
+export function missingTracking(order: Pick<OnlineOrder, "status" | "tracking">) {
+  return order.status === "shipped" && Boolean(order.tracking) && !order.tracking?.number;
+}
+
+// Common Indian couriers and their public tracking pages ({awb} is replaced).
+export const COURIERS: { name: string; url: string }[] = [
+  { name: "Delhivery", url: "https://www.delhivery.com/track/package/{awb}" },
+  { name: "Blue Dart", url: "https://www.bluedart.com/web/guest/trackdartresult?trackFor=0&trackNo={awb}" },
+  { name: "DTDC", url: "https://www.dtdc.in/tracking.asp?strCnno={awb}" },
+  { name: "India Post", url: "https://www.indiapost.gov.in/_layouts/15/dop.portal.tracking/trackconsignment.aspx?consignmentnumber={awb}" },
+  { name: "Ekart", url: "https://ekartlogistics.com/shipmenttrack/{awb}" },
+  { name: "Xpressbees", url: "https://www.xpressbees.com/shipment/tracking?awbNo={awb}" },
+  { name: "Shiprocket", url: "https://shiprocket.co/tracking/{awb}" },
+  { name: "Shadowfax", url: "https://tracker.shadowfax.in/#/track/{awb}" }
+];
+
+export function courierTrackingUrl(courier: string, awb: string) {
+  const match = COURIERS.find((c) => c.name.toLowerCase() === courier.trim().toLowerCase());
+  return match && awb.trim() ? match.url.replace("{awb}", encodeURIComponent(awb.trim())) : "";
 }
 
 // Buckets used by the Online Orders tabs.

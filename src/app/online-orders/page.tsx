@@ -15,6 +15,9 @@ import {
   listOnlineOrders,
   needsPaymentCheck,
   orderTypeOf,
+  missingTracking,
+  openRequests,
+  refundDue,
   stageLabel,
   WebstoreError,
   type OnlineOrder,
@@ -25,8 +28,8 @@ import {
 
 export const dynamic = "force-dynamic";
 
-type OnlineView = "open" | "payment" | "shipped" | "delivered" | "fulfilled" | "all";
-const VIEWS: OnlineView[] = ["open", "payment", "shipped", "delivered", "fulfilled", "all"];
+type OnlineView = "open" | "attention" | "payment" | "shipped" | "delivered" | "fulfilled" | "all";
+const VIEWS: OnlineView[] = ["open", "attention", "payment", "shipped", "delivered", "fulfilled", "all"];
 
 function SetupNotice({ message }: { message: string }) {
   return (
@@ -76,11 +79,13 @@ export default async function OnlineOrdersPage({
   const orders = result?.orders ?? [];
   const openOrders = orders.filter(isOpenOnlineOrder);
   const paymentOrders = orders.filter(needsPaymentCheck);
+  const attentionOrders = orders.filter((order) => refundDue(order) || openRequests(order).length > 0 || missingTracking(order));
   const shippedOrders = orders.filter((order) => order.status === "shipped");
   const deliveredOrders = orders.filter((order) => order.status === "delivered");
   const fulfilledOrders = orders.filter((order) => order.status === "completed");
   const viewOrders: Record<OnlineView, OnlineOrder[]> = {
     open: openOrders,
+    attention: attentionOrders,
     payment: paymentOrders,
     shipped: shippedOrders,
     delivered: deliveredOrders,
@@ -180,6 +185,7 @@ export default async function OnlineOrdersPage({
           <nav aria-label="Online order lists" className="mb-5 inline-flex flex-wrap gap-1 rounded-2xl bg-surface-sunken p-1.5 shadow-pressed">
             {[
               ["open", "Open", openOrders.length],
+              ["attention", "Needs action", attentionOrders.length],
               ["payment", "Payments to Verify", paymentOrders.length],
               ["shipped", "Shipped", shippedOrders.length],
               ["delivered", "Delivered", deliveredOrders.length],

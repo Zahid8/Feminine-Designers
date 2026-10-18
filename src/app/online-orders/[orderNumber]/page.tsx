@@ -9,6 +9,9 @@ import { OnlineOrderStageActions } from "@/components/online-orders/online-order
 import { OnlineBillActions } from "@/components/online-orders/online-bill-actions";
 import { OnlineOrderStatusForm } from "@/components/online-orders/online-order-status-form";
 import { CopyTextButton } from "@/components/online-orders/copy-text-button";
+import { OnlineOrderTrackingForm } from "@/components/online-orders/online-order-tracking-form";
+import { OnlineOrderRequests } from "@/components/online-orders/online-order-requests";
+import { OnlineOrderTimeline } from "@/components/online-orders/online-order-timeline";
 import { ContactActions } from "@/components/shared/contact-actions";
 import { requestOrigin } from "@/lib/http/request-origin";
 import { onlineBillAmounts, onlineBillFileName, onlineCustomerMessages } from "@/lib/online-orders/online-bill";
@@ -16,7 +19,7 @@ import { onlineBillLinkPath } from "@/lib/receipts/bill-link";
 import { hasWebstoreEnv } from "@/lib/webstore/env";
 import { formatDateTime } from "@/lib/utils/date";
 import { formatINR, rupeesToPaise } from "@/lib/utils/money";
-import { getOnlineOrder, listOnlineOrders, orderTypeOf, stageLabel } from "@/services/online-orders/online-order-service";
+import { getOnlineOrder, listOnlineOrders, openRequests, orderTypeOf, refundDue, stageLabel } from "@/services/online-orders/online-order-service";
 import { getStoreSettings } from "@/services/settings/settings-service";
 
 export const dynamic = "force-dynamic";
@@ -68,6 +71,27 @@ export default async function OnlineOrderDetailPage({ params }: { params: Promis
           </div>
         }
       />
+
+      {refundDue(order) ? (
+        <div role="alert" className="mb-5 rounded-2xl border-l-4 border-danger bg-[#fbe3e1] px-4 py-3 text-sm">
+          <p className="font-bold text-danger">Refund due: {rupees(order.total)}</p>
+          <p className="text-ink-soft">
+            Cancelled by {order.cancellation?.by || "—"}
+            {order.cancellation?.reason ? ` (“${order.cancellation.reason}”)` : ""} after an online payment
+            {order.gateway?.payment_id ? ` · Razorpay payment ${order.gateway.payment_id}` : ""}. Refund it from the Razorpay dashboard, then set Payment to “Refunded” below.
+          </p>
+        </div>
+      ) : order.status === "cancelled" && order.cancellation ? (
+        <div className="mb-5 rounded-2xl border-l-4 border-line-strong bg-paper px-4 py-3 text-sm text-ink-soft">
+          Cancelled by {order.cancellation.by || "—"} on {formatDateTime(order.cancellation.at)}
+          {order.cancellation.reason ? ` · “${order.cancellation.reason}”` : ""}. Ready-made stock has been returned to the shelf.
+        </div>
+      ) : null}
+      {openRequests(order).length ? (
+        <div className="mb-5 rounded-2xl border-l-4 border-gold bg-cream px-4 py-3 text-sm text-ink-soft">
+          <span className="font-bold text-wine-ink">Customer request waiting:</span> {openRequests(order).map((r) => r.kind_label).join(", ")} — see “Customer requests” below.
+        </div>
+      ) : null}
 
       <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
         <div className="grid content-start gap-5">
@@ -185,6 +209,28 @@ export default async function OnlineOrderDetailPage({ params }: { params: Promis
             </CardContent>
           </Card>
 
+          {order.status !== "cancelled" ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Courier &amp; tracking</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <OnlineOrderTrackingForm key={`${order.updated_at}-tracking`} order={order} />
+              </CardContent>
+            </Card>
+          ) : null}
+
+          {order.requests && order.requests.length ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Customer requests</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <OnlineOrderRequests key={order.updated_at} orderNumber={order.order_number} requests={order.requests} statuses={meta.requestStatuses} />
+              </CardContent>
+            </Card>
+          ) : null}
+
           <Card>
             <CardHeader>
               <CardTitle>Bill</CardTitle>
@@ -203,7 +249,7 @@ export default async function OnlineOrderDetailPage({ params }: { params: Promis
               <CardTitle>Update order</CardTitle>
             </CardHeader>
             <CardContent>
-              <OnlineOrderStatusForm order={order} statuses={meta.statuses} paymentStatuses={meta.paymentStatuses} />
+              <OnlineOrderStatusForm key={`${order.status}-${order.payment_status}-${order.updated_at}`} order={order} statuses={meta.statuses} paymentStatuses={meta.paymentStatuses} />
             </CardContent>
           </Card>
         </div>
@@ -309,6 +355,17 @@ export default async function OnlineOrderDetailPage({ params }: { params: Promis
               </dl>
             </CardContent>
           </Card>
+
+          {order.timeline ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>History</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <OnlineOrderTimeline events={order.timeline} />
+              </CardContent>
+            </Card>
+          ) : null}
 
           <Card>
             <CardHeader>
