@@ -6,6 +6,7 @@ import { formatDate } from "@/lib/utils/date";
 import { rupeesToPaise } from "@/lib/utils/money";
 import { ORDER_TYPE_LABELS, orderTypeOf, stageLabel, type OnlineOrder } from "@/services/online-orders/online-order-service";
 import type { StoreSettings } from "@/types/domain";
+import { safeHttpUrl } from "@/lib/utils/safe-url";
 
 /**
  * Customer bill for a webstore (online) order, in the same design as the in-store
@@ -75,9 +76,9 @@ export function OnlineReceiptPdfDocument({ order, settings }: { order: OnlineOrd
           <View style={styles.lowerLeft}>
             <SectionHead title="Delivery address" />
             <Text style={[styles.noteBox, { marginTop: 2 }]}>{order.shipping_address || "—"}</Text>
-            {order.location_url ? (
-              <Link src={order.location_url} style={{ marginTop: 4, fontSize: 8, color: colors.wine }}>
-                Google Maps location: {order.location_url}
+            {safeHttpUrl(order.location_url) ? (
+              <Link src={safeHttpUrl(order.location_url)!} style={{ marginTop: 4, fontSize: 8, color: colors.wine }}>
+                Google Maps location: {safeHttpUrl(order.location_url)}
               </Link>
             ) : null}
             {order.notes ? <Text style={styles.noteBox}>Customer Notes: {order.notes}</Text> : null}

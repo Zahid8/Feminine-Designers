@@ -21,6 +21,7 @@ import { formatDateTime } from "@/lib/utils/date";
 import { formatINR, rupeesToPaise } from "@/lib/utils/money";
 import { getOnlineOrder, listOnlineOrders, openRequests, orderTypeOf, refundDue, stageLabel } from "@/services/online-orders/online-order-service";
 import { getStoreSettings } from "@/services/settings/settings-service";
+import { safeHttpUrl } from "@/lib/utils/safe-url";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +43,8 @@ export default async function OnlineOrderDetailPage({ params }: { params: Promis
   if (!hasWebstoreEnv()) notFound();
   const [order, meta, settings] = await Promise.all([getOnlineOrder(orderNumber), listOnlineOrders({ limit: 1 }), getStoreSettings()]);
   if (!order) notFound();
+  // Customer-supplied map pin: only link it if it is a normal web address.
+  const mapUrl = safeHttpUrl(order.location_url);
   const billPath = onlineBillLinkPath(order.order_number);
   const billUrl = billPath ? `${await requestOrigin()}${billPath}` : undefined;
   const customerMessages = onlineCustomerMessages(order, settings, billUrl);
@@ -140,8 +143,8 @@ export default async function OnlineOrderDetailPage({ params }: { params: Promis
                       </div>
                       <div className="mt-2 flex flex-wrap items-center gap-2">
                         <ItemFitBadge custom={item.made_to_measure} />
-                        {item.product_url ? (
-                          <a href={item.product_url} target="_blank" rel="noopener" className="text-xs font-semibold text-wine hover:underline">
+                        {safeHttpUrl(item.product_url) ? (
+                          <a href={safeHttpUrl(item.product_url)} target="_blank" rel="noopener" className="text-xs font-semibold text-wine hover:underline">
                             View on store
                           </a>
                         ) : null}
@@ -265,20 +268,20 @@ export default async function OnlineOrderDetailPage({ params }: { params: Promis
               <p className="whitespace-pre-line text-ink-soft">{order.shipping_address || "No address given."}</p>
               {order.customer.phone ? <p className="text-muted-strong">Phone: {order.customer.phone}</p> : null}
               <div className="flex flex-wrap gap-2">
-                {order.location_url ? (
-                  <ButtonLink href={order.location_url} target="_blank" rel="noopener noreferrer">
+                {mapUrl ? (
+                  <ButtonLink href={mapUrl} target="_blank" rel="noopener noreferrer">
                     <MapPin className="h-4 w-4" aria-hidden />
                     Open in Google Maps
                   </ButtonLink>
                 ) : null}
                 <CopyTextButton
-                  text={[order.customer.name, order.shipping_address, order.customer.phone ? `Phone: ${order.customer.phone}` : "", order.location_url ?? ""]
+                  text={[order.customer.name, order.shipping_address, order.customer.phone ? `Phone: ${order.customer.phone}` : "", mapUrl ?? ""]
                     .filter(Boolean)
                     .join("\n")}
                   label="Copy delivery details"
                 />
               </div>
-              {!order.location_url ? <p className="text-xs text-muted">No map pin shared by the customer.</p> : null}
+              {!mapUrl ? <p className="text-xs text-muted">No map pin shared by the customer.</p> : null}
               {order.gift_message ? (
                 <div className="rounded-xl border-l-4 border-wine bg-blush/60 px-3 py-2">
                   <p className="text-xs font-bold uppercase tracking-[0.08em] text-label">Gift · write this on a card, no prices in the parcel</p>

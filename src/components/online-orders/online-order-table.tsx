@@ -9,6 +9,7 @@ import { cardNavigationHandler } from "@/lib/ui/card-navigation";
 import { formatDateTime } from "@/lib/utils/date";
 import { formatINR, rupeesToPaise } from "@/lib/utils/money";
 import { missingTracking, openRequests, refundDue, orderTypeOf, type OnlineOrder } from "@/services/online-orders/online-order-service";
+import { safeHttpUrl } from "@/lib/utils/safe-url";
 
 export function summarizeOnlineItems(order: OnlineOrder) {
   return order.items
@@ -66,9 +67,9 @@ export function OnlineOrderTable({ orders }: { orders: OnlineOrder[] }) {
                     </Link>
                     <p className="whitespace-nowrap text-xs text-muted">{order.customer.phone || order.customer.email}</p>
                     <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
-                      {order.location_url ? (
+                      {safeHttpUrl(order.location_url) ? (
                         <a
-                          href={order.location_url}
+                          href={safeHttpUrl(order.location_url)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 font-semibold text-section-online hover:underline"

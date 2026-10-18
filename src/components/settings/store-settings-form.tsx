@@ -20,6 +20,7 @@ const SAMPLE_VALUES = {
   paid: "₹1,000.00",
   balance: "₹3,515.00",
   delivery: "05/09/2026",
+  tracking: "Courier: Delhivery · AWB 1234567890 · Track: https://www.delhivery.com/track/package/1234567890",
   bill_link: "https://…/bill/…"
 };
 

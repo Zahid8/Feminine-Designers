@@ -63,6 +63,16 @@ describe("online-order-service", () => {
     expect(init.body).toBe('{"status":"confirmed"}');
   });
 
+  it("refuses tracking links that are not https, before calling the webstore", async () => {
+    await expect(updateOnlineOrder("FD-20261017-ABC123", { tracking_url: "javascript:alert(1)" })).rejects.toThrow("https://");
+    await expect(updateOnlineOrder("FD-20261017-ABC123", { tracking_url: "http://track.example.com/1" })).rejects.toBeInstanceOf(WebstoreError);
+    expect(fetchMock).not.toHaveBeenCalled();
+    fetchMock.mockResolvedValue(new Response(JSON.stringify({ order: sampleOrder }), { status: 200 }));
+    await updateOnlineOrder("FD-20261017-ABC123", { tracking_url: "https://www.delhivery.com/track/package/1" });
+    await updateOnlineOrder("FD-20261017-ABC123", { tracking_url: "" });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
   it("fails clearly when the connection is not configured", async () => {
     delete process.env.WEBSTORE_API_TOKEN;
     await expect(listOnlineOrders()).rejects.toBeInstanceOf(WebstoreError);

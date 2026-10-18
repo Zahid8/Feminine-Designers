@@ -202,6 +202,10 @@ export async function getOnlineOrder(orderNumber: string): Promise<OnlineOrder |
 }
 
 export async function updateOnlineOrder(orderNumber: string, changes: OnlineOrderChanges): Promise<OnlineOrder> {
+  // Checked here too, not just in the browser form: the link is sent on to customers.
+  if (changes.tracking_url && !/^https:\/\//i.test(changes.tracking_url.trim())) {
+    throw new WebstoreError("Tracking link must start with https://");
+  }
   const data = await webstoreFetch<{ order: OnlineOrder }>(`/api/online-orders/${encodeURIComponent(orderNumber)}/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
